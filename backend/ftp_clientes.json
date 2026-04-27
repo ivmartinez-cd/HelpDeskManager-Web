@@ -1,0 +1,1598 @@
+{
+  "AGCO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "agco",
+    "password": "M627SjIR",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ALPEK POLYESTER ARGENTINA S. A. - DAK AMERICAS": {
+    "host": "www.cdsisa.com.ar",
+    "user": "dakamericas",
+    "password": "CcJ4Dw4V",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ANNEX": {
+    "host": "www.cdsisa.com.ar",
+    "user": "annex",
+    "password": "vZeedfg",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ARCA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "arcajunin",
+    "password": "arcajun",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ARCADIUM": {
+    "host": "www.cdsisa.com.ar",
+    "user": "arcadiumlithium",
+    "password": "I42oCygE",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "AUBASA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "aubasa",
+    "password": "whOf8rui",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "AVON": {
+    "host": "www.cdsisa.com.ar",
+    "user": "avon",
+    "password": "g9VM52Cb",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "BAUFEST": {
+    "host": "www.cdsisa.com.ar",
+    "user": "baufest",
+    "password": "uvbnkV7T",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "COOK MASTER": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cookMaster",
+    "password": "go%RR716",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CORVEN": {
+    "host": "www.cdsisa.com.ar",
+    "user": "corven",
+    "password": "7kWm5ToT",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Credicoop": {
+    "host": "www.cdsisa.com.ar",
+    "user": "credicoop",
+    "password": "j6kMeGlH",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CRESUD": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cresud",
+    "password": "i8e8FEev",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DADA LOGISTICA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "dada",
+    "password": "7HK4RUQn",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DIA %": {
+    "host": "www.cdsisa.com.ar",
+    "user": "dia",
+    "password": "PE5ZH2czbz",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DISTRINANDO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "distrinando",
+    "password": "PW3lP4rG",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DOCK SUD": {
+    "host": "www.cdsisa.com.ar",
+    "user": "docksud",
+    "password": "aZgHqVii",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "EANA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "EANA",
+    "password": "CU9y8Dnk",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ECOM CHACO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "ecomchaco",
+    "password": "6K3n8fhc",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "EDENRED": {
+    "host": "www.cdsisa.com.ar",
+    "user": "edenred",
+    "password": "dL@6s70Y",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "EDERSA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "edersa",
+    "password": "lp%9f70v",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "EL ABASTECEDOR": {
+    "host": "www.cdsisa.com.ar",
+    "user": "abastecedor",
+    "password": "6Pw5u6RC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ENVASES TINPLATE": {
+    "host": "www.cdsisa.com.ar",
+    "user": "Envasestinplate",
+    "password": "Y0rT7hW1",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "EXOLGAN": {
+    "host": "www.cdsisa.com.ar",
+    "user": "itl",
+    "password": "nply2f5j",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "FOOD SOLUTION": {
+    "host": "www.cdsisa.com.ar",
+    "user": "foodsolution",
+    "password": "coEbn0LM",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "FRATELLI BRANCA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "branca",
+    "password": "8lKMTtBr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GALENO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "galeno",
+    "password": "ghakjh76576",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GATE GOURMET": {
+    "host": "www.cdsisa.com.ar",
+    "user": "gategourmet",
+    "password": "frp43RR9",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GENERACION MEDITERRANEA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "genmediterranea",
+    "password": "ABR9bw4d",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GEORGALOS": {
+    "host": "www.cdsisa.com.ar",
+    "user": "Georgalos",
+    "password": "FKk8wjeL",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Glenmark": {
+    "host": "www.cdsisa.com.ar",
+    "user": "Glenmark",
+    "password": "8RzsZvNY",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GLOBALFARM": {
+    "host": "www.cdsisa.com.ar",
+    "user": "globalfarm",
+    "password": "hx45g20r",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "IEASA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "IEASA",
+    "password": "cFJX0edbnC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "IRSA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "irsa",
+    "password": "p9tT8qCg",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "LisickiLitvin": {
+    "host": "www.cdsisa.com.ar",
+    "user": "lisicki",
+    "password": "p9tT8qCg",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MASTELLONE": {
+    "host": "www.cdsisa.com.ar",
+    "user": "mastellone",
+    "password": "qPc74UF9",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "NASA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "nasa",
+    "password": "fjpmFLn39a",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Salta Refrescos": {
+    "host": "www.cdsisa.com.ar",
+    "user": "saltarefrescos",
+    "password": "dJe59352",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Sancor": {
+    "host": "www.cdsisa.com.ar",
+    "user": "aproagro",
+    "password": "xM4EwF0hsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Vital": {
+    "host": "www.cdsisa.com.ar",
+    "user": "vital",
+    "password": "DJpjvK3rt4",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "360 ENERGY": {
+    "host": "www.cdsisa.com.ar",
+    "user": "360energy",
+    "password": "X636HrB8",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Aca Salud": {
+    "host": "www.cdsisa.com.ar",
+    "user": "acasalud",
+    "password": "4wvXRIIj",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Adecoagro": {
+    "host": "www.cdsisa.com.ar",
+    "user": "adecoagro",
+    "password": "3SU68w3y",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ADMIFARM": {
+    "host": "www.cdsisa.com.ar",
+    "user": "admifarm",
+    "password": "chXx9HFZIt",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "AEROLINEAS ARGENTINAS": {
+    "host": "www.cdsisa.com.ar",
+    "user": "aerolineas",
+    "password": "6cG99dQl",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "AGS": {
+    "host": "www.cdsisa.com.ar",
+    "user": "agscomercializadora",
+    "password": "IxcO35ef",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Alfaparf": {
+    "host": "www.cdsisa.com.ar",
+    "user": "alfaparf",
+    "password": "1e9j6mbE",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Alicorp": {
+    "host": "www.cdsisa.com.ar",
+    "user": "alicorp",
+    "password": "dop319ke2",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Alta Plastica": {
+    "host": "www.cdsisa.com.ar",
+    "user": "altaplastica",
+    "password": "Nfpod7aq",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ARACAR": {
+    "host": "www.cdsisa.com.ar",
+    "user": "aracar",
+    "password": "OsT3MvAE",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Arag": {
+    "host": "www.cdsisa.com.ar",
+    "user": "arag",
+    "password": "awYbf5DQqN",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Arcos Dorados": {
+    "host": "www.cdsisa.com.ar",
+    "user": "arcosdorados",
+    "password": "3Oa0BjLhsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ARIMEX": {
+    "host": "www.cdsisa.com.ar",
+    "user": "arimex",
+    "password": "wENCePglfM",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Arredo": {
+    "host": "www.cdsisa.com.ar",
+    "user": "arredo",
+    "password": "4JjM1JLi",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ARSA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "arsa",
+    "password": "sF5sX8g7",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ARV": {
+    "host": "www.cdsisa.com.ar",
+    "user": "alvarez",
+    "password": "4yZTJiZB",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Asociart": {
+    "host": "www.cdsisa.com.ar",
+    "user": "asociart",
+    "password": "cqL6KMMmw9",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ASOFARMA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "asofarma",
+    "password": "YoSuGeMEN7",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ASSIST CARD": {
+    "host": "www.cdsisa.com.ar",
+    "user": "assistcard",
+    "password": "4FYT2UGl",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ATANOR": {
+    "host": "www.cdsisa.com.ar",
+    "user": "atanor",
+    "password": "ujm739ft9",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ATANOR2": {
+    "host": "www.cdsisa.com.ar",
+    "user": "atanor",
+    "password": "ujm739ft9",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "AUSOL": {
+    "host": "www.cdsisa.com.ar",
+    "user": "audelsol",
+    "password": "WVf0Fu0KcF",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "AXIONLOG": {
+    "host": "www.cdsisa.com.ar",
+    "user": "axionlog",
+    "password": "SaMQuLKFpf",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Bagues": {
+    "host": "www.cdsisa.com.ar",
+    "user": "bagues",
+    "password": "X4AyTMBA",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Banco Bice": {
+    "host": "www.cdsisa.com.ar",
+    "user": "bancobice",
+    "password": "NhiR3NZvaY",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Big Bloom": {
+    "host": "www.cdsisa.com.ar",
+    "user": "bigbloom",
+    "password": "ghj8Gdui",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "BIOGENESIS": {
+    "host": "www.cdsisa.com.ar",
+    "user": "biogenesis",
+    "password": "hL1v49sR",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Biosidus": {
+    "host": "www.cdsisa.com.ar",
+    "user": "biosidus",
+    "password": "mwjP6AxK",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "BOLDT": {
+    "host": "www.cdsisa.com.ar",
+    "user": "boldt",
+    "password": "X0X0vEMD",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Bolsa de Comercio de Bahia Blanca": {
+    "host": "www.cdsisa.com.ar",
+    "user": "bcbbsa",
+    "password": "gKISiH1O",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Boston Seguros": {
+    "host": "www.cdsisa.com.ar",
+    "user": "boston",
+    "password": "fCiP3d2A",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "BRF / CAMPO AUSTRAL": {
+    "host": "www.cdsisa.com.ar",
+    "user": "danica",
+    "password": "rKov3uD3",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Brinks": {
+    "host": "www.cdsisa.com.ar",
+    "user": "brinks",
+    "password": "b0t8JHuY",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Buquebus": {
+    "host": "www.cdsisa.com.ar",
+    "user": "riosar",
+    "password": "5iVj25f9G2",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Caja de Valores": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cajavalores",
+    "password": "yvmMyw8gzK",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CALICO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "calico",
+    "password": "oxa721wp5",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CAP Sunchales": {
+    "host": "www.cdsisa.com.ar",
+    "user": "capsunchales",
+    "password": "cFJX0edbnC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Caro Cuore": {
+    "host": "www.cdsisa.com.ar",
+    "user": "carocuore",
+    "password": "9Rq8Gry0",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CCU": {
+    "host": "www.cdsisa.com.ar",
+    "user": "CCU",
+    "password": "K4fbD99x",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Celsur": {
+    "host": "www.cdsisa.com.ar",
+    "user": "celsur",
+    "password": "nijRSf2I",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CENTRAL PUERTO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cpuerto",
+    "password": "XiMP6PFX6i",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CEPAS": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cepas",
+    "password": "2UXU91t1",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Cheeky": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cheeky",
+    "password": "pvs932lj7",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Chubb": {
+    "host": "www.cdsisa.com.ar",
+    "user": "chubb",
+    "password": "GEOJhkR2sr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CITROMAX": {
+    "host": "www.cdsisa.com.ar",
+    "user": "citromax",
+    "password": "vZee3Zy",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Citrusvil": {
+    "host": "www.cdsisa.com.ar",
+    "user": "citrusvil",
+    "password": "KPnh59PC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CLIMO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "climo",
+    "password": "N8tGlhY0",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Colchones Cannon": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cannon",
+    "password": "YrU3gC5b",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CPC Carne": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cpcarne",
+    "password": "GF5pweqC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CPC Catter Meat": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cpc",
+    "password": "La8y8W4M",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CPC SA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "CPCSA",
+    "password": "XGxi6a73tj",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CPCarne": {
+    "host": "www.cdsisa.com.ar",
+    "user": "cpcarne",
+    "password": "GF5pweqC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CPCEPBA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "CPCEPBA",
+    "password": "K3jaxubR",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Craverolanis": {
+    "host": "www.cdsisa.com.ar",
+    "user": "Craverolanis",
+    "password": "6cG99dQl",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CREDIPAZ": {
+    "host": "www.cdsisa.com.ar",
+    "user": "credipaz",
+    "password": "m7O8nTQ0",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "CRESTA ROJA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "crestaroja",
+    "password": "KAJIeV8mP4",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DEGASA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "degasa",
+    "password": "A4X805sT",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DERAGOPYAN": {
+    "host": "www.cdsisa.com.ar",
+    "user": "deragopyan",
+    "password": "55R3S7QJ9Q",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DHL Exel": {
+    "host": "www.cdsisa.com.ar",
+    "user": "dhl",
+    "password": "wfC5N9jL64",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DHL Express": {
+    "host": "www.cdsisa.com.ar",
+    "user": "dhl",
+    "password": "wfC5N9jL64",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Diarco": {
+    "host": "www.cdsisa.com.ar",
+    "user": "potigian",
+    "password": "5eVgewh1",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "DIST. METROPOLITANA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "distrimetro",
+    "password": "tMEMI8VtaV",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Dos Anclas": {
+    "host": "www.cdsisa.com.ar",
+    "user": "dosanclas",
+    "password": "HOKZh8n56I",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Efectivo Sí": {
+    "host": "www.cdsisa.com.ar",
+    "user": "efectivosi",
+    "password": "VWmsSm9Usr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ELEA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "eleaphoenix",
+    "password": "d7H5NX9z",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "EMA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "emaservicios",
+    "password": "SYU3CsvG",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ESPN": {
+    "host": "www.cdsisa.com.ar",
+    "user": "espn",
+    "password": "D4NL7qmR",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "FARGO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "fargo",
+    "password": "a8Qx6GfiIS",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Fast Food Sudamericana": {
+    "host": "www.cdsisa.com.ar",
+    "user": "fastfoodsa",
+    "password": "edLFcrh3",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Felfort": {
+    "host": "www.cdsisa.com.ar",
+    "user": "felfort",
+    "password": "MFGTyfJHsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Ferrero": {
+    "host": "www.cdsisa.com.ar",
+    "user": "ferrero",
+    "password": "qh6CYcAK",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Fleming": {
+    "host": "www.cdsisa.com.ar",
+    "user": "fleming",
+    "password": "JJ1Fo6mp",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "FLENI": {
+    "host": "www.cdsisa.com.ar",
+    "user": "fleni",
+    "password": "uty532tb8",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "FRIG. FEDERAL": {
+    "host": "www.cdsisa.com.ar",
+    "user": "frigorificofederal",
+    "password": "1qNTvIDIPC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "FRIMSA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "frimsa",
+    "password": "XC4l7I0mS3",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Garbarino": {
+    "host": "www.cdsisa.com.ar",
+    "user": "garbarino",
+    "password": "ghiK8U",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GEFCO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "gefco",
+    "password": "UV96kfVTZ6",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GENNEIA": {
+    "host": "aws.cdsisa.com.ar",
+    "user": "genneia",
+    "password": "siSTC7jw",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Gestion Seguros": {
+    "host": "www.cdsisa.com.ar",
+    "user": "gestionseguros",
+    "password": "f1WuHHd0",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GIRE": {
+    "host": "www.cdsisa.com.ar",
+    "user": "gire",
+    "password": "Znm2vUtL5H",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Gob de SJ": {
+    "host": "www.cdsisa.com.ar",
+    "user": "gobsanjuan",
+    "password": "ghyO89H",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GRUPO CONSECIONARIO DEL OESTE": {
+    "host": "www.cdsisa.com.ar",
+    "user": "gcdeloeste",
+    "password": "9C07bIVlra",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GRUPO PLANETA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "grupoplaneta",
+    "password": "gho528tb4",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Grupo Prof": {
+    "host": "www.cdsisa.com.ar",
+    "user": "prof",
+    "password": "613s8MktmN",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GRUPO RANDAZZO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "randazzo",
+    "password": "BPiJc5aD4m",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Grupo Solanas": {
+    "host": "www.cdsisa.com.ar",
+    "user": "solanas",
+    "password": "aq5XYF0N",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "GTA (Granja Tres Arroyos)": {
+    "host": "www.cdsisa.com.ar",
+    "user": "tresarroyos",
+    "password": "NhiR3NZvaY",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "HB FULLER": {
+    "host": "www.cdsisa.com.ar",
+    "user": "hbfuller",
+    "password": "C8ISYKbOsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Hernan Marotta": {
+    "host": "www.cdsisa.com.ar",
+    "user": "hmarotta",
+    "password": "ef3YTu6H",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Hospital Austral": {
+    "host": "www.cdsisa.com.ar",
+    "user": "hospiaustral",
+    "password": "J4CabkXRsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "HOSPITAL ITALIANO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "italianolp",
+    "password": "cmOj2jwy",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "HOSPITAL PADILLA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "htalpadilla",
+    "password": "1r6TKvx9",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "IAE": {
+    "host": "www.cdsisa.com.ar",
+    "user": "iae",
+    "password": "T3aNNleqsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Ilolay": {
+    "host": "www.cdsisa.com.ar",
+    "user": "ilolay",
+    "password": "VdQFSkK547",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Ind. Andina": {
+    "host": "www.cdsisa.com.ar",
+    "user": "induandina",
+    "password": "EqSm05SH",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Indumentaria Andina": {
+    "host": "www.cdsisa.com.ar",
+    "user": "induandina",
+    "password": "EqSm05SH",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "INESA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "inesa",
+    "password": "0tngu70csr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "INFUPA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "infupa",
+    "password": "thQ9BAUnIk",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Intersur Recoleta": {
+    "host": "www.cdsisa.com.ar",
+    "user": "intersur",
+    "password": "ghU7E34Kl",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "IPH": {
+    "host": "www.cdsisa.com.ar",
+    "user": "iph",
+    "password": "vks528na9",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ISSN": {
+    "host": "www.cdsisa.com.ar",
+    "user": "issn",
+    "password": "3eR47xKd",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "JBS": {
+    "host": "www.cdsisa.com.ar",
+    "user": "jbs",
+    "password": "qrUZDGjV0q",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Lab Poen": {
+    "host": "www.cdsisa.com.ar",
+    "user": "poen",
+    "password": "u7II5Kyesr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Lab. Andromaco": {
+    "host": "www.cdsisa.com.ar",
+    "user": "andromaco",
+    "password": "Jpca2h7v",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "LAMB WESTON": {
+    "host": "www.cdsisa.com.ar",
+    "user": "lambweston",
+    "password": "6tZ9fl0H",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "LE PAIN QUOTIDIEN": {
+    "host": "www.cdsisa.com.ar",
+    "user": "lepainquotidien",
+    "password": "Jh7U90cL",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Ledesma": {
+    "host": "www.cdsisa.com.ar",
+    "user": "ledesma",
+    "password": "zj0us25nm2",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "LOGISTICA BERNAL": {
+    "host": "www.cdsisa.com.ar",
+    "user": "logisticatotalbernal",
+    "password": "Q0lGvc4F",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Los Grobo": {
+    "host": "www.cdsisa.com.ar",
+    "user": "losgrobo",
+    "password": "xkkgQWbnsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MANPOWER": {
+    "host": "www.cdsisa.com.ar",
+    "user": "manpower",
+    "password": "n6FBberdsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MARBY": {
+    "host": "www.cdsisa.com.ar",
+    "user": "Marby",
+    "password": "P2Ki8Xbz",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MARFRIG / QUICKFOOD / CDT": {
+    "host": "www.cdsisa.com.ar",
+    "user": "marfrig",
+    "password": "wQhlxYWsmP",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MARIA CHER": {
+    "host": "www.cdsisa.com.ar",
+    "user": "mariacher",
+    "password": "3aP9hZWRtS",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Mary Kay": {
+    "host": "www.cdsisa.com.ar",
+    "user": "marykay",
+    "password": "FrE9k8BkrQ",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Mas Vision": {
+    "host": "www.cdsisa.com.ar",
+    "user": "masvision",
+    "password": "eq4QwJXEqO",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MATER DEI": {
+    "host": "www.cdsisa.com.ar",
+    "user": "materdei",
+    "password": "nCtMIXX5",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MEDAMAX": {
+    "host": "www.cdsisa.com.ar",
+    "user": "MEDAMAX",
+    "password": "rHq90RSg",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Megatlon": {
+    "host": "www.cdsisa.com.ar",
+    "user": "megatlon",
+    "password": "LCQ2uZsx",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MERCADO LIBRE": {
+    "host": "www.cdsisa.com.ar",
+    "user": "mercadolibre",
+    "password": "eDtVbt5a",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Metalsa": {
+    "host": "www.cdsisa.com.ar",
+    "user": "metalsa",
+    "password": "ONtEZvTLT6",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Metropolis": {
+    "host": "www.cdsisa.com.ar",
+    "user": "metropolis",
+    "password": "hhDm2cXq",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MINERA SANTA CRUZ": {
+    "host": "www.cdsisa.com.ar",
+    "user": "minerasantacruz",
+    "password": "E5EJG4HidE",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Molino Cañuelas": {
+    "host": "www.cdsisa.com.ar",
+    "user": "molino",
+    "password": "ZjXwJIue13",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "MUSIMUNDO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "musimundo",
+    "password": "dNSfu431",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "NATURA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "natura",
+    "password": "Ru5mPlDR",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Noble": {
+    "host": "www.cdsisa.com.ar",
+    "user": "noble",
+    "password": "LPS9AyTc3y",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "OCA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "oca",
+    "password": "rho4Gdh",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "OSME": {
+    "host": "www.cdsisa.com.ar",
+    "user": "osme",
+    "password": "93f6h4tK",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Osram": {
+    "host": "www.cdsisa.com.ar",
+    "user": "osram",
+    "password": "uhb710iu3",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Otis": {
+    "host": "www.cdsisa.com.ar",
+    "user": "otis",
+    "password": "ruv296jwp1",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Panificadora Balcarce": {
+    "host": "www.cdsisa.com.ar",
+    "user": "pbalcarce",
+    "password": "N58R9Pph",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "PEDIDOS YA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "pedidosya",
+    "password": "P5q3C8YL",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Pernord Ricard": {
+    "host": "www.cdsisa.com.ar",
+    "user": "pernord",
+    "password": "ggRXqCh7gt",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Peñaflor": {
+    "host": "www.cdsisa.com.ar",
+    "user": "peniaflor",
+    "password": "Oy3MO1A5UL",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Piero Saic": {
+    "host": "www.cdsisa.com.ar",
+    "user": "pierosaic",
+    "password": "WhJa8eFS",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Plastiferro": {
+    "host": "www.cdsisa.com.ar",
+    "user": "plastiferro",
+    "password": "Lk4rCHPA",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Praxair": {
+    "host": "www.cdsisa.com.ar",
+    "user": "praxair",
+    "password": "Pq8mSyCL",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "PRINCZ": {
+    "host": "www.cdsisa.com.ar",
+    "user": "princz",
+    "password": "IjjNKGWjNS",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "PUENTE NET": {
+    "host": "www.cdsisa.com.ar",
+    "user": "puente",
+    "password": "84uPCfOb",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Rafaela Alimentos": {
+    "host": "www.cdsisa.com.ar",
+    "user": "rafaelaalimentos",
+    "password": "5Ev85ZXXhL",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Raffo": {
+    "host": "www.cdsisa.com.ar",
+    "user": "labraffo",
+    "password": "B4GmHqnf",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "RED LINK": {
+    "host": "www.cdsisa.com.ar",
+    "user": "redlink",
+    "password": "RUoH7CW*",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Refinor": {
+    "host": "www.cdsisa.com.ar",
+    "user": "refinor",
+    "password": "f5aByTLrVr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Ribeiro": {
+    "host": "www.cdsisa.com.ar",
+    "user": "ribeiro",
+    "password": "p2U1SyvC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "River Plate": {
+    "host": "www.cdsisa.com.ar",
+    "user": "RIVER",
+    "password": "4hOaW8Gb",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ROBINSON LOGISTICS": {
+    "host": "www.cdsisa.com.ar",
+    "user": "robinsonlogistics",
+    "password": "yQttxOXq",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "ROCH": {
+    "host": "www.cdsisa.com.ar",
+    "user": "roch",
+    "password": "Va6AAQoLB8",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Roemmers - Maprimed": {
+    "host": "www.cdsisa.com.ar",
+    "user": "roemmers",
+    "password": "9FTszAu0",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SAPUTO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "saputo",
+    "password": "A3RZ6Morm5",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Sartorius": {
+    "host": "www.cdsisa.com.ar",
+    "user": "sartorius",
+    "password": "JCQeD3We",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SHAWCOR": {
+    "host": "www.cdsisa.com.ar",
+    "user": "shawcor",
+    "password": "k1gAeXkp",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SIASA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "siasa",
+    "password": "XY85kfTVZ3",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Sika": {
+    "host": "www.cdsisa.com.ar",
+    "user": "sika",
+    "password": "X6tCkzqfAX",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Sinergium": {
+    "host": "www.cdsisa.com.ar",
+    "user": "sinergium",
+    "password": "HmXAEc40Oy",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Smurfit Kappa": {
+    "host": "www.cdsisa.com.ar",
+    "user": "smurfit",
+    "password": "1sYRyWjI",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SOLBAYRES": {
+    "host": "www.cdsisa.com.ar",
+    "user": "solbayres",
+    "password": "cFJX0edbnC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SOYCHU": {
+    "host": "www.cdsisa.com.ar",
+    "user": "soychu",
+    "password": "wXxhZLBi7g",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SUAVESTAR": {
+    "host": "www.cdsisa.com.ar",
+    "user": "suavestar",
+    "password": "LQmx4Oo8Bv",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SULLAIR": {
+    "host": "www.cdsisa.com.ar",
+    "user": "SULLAIR",
+    "password": "wFcg0Cnc",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SUPERCEMENTO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "supercemento",
+    "password": "dZmtKDYR",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SUPERMAT - UNIBER": {
+    "host": "www.cdsisa.com.ar",
+    "user": "supermat",
+    "password": "6E#L294i",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TALP": {
+    "host": "www.cdsisa.com.ar",
+    "user": "talp",
+    "password": "Pl20Znmd",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TASA LOGISTICA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "tasa",
+    "password": "Xa2qe7ru9s",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Tejidos Latinos": {
+    "host": "www.cdsisa.com.ar",
+    "user": "tejidoslatinos",
+    "password": "VoL1Tfq5",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TELERED": {
+    "host": "www.cdsisa.com.ar",
+    "user": "telered",
+    "password": "XR5qs7CN5E",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TEMAIKEN": {
+    "host": "www.cdsisa.com.ar",
+    "user": "temaiken",
+    "password": "FEq5Hi0C",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Termoelectrica": {
+    "host": "www.cdsisa.com.ar",
+    "user": "TERMOELECTRICAJSM",
+    "password": "Scf6pfGu",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Textil Federal": {
+    "host": "www.cdsisa.com.ar",
+    "user": "textilfederal",
+    "password": "091DbtIC",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TIA MARUCA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "tiamaruca",
+    "password": "PQ2rP4Xg",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TRANS GOL": {
+    "host": "www.cdsisa.com.ar",
+    "user": "transgol",
+    "password": "7s1bOjFS",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TRF": {
+    "host": "www.cdsisa.com.ar",
+    "user": "transfarmaco",
+    "password": "UiyfdlSOft",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TRIVIUM": {
+    "host": "www.cdsisa.com.ar",
+    "user": "trivium",
+    "password": "Xxug788M",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "UNICEF": {
+    "host": "www.cdsisa.com.ar",
+    "user": "unicef",
+    "password": "k9o2rh9L",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Universal Assistance": {
+    "host": "www.cdsisa.com.ar",
+    "user": "univassistance",
+    "password": "2TD8rU63",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Universidad Austral": {
+    "host": "www.cdsisa.com.ar",
+    "user": "uaustral",
+    "password": "7u0my5Qq",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Universidad Nacional de Avellaneda": {
+    "host": "www.cdsisa.com.ar",
+    "user": "undav",
+    "password": "gd1nvcIN",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "UNLAM": {
+    "host": "www.cdsisa.com.ar",
+    "user": "UNLaM",
+    "password": "ocomoJ5j",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "VALVULAS DE PRECISION": {
+    "host": "www.cdsisa.com.ar",
+    "user": "valvulas",
+    "password": "Rb74fbuk",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Vidal Raffo": {
+    "host": "www.cdsisa.com.ar",
+    "user": "vidalraffo",
+    "password": "287tUcMI",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Violetta": {
+    "host": "www.cdsisa.com.ar",
+    "user": "violeta",
+    "password": "o13OFBdbsr",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "VISUAR": {
+    "host": "www.cdsisa.com.ar",
+    "user": "visuar",
+    "password": "iTke73p2",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "VITALCAN": {
+    "host": "www.cdsisa.com.ar",
+    "user": "Vitalcan",
+    "password": "T7hJ9KQ2",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "VITAMINA": {
+    "host": "www.cdsisa.com.ar",
+    "user": "vitamina",
+    "password": "trs476A2",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Walmart": {
+    "host": "www.cdsisa.com.ar",
+    "user": "walmart",
+    "password": "DIGOsF2Q",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Yaguar": {
+    "host": "www.cdsisa.com.ar",
+    "user": "yaguar",
+    "password": "Hr9vfxq2",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Zucamor": {
+    "host": "www.cdsisa.com.ar",
+    "user": "zucamor",
+    "password": "g57mdNdt",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "TEMIS LOSTALO": {
+    "host": "www.cdsisa.com.ar",
+    "user": "temislostalo",
+    "password": "LC9NvjVn",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "SULZER": {
+    "host": "www.cdsisa.com.ar",
+    "user": "SULZER",
+    "password": "sulzsulz",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  },
+  "Minerva": {
+    "host": "www.cdsisa.com.ar",
+    "user": "minervafoods",
+    "password": "kbKTFS0h",
+    "path": "/",
+    "pattern": "PrinterMonitorClient.db3.*"
+  }
+}
