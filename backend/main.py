@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import os
 import shutil
+import json
 from pathlib import Path
 from services.db3_to_csv import procesar_db_a_csv
 from services.ftp_db3 import download_db3_from_ftp
@@ -44,6 +45,8 @@ from services.counters_tools import (
 from services.ftp_nas_config import ensure_nas_ftp_config
 from database import engine, SessionLocal, get_db
 from models import FTPClient
+import models
+models.Base.metadata.create_all(bind=engine)
 from sqlalchemy.orm import Session
 # Depends already imported at top
 
@@ -153,7 +156,9 @@ async def startup_seed():
     
     db = SessionLocal()
     try:
-        from models import ResourceLink
+        from models import ResourceLink, FTPClient
+        
+        # Seed ResourceLinks
         if db.query(ResourceLink).count() == 0:
             demo_links = [
                 ResourceLink(name="Manual App Mobile", url="https://cdst-ar.github.io/ST/appmobile", category="Manuales"),
@@ -163,6 +168,34 @@ async def startup_seed():
             ]
             db.add_all(demo_links)
             db.commit()
+            print("DEBUG: ResourceLinks seeded.")
+
+        # Seed FTPClients from JSON
+        if db.query(FTPClient).count() == 0:
+            json_path = Path("ftp_clientes.json")
+            if json_path.exists():
+                with open(json_path, "r", encoding="utf-8") as f:
+                    clients_data = json.load(f)
+                
+                new_clients = []
+                for name, info in clients_data.items():
+                    new_clients.append(FTPClient(
+                        name=name,
+                        host=info.get("host", ""),
+                        user=info.get("user", ""),
+                        password=info.get("password", ""),
+                        path=info.get("path", "/"),
+                        pattern=info.get("pattern", "PrinterMonitorClient.db3.*")
+                    ))
+                
+                db.add_all(new_clients)
+                db.commit()
+                print(f"DEBUG: {len(new_clients)} FTPClients seeded from JSON.")
+            else:
+                print("WARNING: ftp_clientes.json not found for seeding.")
+    except Exception as e:
+        print(f"ERROR during seeding: {e}")
+        db.rollback()
     finally:
         db.close()
 

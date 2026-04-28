@@ -1,9 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Navbar } from "@/components/navbar"
-import { motion } from "framer-motion"
-import { Shield, FileText, Database, Upload, Download, Loader2, CheckCircle2, AlertCircle, Network } from "lucide-react"
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion"
+import { 
+  Shield, FileText, Database, Upload, Download, 
+  Loader2, CheckCircle2, AlertCircle, Network, ArrowRight, X 
+} from "lucide-react"
 
 export default function StcPage() {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -56,87 +58,66 @@ export default function StcPage() {
   }
 
   return (
-    <>
-      <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
-          >
-            <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-2xl text-primary mb-4">
-              <Network className="h-10 w-10" />
-            </div>
-            <h1 className="text-4xl font-bold mb-4">Utilidades STC & Red</h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Extrae direcciones IP desde bases de datos o archivos de texto para generar rangos de red unificados.
-            </p>
-          </motion.div>
+    <div className="relative min-h-screen bg-[#050505] text-foreground p-4 md:p-8 overflow-hidden font-sans">
+      
+      <main className="relative flex-1 flex flex-col items-center overflow-hidden">
+        {/* Modern Industrial Background */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] animate-grid-fade" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* DB3 Card */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-card border rounded-3xl p-8 flex flex-col items-center text-center space-y-6 hover:shadow-xl transition-all"
-            >
-              <div className="p-4 bg-blue-500/10 rounded-2xl text-blue-500">
-                <Database className="h-12 w-12" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Extraer IPs desde DB3</h2>
-                <p className="text-sm text-muted-foreground">
-                  Sube uno o varios archivos .db3 para extraer las IPs de la tabla de contadores y agruparlas por rangos /24.
-                </p>
-              </div>
-              <div className="w-full relative">
-                <input 
-                  type="file" 
-                  multiple
-                  accept=".db3,.sqlite,.db"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={(e) => handleUpload("db3", e.target.files)}
-                  disabled={isProcessing}
-                />
-                <button className="w-full bg-primary text-primary-foreground h-12 rounded-xl font-bold flex items-center justify-center gap-2">
-                  <Upload className="h-4 w-4" />
-                  Seleccionar Archivos
-                </button>
-              </div>
-            </motion.div>
-
-            {/* TXT Card */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+        <div className="container relative z-10 px-4 py-12 md:py-16">
+          
+          <section className="flex flex-col items-center text-center mb-16">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-card border rounded-3xl p-8 flex flex-col items-center text-center space-y-6 hover:shadow-xl transition-all"
+              className="text-4xl md:text-6xl font-black tracking-tighter mb-4"
             >
-              <div className="p-4 bg-orange-500/10 rounded-2xl text-orange-500">
-                <FileText className="h-12 w-12" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Extraer IPs desde TXT</h2>
-                <p className="text-sm text-muted-foreground">
-                  Procesa cualquier archivo de texto para identificar direcciones IPv4 y generar el listado de rangos /24.
-                </p>
-              </div>
-              <div className="w-full relative">
-                <input 
-                  type="file" 
-                  accept=".txt,.log,.csv"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  onChange={(e) => handleUpload("txt", e.target.files)}
-                  disabled={isProcessing}
-                />
-                <button className="w-full bg-accent text-accent-foreground h-12 rounded-xl font-bold flex items-center justify-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Seleccionar TXT
-                </button>
-              </div>
-            </motion.div>
+              <span className="text-orange-500 drop-shadow-2xl">
+                UTILIDADES
+              </span>{" "}
+              <span className="text-foreground drop-shadow-2xl">
+                STC & RED
+              </span>
+            </motion.h1>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-sm md:text-base font-bold tracking-[0.2em] text-muted-foreground uppercase max-w-2xl"
+            >
+              Extracción de IPs <span className="text-orange-500">•</span> Generación de Rangos /24
+            </motion.p>
+          </section>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <StcActionCard 
+              icon={Database}
+              title="IPs desde DB3"
+              desc="Sube uno o varios archivos .db3 para extraer las IPs de la tabla de contadores y agruparlas por rangos /24."
+              color="text-blue-500"
+              accept=".db3,.sqlite,.db"
+              multiple={true}
+              onUpload={(files) => handleUpload("db3", files)}
+              isProcessing={isProcessing}
+              delay={0.4}
+            />
+
+            <StcActionCard 
+              icon={FileText}
+              title="IPs desde TXT"
+              desc="Procesa cualquier archivo de texto para identificar direcciones IPv4 y generar el listado de rangos /24."
+              color="text-orange-500"
+              accept=".txt,.log,.csv"
+              multiple={false}
+              onUpload={(files) => handleUpload("txt", files)}
+              isProcessing={isProcessing}
+              delay={0.5}
+            />
           </div>
 
           {/* Status & Results */}
@@ -146,43 +127,59 @@ export default function StcPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="mt-12 p-8 border rounded-3xl bg-card/50 backdrop-blur-sm"
+                className="mt-12 max-w-2xl mx-auto p-8 border rounded-[2.5rem] bg-card/30 backdrop-blur-xl relative overflow-hidden"
               >
+                <div className="absolute -top-12 -right-12 w-24 h-24 bg-orange-500/10 blur-2xl rounded-full" />
+                
                 {isProcessing ? (
-                  <div className="flex flex-col items-center gap-4 py-4">
-                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                    <p className="font-bold">Procesando y extrayendo IPs...</p>
+                  <div className="flex flex-col items-center gap-6 py-6">
+                    <div className="relative h-20 w-20">
+                      <div className="absolute inset-0 rounded-full border-4 border-orange-500/20" />
+                      <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
+                      <Loader2 className="absolute inset-0 m-auto h-8 w-8 text-orange-500 animate-pulse" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-xl mb-1 text-foreground">Extrayendo direcciones...</p>
+                      <p className="text-muted-foreground text-sm animate-pulse">Analizando estructura de red</p>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-6 relative z-10">
                     <div className={`
-                      p-4 rounded-2xl flex items-center gap-3
+                      p-6 rounded-3xl flex items-center gap-4
                       ${status === "success" ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"}
                     `}>
-                      {status === "success" ? <CheckCircle2 className="h-6 w-6" /> : <AlertCircle className="h-6 w-6" />}
-                      <span className="font-bold">{message}</span>
+                      {status === "success" ? <CheckCircle2 className="h-8 w-8" /> : <AlertCircle className="h-8 w-8" />}
+                      <span className="font-bold text-lg">{message}</span>
                     </div>
 
                     {status === "success" && resultFile && (
-                      <div className="bg-primary/5 border border-primary/20 p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-primary p-3 rounded-xl text-primary-foreground">
-                            <Download className="h-6 w-6" />
+                      <div className="bg-background/50 border border-orange-500/20 p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 group">
+                        <div className="flex items-center gap-4">
+                          <div className="bg-orange-500/10 p-4 rounded-2xl text-orange-500 transition-transform group-hover:scale-110">
+                            <Download className="h-7 w-7" />
                           </div>
                           <div>
-                            <p className="font-bold text-lg">Archivo de Rangos Listo</p>
-                            <p className="text-xs text-muted-foreground">Listado de red unificado (.txt)</p>
+                            <p className="font-bold text-lg text-foreground">Rangos Generados</p>
+                            <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Documento de red (.txt)</p>
                           </div>
                         </div>
                         <a 
                           href={`${apiUrl}/api/download/${resultFile}`} 
                           download={resultFile}
-                          className="w-full sm:w-auto bg-primary text-primary-foreground h-12 px-10 rounded-xl flex items-center justify-center font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+                          className="w-full sm:w-auto bg-orange-500 text-white h-12 px-10 rounded-2xl flex items-center justify-center font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-orange-500/20"
                         >
                           Descargar TXT
                         </a>
                       </div>
                     )}
+                    
+                    <button 
+                      onClick={() => setStatus("idle")}
+                      className="w-full h-12 bg-secondary/50 hover:bg-secondary rounded-2xl font-bold transition-all text-foreground text-sm"
+                    >
+                      Limpiar y Volver
+                    </button>
                   </div>
                 )}
               </motion.div>
@@ -190,8 +187,65 @@ export default function StcPage() {
           </AnimatePresence>
         </div>
       </main>
-    </>
+    </div>
   )
 }
 
-import { AnimatePresence } from "framer-motion"
+function StcActionCard({ icon: Icon, title, desc, color, accept, multiple, onUpload, isProcessing, delay }: any) {
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect()
+    mouseX.set(clientX - left)
+    mouseY.set(clientY - top)
+  }
+
+  const spotlightBg = useTransform(
+    [mouseX, mouseY],
+    ([x, y]) => `radial-gradient(600px circle at ${x}px ${y}px, rgba(249, 115, 22, 0.1), transparent 40%)`
+  )
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      onMouseMove={handleMouseMove}
+      className="group relative rounded-[2.5rem] border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 p-10 transition-colors hover:border-orange-500/50 overflow-hidden"
+    >
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 transition duration-300 group-hover:opacity-100"
+        style={{ background: spotlightBg }}
+      />
+      
+      <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+        <div className={`p-5 rounded-2xl bg-orange-500/10 ${color} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+          <Icon className="h-10 w-10" />
+        </div>
+        
+        <div>
+          <h2 className="text-3xl font-black mb-3 text-foreground group-hover:text-orange-500 transition-colors">{title}</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {desc}
+          </p>
+        </div>
+
+        <div className="w-full relative group/btn">
+          <input 
+            type="file" 
+            multiple={multiple}
+            accept={accept}
+            className="absolute inset-0 opacity-0 cursor-pointer z-20"
+            onChange={(e) => onUpload(e.target.files)}
+            disabled={isProcessing}
+          />
+          <button className="w-full bg-orange-500 text-white h-14 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-orange-500/20 group-hover/btn:scale-[1.02] transition-transform">
+            <Upload className="h-5 w-5" />
+            Seleccionar Archivos
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  )
+}

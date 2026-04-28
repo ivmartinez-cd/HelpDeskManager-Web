@@ -1,125 +1,161 @@
 "use client"
 
-import { Navbar } from "@/components/navbar";
-import { Calculator, ArrowRight, Activity, ShieldCheck, Zap } from "lucide-react";
-import { motion } from "framer-motion";
-import Link from "next/link";
+import { motion, useMotionValue, useTransform } from "framer-motion"
+import Link from "next/link"
+import { Calculator, ExternalLink, Link as LinkIcon, ArrowRight, Monitor } from "lucide-react"
+import { MouseEvent, useState, useEffect } from "react"
 
-export default function Home() {
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
+function SpotlightCard({ 
+  href, 
+  icon: Icon, 
+  title, 
+  description, 
+  delay 
+}: { 
+  href: string; 
+  icon: any; 
+  title: string; 
+  description: string;
+  delay: number;
+}) {
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
+  function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect()
+    mouseX.set(clientX - left)
+    mouseY.set(clientY - top)
+  }
+
+  const spotlightBg = useTransform(
+    [mouseX, mouseY],
+    ([x, y]) => `radial-gradient(600px circle at ${x}px ${y}px, rgba(249, 115, 22, 0.15), transparent 40%)`
+  )
 
   return (
-    <>
-      <Navbar />
-      <main className="flex-1 flex flex-col items-center">
-        {/* Hero Section */}
-        <section className="w-full py-24 md:py-32 flex flex-col items-center justify-center text-center px-4 bg-linear-to-b from-background via-background to-secondary/20">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase"
-          >
-            <Zap className="h-3 w-3 fill-current" />
-            Estándares 2026 • Web Edition
-          </motion.div>
+    <Link href={href} className="block group">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay }}
+        onMouseMove={handleMouseMove}
+        className="relative h-full rounded-3xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 p-8 transition-all hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/10"
+      >
+        <motion.div
+          className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition duration-300 group-hover:opacity-100"
+          style={{ background: spotlightBg }}
+        />
+        
+        <div className="relative z-10">
+          <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 transition-transform group-hover:scale-110">
+            <Icon className="h-6 w-6" />
+          </div>
           
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 max-w-4xl"
-          >
-            Gestión de Operaciones <br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-amber-400">
-              Simplificada y Premium
-            </span>
-          </motion.h1>
+          <h3 className="mb-3 text-2xl font-bold text-foreground group-hover:text-orange-500 transition-colors">
+            {title}
+          </h3>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl"
-          >
-            La evolución web de HelpDesk Manager. Procesa contadores, gestiona alertas y optimiza tus procesos con una interfaz de vanguardia.
-          </motion.p>
+          <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
           
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <Link 
-              href="/contadores"
-              className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/20 gap-2 group"
+          <div className="inline-flex items-center gap-2 text-sm font-bold text-orange-500 transition-colors group-hover:text-orange-400">
+            Lanzar Módulo
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </div>
+        </div>
+      </motion.div>
+    </Link>
+  )
+}
+
+export default function Home() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background selection:bg-accent/30">
+      
+      <main className="relative flex-1 flex flex-col items-center justify-center overflow-hidden">
+        {/* Modern Industrial Background */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] animate-grid-fade" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-accent/10 blur-[120px] rounded-full pointer-events-none" />
+        </div>
+
+        <div className="container relative z-10 px-4 py-20 md:py-32">
+          {/* Hero Section */}
+          <section className="flex flex-col items-center text-center mb-24">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="mb-8 px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 backdrop-blur-sm"
             >
-              Comenzar Ahora
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <button className="h-12 px-8 rounded-full border border-input bg-background hover:bg-accent transition-colors font-bold">
-              Ver Documentación
-            </button>
-          </motion.div>
-        </section>
-
-        {/* Features Grid */}
-        <section className="container mx-auto px-4 py-20">
-          <motion.div 
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
-            <motion.div variants={item} className="p-8 rounded-3xl border bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all group">
-              <div className="bg-orange-500/10 p-3 rounded-2xl w-fit mb-6 text-orange-500 group-hover:scale-110 transition-transform">
-                <Calculator className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Procesamiento de Contadores</h3>
-              <p className="text-muted-foreground">
-                Sube tus archivos DB3 y XLS para generar reportes unificados en segundos con precisión garantizada.
-              </p>
+              <span className="text-[10px] font-black tracking-[0.3em] text-accent uppercase">
+                Sistema de Gestión de Operaciones v3.0
+              </span>
             </motion.div>
 
-            <motion.div variants={item} className="p-8 rounded-3xl border bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all group">
-              <div className="bg-blue-500/10 p-3 rounded-2xl w-fit mb-6 text-blue-500 group-hover:scale-110 transition-transform">
-                <Activity className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Monitor de Flota</h3>
-              <p className="text-muted-foreground">
-                Control en tiempo real de todos tus dispositivos conectados con alertas automáticas y diagnóstico preventivo.
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="text-display text-7xl md:text-[10rem] font-black tracking-tighter leading-[0.8] mb-8"
+            >
+              <span className="text-foreground block">HELPDESK</span>
+              <span className="text-accent block">MANAGER</span>
+            </motion.h1>
+            
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 1 }}
+              className="max-w-xl mx-auto"
+            >
+              <p className="text-lg md:text-xl font-medium text-muted-foreground/80 leading-relaxed mb-10">
+                Optimización técnica y procesamiento de datos con estándares de precisión industrial para el equipo de soporte.
               </p>
             </motion.div>
+          </section>
 
-            <motion.div variants={item} className="p-8 rounded-3xl border bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all group">
-              <div className="bg-green-500/10 p-3 rounded-2xl w-fit mb-6 text-green-500 group-hover:scale-110 transition-transform">
-                <ShieldCheck className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Arquitectura Segura</h3>
-              <p className="text-muted-foreground">
-                Diseñado bajo estándares de seguridad modernos para proteger la integridad de tus datos operativos.
-              </p>
-            </motion.div>
-          </motion.div>
-        </section>
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            <SpotlightCard
+              href="/contadores"
+              icon={Calculator}
+              title="Contadores"
+              description="Procesamiento masivo de DB3 con algoritmos de estimación y reportes CSV precisos."
+              delay={0.6}
+            />
+            
+            <SpotlightCard
+              href="/stc"
+              icon={Monitor}
+              title="STC"
+              description="Extracción inteligente de IPs y generación de rangos de red para auditoría técnica."
+              delay={0.7}
+            />
+            
+            <SpotlightCard
+              href="/recursos"
+              icon={LinkIcon}
+              title="Recursos"
+              description="Biblioteca centralizada de manuales, guías y accesos directos para la gestión diaria."
+              delay={0.8}
+            />
+          </div>
+        </div>
       </main>
 
-      <footer className="w-full border-t py-12 px-4">
+      <footer className="w-full border-t py-12 px-4 bg-background">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-sm text-muted-foreground">
             © 2026 HelpDesk Manager Web • Hecho con precisión por Iván Martínez
@@ -131,6 +167,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </>
-  );
+    </div>
+  )
 }

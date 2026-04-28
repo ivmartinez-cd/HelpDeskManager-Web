@@ -33,7 +33,7 @@ def test_db3_to_csv_dummy(tmp_path):
     )
     
     assert os.path.exists(csv_path)
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, sep=";")
     assert not df.empty
     # El CSV generado tiene estas columnas específicas
     assert "CONTADOR_10" in df.columns
