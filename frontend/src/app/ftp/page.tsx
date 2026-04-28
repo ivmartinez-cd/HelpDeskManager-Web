@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { motion, AnimatePresence } from "framer-motion"
-import { Server, Search, RefreshCw, Play, CheckCircle2, AlertCircle, Loader2, Download, ExternalLink, Plus, Edit2, Trash2, X, Database } from "lucide-react"
+import { Server, Search, RefreshCw, Play, CheckCircle2, AlertCircle, Loader2, Download, ExternalLink, Plus, Edit2, Trash2, X, Database, AlertTriangle } from "lucide-react"
+import { Modal } from "@/components/ui/modal"
+import { toast } from "@/hooks/use-toast"
 
 interface Client {
   id: number;
@@ -38,6 +40,9 @@ export default function FtpPage() {
     path: "/",
     pattern: "PrinterMonitorClient.db3.*"
   })
+  const [modalError, setModalError] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010";
 
@@ -127,18 +132,27 @@ export default function FtpPage() {
 
   const handleDeleteClient = async (id: number, name: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm(`¿Estás seguro de que quieres eliminar al cliente ${name}?`)) return
-    
+    setConfirmDelete({ id, name })
+  }
+
+  const confirmAndDelete = async () => {
+    if (!confirmDelete) return
+    setIsDeleting(true)
     try {
-      const response = await fetch(`${apiUrl}/api/ftp/clients/${id}`, {
+      const response = await fetch(`${apiUrl}/api/ftp/clients/${confirmDelete.id}`, {
         method: "DELETE",
       })
       if (response.ok) {
-        if (selectedClient?.id === id) setSelectedClient(null)
-        fetchClients()
+        if (selectedClient?.id === confirmDelete.id) setSelectedClient(null)
+        await fetchClients()
+        setConfirmDelete(null)
+        toast("Cliente eliminado", "success")
       }
     } catch (error) {
       console.error("Error deleting client:", error)
+      toast("Error al eliminar cliente", "error")
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -158,13 +172,16 @@ export default function FtpPage() {
 
       if (response.ok) {
         setIsModalOpen(false)
+        setModalError(null)
         fetchClients()
+        toast(modalMode === "add" ? "Cliente creado" : "Cliente actualizado", "success")
       } else {
-        const error = await response.json()
-        alert(error.detail || "Error al guardar el cliente")
+        const errorData = await response.json()
+        setModalError(errorData.detail || "Error al guardar el cliente")
       }
     } catch (error) {
       console.error("Error saving client:", error)
+      setModalError("Error de conexión con el servidor")
     }
   }
 
@@ -231,35 +248,41 @@ export default function FtpPage() {
                   </div>
                 ) : filteredClients.length > 0 ? (
                   <div className="divide-y divide-border/50">
-                    {filteredClients.map((client) => (
-                      <div
-                        key={client.id}
-                        onClick={() => setSelectedClient(client)}
-                        className={`
-                          group w-full cursor-pointer px-6 py-4 transition-all flex items-center justify-between
-                          ${selectedClient?.id === client.id ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-accent/30 border-l-4 border-transparent"}
-                        `}
-                      >
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <Server className={`h-4 w-4 shrink-0 ${selectedClient?.id === client.id ? "text-primary" : "text-muted-foreground"}`} />
-                          <span className={`font-medium text-sm truncate ${selectedClient?.id === client.id ? "text-primary" : ""}`}>{client.name}</span>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={(e) => handleOpenEditModal(client, e)}
-                            className="p-1.5 hover:bg-primary/20 rounded-lg text-muted-foreground hover:text-primary transition-colors"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button 
-                            onClick={(e) => handleDeleteClient(client.id, client.name, e)}
-                            className="p-1.5 hover:bg-destructive/20 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                    <AnimatePresence mode="popLayout">
+                      {filteredClients.map((client) => (
+                        <motion.div
+                          layout
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          key={client.id}
+                          onClick={() => setSelectedClient(client)}
+                          className={`
+                            group w-full cursor-pointer px-6 py-4 transition-all flex items-center justify-between
+                            ${selectedClient?.id === client.id ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-accent/30 border-l-4 border-transparent"}
+                          `}
+                        >
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <Server className={`h-4 w-4 shrink-0 ${selectedClient?.id === client.id ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`font-medium text-sm truncate ${selectedClient?.id === client.id ? "text-primary" : ""}`}>{client.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={(e) => handleOpenEditModal(client, e)}
+                              className="p-1.5 hover:bg-primary/20 rounded-lg text-muted-foreground hover:text-primary transition-colors"
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </button>
+                            <button 
+                              onClick={(e) => handleDeleteClient(client.id, client.name, e)}
+                              className="p-1.5 hover:bg-destructive/20 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 ) : (
                   <div className="p-8 text-center text-muted-foreground">
@@ -424,128 +447,135 @@ export default function FtpPage() {
             </motion.div>
           </div>
         </div>
-      </main>
 
-      {/* Modal: Add/Edit Client */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsModalOpen(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-card border rounded-3xl shadow-2xl overflow-hidden"
-            >
-              <div className="p-6 border-b flex items-center justify-between">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  {modalMode === "add" ? <Plus className="h-5 w-5" /> : <Edit2 className="h-5 w-5" />}
-                  {modalMode === "add" ? "Nuevo Cliente" : "Editar Cliente"}
-                </h2>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-accent rounded-full transition-colors">
-                  <X className="h-5 w-5" />
-                </button>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setModalError(null)
+        }}
+        title={modalMode === "add" ? "Nuevo Cliente" : "Editar Cliente"}
+        subtitle={modalMode === "add" ? "Configuración FTP" : `Editando ${editingClient?.name}`}
+        error={modalError}
+      >
+        <form onSubmit={handleSubmitModal} className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Nombre del Cliente</label>
+              <input 
+                required
+                type="text" 
+                placeholder="Ej: ISSN"
+                className={`w-full h-14 px-6 rounded-2xl border bg-black/[0.02] dark:bg-white/5 font-bold outline-none transition-all ${modalError && !formData.name ? "border-destructive/50 focus:border-destructive" : "border-black/5 dark:border-white/10 focus:border-orange-500/50"}`}
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Servidor FTP (Host)</label>
+              <input 
+                required
+                type="text" 
+                placeholder="www.cdsisa.com.ar"
+                className={`w-full h-14 px-6 rounded-2xl border bg-black/[0.02] dark:bg-white/5 font-bold outline-none transition-all ${modalError && !formData.host ? "border-destructive/50 focus:border-destructive" : "border-black/5 dark:border-white/10 focus:border-orange-500/50"}`}
+                value={formData.host}
+                onChange={(e) => setFormData({...formData, host: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Usuario FTP</label>
+                <input 
+                  required
+                  type="text" 
+                  placeholder="usuario"
+                  className={`w-full h-14 px-6 rounded-2xl border bg-black/[0.02] dark:bg-white/5 font-bold outline-none transition-all ${modalError && !formData.user ? "border-destructive/50 focus:border-destructive" : "border-black/5 dark:border-white/10 focus:border-orange-500/50"}`}
+                  value={formData.user}
+                  onChange={(e) => setFormData({...formData, user: e.target.value})}
+                />
               </div>
-              <form onSubmit={handleSubmitModal} className="p-6 space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase text-muted-foreground">Nombre del Cliente</label>
-                    <input 
-                      required
-                      type="text" 
-                      placeholder="Ej: ISSN"
-                      className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none"
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase text-muted-foreground">Servidor FTP (Host)</label>
-                    <input 
-                      required
-                      type="text" 
-                      placeholder="www.cdsisa.com.ar"
-                      className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none"
-                      value={formData.host}
-                      onChange={(e) => setFormData({...formData, host: e.target.value})}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase text-muted-foreground">Usuario FTP</label>
-                      <input 
-                        required
-                        type="text" 
-                        placeholder="usuario"
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none"
-                        value={formData.user}
-                        onChange={(e) => setFormData({...formData, user: e.target.value})}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase text-muted-foreground">Contraseña FTP</label>
-                      <input 
-                        required
-                        type="password" 
-                        placeholder="••••••••"
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none"
-                        value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase text-muted-foreground">Ruta FTP</label>
-                      <input 
-                        required
-                        type="text" 
-                        placeholder="/"
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none"
-                        value={formData.path}
-                        onChange={(e) => setFormData({...formData, path: e.target.value})}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase text-muted-foreground">Patrón de Archivos</label>
-                      <input 
-                        required
-                        type="text" 
-                        placeholder="*.db3"
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background focus:ring-2 focus:ring-primary/20 outline-none"
-                        value={formData.pattern}
-                        onChange={(e) => setFormData({...formData, pattern: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="pt-4 flex gap-3">
-                  <button 
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="flex-1 px-4 py-3 rounded-xl font-bold border hover:bg-accent transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    type="submit"
-                    className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-                  >
-                    {modalMode === "add" ? "Crear Cliente" : "Guardar Cambios"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Contraseña FTP</label>
+                <input 
+                  required
+                  type="password" 
+                  placeholder="••••••••"
+                  className={`w-full h-14 px-6 rounded-2xl border bg-black/[0.02] dark:bg-white/5 font-bold outline-none transition-all ${modalError && !formData.password ? "border-destructive/50 focus:border-destructive" : "border-black/5 dark:border-white/10 focus:border-orange-500/50"}`}
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Ruta FTP</label>
+                <input 
+                  required
+                  type="text" 
+                  placeholder="/"
+                  className={`w-full h-14 px-6 rounded-2xl border bg-black/[0.02] dark:bg-white/5 font-bold outline-none transition-all ${modalError && !formData.path ? "border-destructive/50 focus:border-destructive" : "border-black/5 dark:border-white/10 focus:border-orange-500/50"}`}
+                  value={formData.path}
+                  onChange={(e) => setFormData({...formData, path: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Patrón de Archivos</label>
+                <input 
+                  required
+                  type="text" 
+                  placeholder="*.db3"
+                  className={`w-full h-14 px-6 rounded-2xl border bg-black/[0.02] dark:bg-white/5 font-bold outline-none transition-all ${modalError && !formData.pattern ? "border-destructive/50 focus:border-destructive" : "border-black/5 dark:border-white/10 focus:border-orange-500/50"}`}
+                  value={formData.pattern}
+                  onChange={(e) => setFormData({...formData, pattern: e.target.value})}
+                />
+              </div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+          <button 
+            type="submit"
+            className="w-full h-16 bg-orange-500 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:opacity-90 transition-all shadow-xl shadow-orange-500/20 group"
+          >
+            <CheckCircle2 className="h-6 w-6 group-hover:scale-110 transition-transform" />
+            {modalMode === "add" ? "Crear Cliente" : "Guardar Cambios"}
+          </button>
+        </form>
+      </Modal>
 
+      <Modal
+        isOpen={!!confirmDelete}
+        onClose={() => !isDeleting && setConfirmDelete(null)}
+        title="Eliminar cliente"
+        maxWidth="max-w-sm"
+      >
+        <div className="flex flex-col items-center text-center gap-4">
+          <div className="p-4 rounded-2xl bg-destructive/10">
+            <AlertTriangle className="h-8 w-8 text-destructive" />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">
+              ¿Eliminar <span className="font-bold text-foreground">{confirmDelete?.name}</span>? Esta acción no se puede deshacer.
+            </p>
+          </div>
+          <div className="flex gap-3 w-full mt-2">
+            <button
+              onClick={() => setConfirmDelete(null)}
+              disabled={isDeleting}
+              className="flex-1 h-12 rounded-2xl border font-bold text-sm hover:bg-muted/50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={confirmAndDelete}
+              disabled={isDeleting}
+              className="flex-1 h-12 rounded-2xl bg-destructive text-destructive-foreground font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2"
+            >
+              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </Modal>
+     
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;

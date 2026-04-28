@@ -15,14 +15,26 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 import { Navbar } from "@/components/navbar";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "HelpDesk Manager Web",
+  title: {
+    default: "HelpDesk Manager Web",
+    template: "%s | HelpDesk Manager"
+  },
   description: "Plataforma de gestión de operaciones y helpdesk - Estándares 2026",
+  manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",
   },
+};
+
+export const viewport = {
+  themeColor: "#F97316",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -45,10 +57,17 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="relative z-10 flex flex-col h-screen overflow-hidden">
+            <a 
+              href="#main-content" 
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-orange-500 focus:text-white focus:rounded-xl focus:font-bold focus:shadow-2xl focus:outline-none transition-all"
+            >
+              Saltar al contenido principal
+            </a>
             <Navbar />
-            <main className="flex-grow overflow-hidden relative">
+            <main id="main-content" className="flex-grow overflow-hidden relative">
               {children}
             </main>
+            <Toaster />
           </div>
         </ThemeProvider>
       </body>
