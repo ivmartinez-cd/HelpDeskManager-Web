@@ -19,14 +19,18 @@ Hemos completado la transformación total de la interfaz del HelpDesk Manager We
 - **Validación Industrial**: Reemplazo de alertas nativas por un sistema global de **Toasts** y feedback visual de validación.
 - **Tests Automatizados**: Suite de 10 tests de integración (Playwright) cubriendo flujos críticos, PWA y accesibilidad.
 
-### 4. Capacidades PWA
+### 4. Gestión Avanzada de Datos
+- **Gestor FTP**: Implementación de un CRUD completo para clientes FTP, permitiendo configurar hosts, credenciales y rutas de descarga directamente desde la UI.
+- **Autoestimación**: Renombrado y estabilización de la lógica de asistencia IA para cálculos preventivos.
+
+### 5. Capacidades PWA
 - **Instalación**: Configuración completa de manifest e iconos industriales.
 - **Optimización**: Cache inteligente desactivado en desarrollo para facilitar la edición, pero listo para producción.
 
 ## 🔧 Cambios Técnicos Clave
 - **Next.js 16**: Optimización de metadatos (Viewport/ThemeColor).
 - **Playwright**: Configuración robusta para entornos de desarrollo locales.
-- **Tooling**: Renombrado de herramientas técnicas (ej. "Estimación en 0") según requerimientos del usuario.
+- **Tooling**: Renombrado de herramientas técnicas (ej. "Estimación en 0" y "Autoestimación") según requerimientos del usuario.
 
 ## 🏁 Conclusión
 El roadmap de UI/UX ha sido completado al 100%. El sistema está listo para su uso profesional, ofreciendo una experiencia rápida, accesible y visualmente impactante.

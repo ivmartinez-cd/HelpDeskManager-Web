@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   FileText, Download, Loader2, CheckCircle2,
   AlertCircle, Database, Calculator, Wand2, Eraser,
-  PlusCircle, Server, Search, Play, X, ArrowRight
+  PlusCircle, Server, Search, Play, X, ArrowRight,
+  Settings, Edit, Trash2, Plus, ChevronLeft
 } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
 import { PageShell } from "@/components/ui/page-shell"
@@ -17,6 +18,11 @@ import { toast } from "@/hooks/use-toast"
 interface Client {
   id: number;
   name: string;
+  host: string;
+  user: string;
+  password: string;
+  path: string;
+  pattern: string;
 }
 
 export default function ContadoresPage() {
@@ -25,11 +31,19 @@ export default function ContadoresPage() {
   const [message, setMessage] = useState("")
   const [resultFiles, setResultFiles] = useState<string[]>([])
   const [activeTool, setActiveTool] = useState<string | null>(null)
-  const [logs, setLogs] = useState<string[]>([])
+  const [logs, setLogs] = useState<{ msg: string; time: string }[]>([])
   const [modalError, setModalError] = useState<string | null>(null)
 
+  // FTP Management States
+  const [isManagingClients, setIsManagingClients] = useState(false)
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [clientFormData, setClientFormData] = useState<Omit<Client, "id">>({
+    name: "", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*"
+  })
+
   const addLog = (msg: string, delay: number = 0) => {
-    setTimeout(() => setLogs(prev => [...prev.slice(-4), msg]), delay)
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    setTimeout(() => setLogs(prev => [...prev.slice(-4), { msg, time }]), delay)
   }
 
   const [clients, setClients] = useState<Client[]>([])
@@ -42,31 +56,85 @@ export default function ContadoresPage() {
 
   const [toolData, setToolData] = useState({
     en0_cliente: "",
-    en0_fecha: new Date().toLocaleDateString('es-ES'),
+    en0_fecha: "",
     suma_hojas: 1000,
-    suma_fecha: new Date().toLocaleDateString('es-ES'),
-    auto_fecha: new Date().toLocaleDateString('es-ES'),
+    suma_fecha: "",
+    auto_fecha: "",
     manual_fecha: "",
     calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" }
   })
   const [calcResult, setCalcResult] = useState<any>(null)
 
   useEffect(() => {
-    const fetchClients = async () => {
-      setIsLoadingClients(true)
-      try {
-        const response = await fetch(`${apiUrl}/api/ftp/clients`)
-        const data = await response.json()
-        if (data.clients) setClients(data.clients)
-      } catch (error) {
-        console.error("Error fetching clients:", error)
-        toast("Error al cargar lista de clientes", "error")
-      } finally {
-        setIsLoadingClients(false)
-      }
+    const today = new Date().toLocaleDateString('es-ES')
+    setToolData(prev => ({
+      ...prev,
+      en0_fecha: today,
+      suma_fecha: today,
+      auto_fecha: today
+    }))
+  }, [])
+
+  const fetchClients = async () => {
+    setIsLoadingClients(true)
+    try {
+      const response = await fetch(`${apiUrl}/api/ftp/clients`)
+      const data = await response.json()
+      if (data.clients) setClients(data.clients)
+    } catch (error) {
+      console.error("Error fetching clients:", error)
+      toast("Error al cargar lista de clientes", "error")
+    } finally {
+      setIsLoadingClients(false)
     }
+  }
+
+  useEffect(() => {
     fetchClients()
   }, [])
+
+  const handleSaveClient = async () => {
+    const isEdit = !!editingClient
+    const url = isEdit ? `${apiUrl}/api/ftp/clients/${editingClient!.id}` : `${apiUrl}/api/ftp/clients`
+    const method = isEdit ? "PUT" : "POST"
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(clientFormData)
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || "Error al guardar cliente")
+      }
+      
+      toast(isEdit ? "Cliente actualizado" : "Cliente creado", "success")
+      await fetchClients()
+      setEditingClient(null)
+      setIsManagingClients(false)
+      setClientFormData({ name: "", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*" })
+    } catch (error: any) {
+      setModalError(error.message)
+      toast(error.message, "error")
+    }
+  }
+
+  const handleDeleteClient = async (id: number) => {
+    if (!confirm("¿Estás seguro de eliminar este cliente?")) return
+
+    try {
+      const response = await fetch(`${apiUrl}/api/ftp/clients/${id}`, {
+        method: "DELETE"
+      })
+      if (!response.ok) throw new Error("Error al eliminar cliente")
+      
+      toast("Cliente eliminado", "success")
+      await fetchClients()
+    } catch (error: any) {
+      toast(error.message, "error")
+    }
+  }
 
   const runManualProcess = async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -277,7 +345,7 @@ export default function ContadoresPage() {
             />
             <ActionCard
               icon={Wand2}
-              title="Asistente IA"
+              title="Autoestimación"
               desc="Genera proyecciones automáticas basadas en el historial de consumo."
               color="text-amber-500"
               onClick={() => setActiveTool("auto")}
@@ -303,7 +371,7 @@ export default function ContadoresPage() {
           activeTool === "manual" ? "Procesar DB3" :
           activeTool === "en0" ? "Estimación en 0" :
           activeTool === "suma" ? "Suma Fija" :
-          activeTool === "auto" ? "Asistente IA" :
+          activeTool === "auto" ? "Autoestimación" :
           activeTool === "calc" ? "Calculadora" : ""
         }
         maxWidth="max-w-lg"
@@ -339,8 +407,8 @@ export default function ContadoresPage() {
                           key={i}
                           className="text-accent flex items-center gap-2"
                         >
-                          <span className="text-accent/30 font-bold">[{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]</span>
-                          <span className="text-foreground/90">{log}</span>
+                          <span className="text-accent/30 font-bold">[{log.time}]</span>
+                          <span className="text-foreground/90">{log.msg}</span>
                         </motion.p>
                       ))}
                       <motion.p
@@ -426,76 +494,191 @@ export default function ContadoresPage() {
               <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                 {activeTool === "ftp" && (
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Seleccionar Cliente</label>
-                      {isLoadingClients ? (
-                        <div className="h-14 flex items-center justify-center border rounded-2xl bg-muted/20">
-                          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <div
-                            className="w-full h-14 px-5 rounded-2xl border bg-background flex items-center justify-between cursor-pointer hover:border-orange-500/50 transition-all shadow-sm"
-                            onClick={() => setShowClientDropdown(!showClientDropdown)}
+                    {isManagingClients ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <button 
+                            onClick={() => {
+                              setIsManagingClients(false)
+                              setEditingClient(null)
+                            }}
+                            className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
                           >
-                            <span className={selectedClient ? "text-foreground font-medium" : "text-muted-foreground"}>
-                              {selectedClient || "Selecciona un cliente..."}
-                            </span>
-                            <PlusCircle className={`h-5 w-5 text-muted-foreground transition-transform ${showClientDropdown ? "rotate-45" : ""}`} />
-                          </div>
-                          <AnimatePresence>
-                            {showClientDropdown && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-3xl shadow-2xl z-[60] overflow-hidden"
+                            <ChevronLeft className="h-4 w-4" />
+                            VOLVER A SELECCIÓN
+                          </button>
+                          {!editingClient && (
+                            <h3 className="text-sm font-black uppercase tracking-widest text-accent">Gestión de Clientes</h3>
+                          )}
+                        </div>
+
+                        {editingClient || clientFormData.name ? (
+                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 bg-muted/20 p-6 rounded-[2rem] border border-border">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Nombre Cliente</label>
+                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.name} onChange={e => setClientFormData({...clientFormData, name: e.target.value})} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Host FTP</label>
+                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.host} onChange={e => setClientFormData({...clientFormData, host: e.target.value})} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Usuario</label>
+                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.user} onChange={e => setClientFormData({...clientFormData, user: e.target.value})} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Contraseña</label>
+                                <input type="password" title="Contraseña FTP" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.password} onChange={e => setClientFormData({...clientFormData, password: e.target.value})} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Ruta Remota</label>
+                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.path} onChange={e => setClientFormData({...clientFormData, path: e.target.value})} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Patrón DB3</label>
+                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.pattern} onChange={e => setClientFormData({...clientFormData, pattern: e.target.value})} />
+                              </div>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                              <button onClick={handleSaveClient} className="flex-1 h-12 bg-accent text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg shadow-accent/20">
+                                {editingClient ? "Actualizar Cliente" : "Guardar Nuevo Cliente"}
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  setEditingClient(null)
+                                  setClientFormData({ name: "", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*" })
+                                }} 
+                                className="px-6 h-12 bg-muted rounded-xl font-bold hover:bg-muted/80 transition-all"
                               >
-                                <div className="p-4 border-b bg-muted/20">
-                                  <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <input
-                                      autoFocus
-                                      type="text"
-                                      placeholder="Buscar cliente..."
-                                      className="w-full h-10 pl-10 pr-4 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-orange-500/20"
-                                      value={clientSearch}
-                                      onChange={(e) => setClientSearch(e.target.value)}
-                                    />
+                                Cancelar
+                              </button>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <div className="space-y-2">
+                            <button 
+                              onClick={() => setClientFormData({ name: "NUEVO CLIENTE", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*" })}
+                              className="w-full h-14 border-2 border-dashed border-accent/20 rounded-2xl flex items-center justify-center gap-2 text-accent font-bold hover:bg-accent/5 transition-all mb-4"
+                            >
+                              <Plus className="h-5 w-5" />
+                              AGREGAR NUEVO CLIENTE
+                            </button>
+                            <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar space-y-2">
+                              {clients.map(c => (
+                                <div key={c.id} className="p-4 bg-muted/20 border rounded-2xl flex items-center justify-between group hover:border-accent/50 transition-all">
+                                  <div>
+                                    <p className="font-bold text-sm text-foreground">{c.name}</p>
+                                    <p className="text-[10px] text-muted-foreground">{c.host}</p>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <button 
+                                      onClick={() => {
+                                        setEditingClient(c)
+                                        setClientFormData({
+                                          name: c.name, host: c.host, user: c.user, password: c.password, path: c.path, pattern: c.pattern
+                                        })
+                                      }}
+                                      className="p-2 hover:bg-accent/10 rounded-lg text-muted-foreground hover:text-accent transition-colors"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDeleteClient(c.id)}
+                                      className="p-2 hover:bg-destructive/10 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
                                   </div>
                                 </div>
-                                <div className="max-h-[250px] overflow-y-auto p-2 custom-scrollbar">
-                                  {clients.filter(c => c.name.toLowerCase().includes(clientSearch.toLowerCase())).map(c => (
-                                    <button
-                                      key={c.id}
-                                      onClick={() => {
-                                        setSelectedClient(c.name)
-                                        setShowClientDropdown(false)
-                                        setClientSearch("")
-                                      }}
-                                      className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${selectedClient === c.name ? "bg-orange-500 text-white font-bold" : "hover:bg-accent text-foreground"}`}
-                                    >
-                                      {c.name}
-                                    </button>
-                                  ))}
-                                  {clients.filter(c => c.name.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 && (
-                                    <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron clientes.</p>
-                                  )}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between ml-1">
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground">Seleccionar Cliente</label>
+                            <button 
+                              onClick={() => setIsManagingClients(true)}
+                              className="flex items-center gap-1.5 text-[10px] font-black text-accent hover:text-orange-400 transition-colors uppercase tracking-wider"
+                            >
+                              <Settings className="h-3 w-3" />
+                              Gestionar Clientes
+                            </button>
+                          </div>
+                          {isLoadingClients ? (
+                            <div className="h-14 flex items-center justify-center border rounded-2xl bg-muted/20">
+                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                          ) : (
+                            <div className="relative">
+                              <div
+                                className="w-full h-14 px-5 rounded-2xl border bg-background flex items-center justify-between cursor-pointer hover:border-orange-500/50 transition-all shadow-sm"
+                                onClick={() => setShowClientDropdown(!showClientDropdown)}
+                              >
+                                <span className={selectedClient ? "text-foreground font-medium" : "text-muted-foreground"}>
+                                  {selectedClient || "Selecciona un cliente..."}
+                                </span>
+                                <PlusCircle className={`h-5 w-5 text-muted-foreground transition-transform ${showClientDropdown ? "rotate-45" : ""}`} />
+                              </div>
+                              <AnimatePresence>
+                                {showClientDropdown && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-3xl shadow-2xl z-[60] overflow-hidden"
+                                  >
+                                    <div className="p-4 border-b bg-muted/20">
+                                      <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <input
+                                          autoFocus
+                                          type="text"
+                                          placeholder="Buscar cliente..."
+                                          className="w-full h-10 pl-10 pr-4 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-orange-500/20"
+                                          value={clientSearch}
+                                          onChange={(e) => setClientSearch(e.target.value)}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="max-h-[250px] overflow-y-auto p-2 custom-scrollbar">
+                                      {clients.filter(c => c.name.toLowerCase().includes(clientSearch.toLowerCase())).map(c => (
+                                        <button
+                                          key={c.id}
+                                          onClick={() => {
+                                            setSelectedClient(c.name)
+                                            setShowClientDropdown(false)
+                                            setClientSearch("")
+                                          }}
+                                          className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${selectedClient === c.name ? "bg-orange-500 text-white font-bold" : "hover:bg-accent text-foreground"}`}
+                                        >
+                                          {c.name}
+                                        </button>
+                                      ))}
+                                      {clients.filter(c => c.name.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 && (
+                                        <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron clientes.</p>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={runFtpProcess}
-                      disabled={!selectedClient || isProcessing}
-                      className="w-full h-14 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20"
-                    >
-                      <Play className="h-5 w-5 fill-current" />
-                      Iniciar Descarga
-                    </button>
+                        <button
+                          onClick={runFtpProcess}
+                          disabled={!selectedClient || isProcessing}
+                          className="w-full h-14 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20"
+                        >
+                          <Play className="h-5 w-5 fill-current" />
+                          Iniciar Descarga
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -511,7 +694,7 @@ export default function ContadoresPage() {
                         onChange={e => setToolData({ ...toolData, manual_fecha: e.target.value })}
                       />
                     </div>
-                    <FileInput label="Seleccionar archivo .db3" accept=".db3" onChange={(files) => runManualProcess(files)} error={status === "error"} />
+                    <FileInput label="Seleccionar archivo .db3" accept=".db3" onChange={(files) => runManualProcess(files)} />
                   </div>
                 )}
 
@@ -527,7 +710,7 @@ export default function ContadoresPage() {
                         <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.en0_fecha} onChange={e => setToolData({ ...toolData, en0_fecha: e.target.value })} />
                       </div>
                     </div>
-                    <FileInput label="Sube el CSV de entrada" accept=".csv" onChange={(files) => runTool("en0", files)} error={status === "error"} />
+                    <FileInput label="Sube el CSV de entrada" accept=".csv" onChange={(files) => runTool("en0", files)} />
                   </div>
                 )}
 
@@ -543,7 +726,7 @@ export default function ContadoresPage() {
                         <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.suma_fecha} onChange={e => setToolData({ ...toolData, suma_fecha: e.target.value })} />
                       </div>
                     </div>
-                    <FileInput label="Selecciona archivos XLS/XLSX" multiple accept=".xls,.xlsx" onChange={(files) => runTool("suma", files)} error={status === "error"} />
+                    <FileInput label="Selecciona archivos XLS/XLSX" multiple accept=".xls,.xlsx" onChange={(files) => runTool("suma", files)} />
                   </div>
                 )}
 
@@ -553,7 +736,7 @@ export default function ContadoresPage() {
                       <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha de Estimación</label>
                       <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.auto_fecha} onChange={e => setToolData({ ...toolData, auto_fecha: e.target.value })} />
                     </div>
-                    <FileInput label="Selecciona CSV Detalle" accept=".csv" onChange={(files) => runTool("auto", files)} error={status === "error"} />
+                    <FileInput label="Selecciona CSV Detalle" accept=".csv" onChange={(files) => runTool("auto", files)} />
                   </div>
                 )}
 

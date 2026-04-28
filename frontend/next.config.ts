@@ -8,7 +8,12 @@ const withPWA = require("next-pwa")({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  devIndicators: {
+    // @ts-ignore
+    appIsrStatus: false,
+    // @ts-ignore
+    buildActivity: false,
+  },
 };
 
 export default withPWA(nextConfig);
