@@ -447,6 +447,7 @@ export default function FtpPage() {
             </motion.div>
           </div>
         </div>
+      </main>
 
       <Modal
         isOpen={isModalOpen}
