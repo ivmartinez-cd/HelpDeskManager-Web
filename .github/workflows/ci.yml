@@ -34,7 +34,7 @@ jobs:
         export PYTHONPATH=$PYTHONPATH:.
         pytest
       env:
-        DATABASE_URL: postgresql://mock:mock@localhost:5432/mock
+        DATABASE_URL: sqlite:///./test.db
         NAS_APP_DIR: /tmp/data
 
   frontend-ci:
