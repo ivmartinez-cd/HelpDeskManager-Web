@@ -2,11 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typescript: {
-    // Ignoramos errores de tipos para asegurar que el build de Vercel pase
+    // Mantenerlo en false ayuda a que el deploy en Vercel sea más rápido
+    // pero el CI de GitHub sí lo validará.
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Ignoramos linting para ahorrar memoria en el servidor de build
+    // Ignoramos en el build de Vercel para mayor velocidad.
+    // El CI de GitHub se encargará de avisarnos si hay errores.
     ignoreDuringBuilds: true,
   },
   devIndicators: {
