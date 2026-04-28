@@ -261,7 +261,7 @@ export default function ContadoresPage() {
             />
             <ActionCard
               icon={Eraser}
-              title="Limpiar a Cero"
+              title="Estimación en 0"
               desc="Resetea equipos que no reportaron usando el último contador conocido."
               color="text-rose-500"
               onClick={() => setActiveTool("en0")}
@@ -301,7 +301,7 @@ export default function ContadoresPage() {
         title={
           activeTool === "ftp" ? "Descarga FTP" :
           activeTool === "manual" ? "Procesar DB3" :
-          activeTool === "en0" ? "Limpiar a Cero" :
+          activeTool === "en0" ? "Estimación en 0" :
           activeTool === "suma" ? "Suma Fija" :
           activeTool === "auto" ? "Asistente IA" :
           activeTool === "calc" ? "Calculadora" : ""
