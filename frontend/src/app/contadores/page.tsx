@@ -207,9 +207,9 @@ export default function ContadoresPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-foreground p-4 md:p-8 overflow-hidden font-sans">
+    <div className="relative h-full bg-background text-foreground p-4 md:p-8 overflow-y-auto custom-scrollbar font-sans">
       
-      <main className="relative flex-1 flex flex-col items-center overflow-hidden">
+      <main className="relative flex-1 flex flex-col items-center justify-center">
         {/* Modern Industrial Background */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none" />
@@ -217,9 +217,9 @@ export default function ContadoresPage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-accent/10 blur-[120px] rounded-full pointer-events-none" />
         </div>
 
-        <div className="container relative z-10 px-4 py-12 md:py-20">
+        <div className="container relative z-10 px-4 flex flex-col items-center gap-2 py-2 h-full">
           
-          <section className="flex flex-col items-center text-center mb-16">
+          <section className="flex flex-col items-center text-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -235,7 +235,7 @@ export default function ContadoresPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-display text-5xl md:text-8xl font-black tracking-tighter leading-none mb-4"
+              className="text-display text-4xl md:text-6xl font-black tracking-tighter leading-none mb-1"
             >
               <span className="text-foreground block">CENTRO DE</span>
               <span className="text-accent block">CONTADORES</span>
@@ -245,14 +245,14 @@ export default function ContadoresPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-lg md:text-xl font-medium text-muted-foreground/80 leading-relaxed max-w-2xl"
+              className="text-xs md:text-sm font-medium text-muted-foreground/50 leading-relaxed max-w-xl"
             >
               Automatización de reportes y gestión de bases de datos con precisión industrial.
             </motion.p>
           </section>
 
           {/* Grid de Acciones Principales */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full max-w-[1600px] mx-auto pb-20">
             <ActionCard 
               icon={Server}
               title="Descarga FTP"
@@ -325,7 +325,7 @@ export default function ContadoresPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative w-full max-w-lg bg-card/50 backdrop-blur-xl border rounded-[2.5rem] shadow-2xl p-8 overflow-hidden"
+              className={`relative w-full max-w-lg bg-card/50 backdrop-blur-xl border rounded-[2.5rem] shadow-2xl p-8 !overflow-visible transition-all duration-300 ${showClientDropdown ? "pb-64" : ""}`}
             >
               {/* Modal Decoration */}
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 blur-3xl rounded-full" />
@@ -368,7 +368,7 @@ export default function ContadoresPage() {
                           <p className="text-muted-foreground animate-pulse text-xs text-display">Ejecución en curso...</p>
                         </div>
                         
-                        <div className="bg-black/40 rounded-2xl p-4 border border-white/10 font-mono text-[10px] h-36 overflow-hidden relative">
+                        <div className="bg-muted/50 dark:bg-black/40 rounded-2xl p-4 border border-border dark:border-white/10 font-mono text-[10px] h-36 overflow-hidden relative">
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                           <div className="space-y-1.5">
                             {logs.map((log, i) => (
@@ -551,7 +551,7 @@ export default function ContadoresPage() {
                               onChange={e => setToolData({...toolData, manual_fecha: e.target.value})}
                             />
                           </div>
-                          <FileInput label="Seleccionar archivo .db3" accept=".db3" onChange={files => runManualProcess(files)} />
+                          <FileInput label="Seleccionar archivo .db3" accept=".db3" onChange={(files: FileList | null) => runManualProcess(files)} />
                         </div>
                       )}
 
@@ -567,7 +567,7 @@ export default function ContadoresPage() {
                               <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.en0_fecha} onChange={e => setToolData({...toolData, en0_fecha: e.target.value})} />
                             </div>
                           </div>
-                          <FileInput label="Sube el CSV de entrada" accept=".csv" onChange={files => runTool("en0", files)} />
+                          <FileInput label="Sube el CSV de entrada" accept=".csv" onChange={(files: FileList | null) => runTool("en0", files)} />
                         </div>
                       )}
 
@@ -583,7 +583,7 @@ export default function ContadoresPage() {
                               <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.suma_fecha} onChange={e => setToolData({...toolData, suma_fecha: e.target.value})} />
                             </div>
                           </div>
-                          <FileInput label="Selecciona archivos XLS/XLSX" multiple accept=".xls,.xlsx" onChange={files => runTool("suma", files)} />
+                          <FileInput label="Selecciona archivos XLS/XLSX" multiple accept=".xls,.xlsx" onChange={(files: FileList | null) => runTool("suma", files)} />
                         </div>
                       )}
 
@@ -593,7 +593,7 @@ export default function ContadoresPage() {
                             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha de Estimación</label>
                             <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.auto_fecha} onChange={e => setToolData({...toolData, auto_fecha: e.target.value})} />
                           </div>
-                          <FileInput label="Selecciona CSV Detalle" accept=".csv" onChange={files => runTool("auto", files)} />
+                          <FileInput label="Selecciona CSV Detalle" accept=".csv" onChange={(files: FileList | null) => runTool("auto", files)} />
                         </div>
                       )}
 
@@ -662,23 +662,23 @@ function ActionCard({ icon: Icon, title, desc, color, onClick, delay }: any) {
       transition={{ duration: 0.5, delay }}
       onMouseMove={handleMouseMove}
       onClick={onClick}
-      className="group relative rounded-[2.5rem] border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 p-8 transition-colors hover:border-orange-500/50 cursor-pointer overflow-hidden"
+      className="group relative rounded-[1.2rem] border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 p-4 transition-colors hover:border-orange-500/50 cursor-pointer overflow-hidden"
     >
       <motion.div
-        className="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 transition duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute -inset-px rounded-[1.2rem] opacity-0 transition duration-300 group-hover:opacity-100"
         style={{ background: spotlightBg }}
       />
 
       <div className="relative z-10">
-        <div className={`mb-6 p-4 inline-flex rounded-2xl bg-orange-500/10 ${color} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
-          <Icon className="h-8 w-8" />
+        <div className={`mb-2 p-2 inline-flex rounded-lg bg-orange-500/10 ${color} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+          <Icon className="h-4 w-4" />
         </div>
-        <h3 className="text-2xl font-bold mb-3 text-foreground group-hover:text-orange-500 transition-colors">{title}</h3>
-        <p className="text-muted-foreground text-sm leading-relaxed mb-8">{desc}</p>
+        <h3 className="text-base font-bold mb-0.5 text-foreground group-hover:text-orange-500 transition-colors">{title}</h3>
+        <p className="text-muted-foreground text-[11px] leading-tight mb-3 line-clamp-2">{desc}</p>
         
-        <div className="flex items-center gap-2 text-xs font-bold text-orange-500 group/link">
+        <div className="flex items-center gap-2 text-[9px] font-bold text-orange-500 group/link">
           INICIAR PROCESO
-          <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
+          <ArrowRight className="h-3 w-3 transition-transform group-hover/link:translate-x-1" />
         </div>
       </div>
     </motion.div>

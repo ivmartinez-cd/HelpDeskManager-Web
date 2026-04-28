@@ -19,6 +19,10 @@ import { Navbar } from "@/components/navbar";
 export const metadata: Metadata = {
   title: "HelpDesk Manager Web",
   description: "Plataforma de gestión de operaciones y helpdesk - Estándares 2026",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -40,9 +44,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="relative z-10 flex flex-col min-h-screen">
+          <div className="relative z-10 flex flex-col h-screen overflow-hidden">
             <Navbar />
-            <main className="flex-grow">
+            <main className="flex-grow overflow-hidden relative">
               {children}
             </main>
           </div>

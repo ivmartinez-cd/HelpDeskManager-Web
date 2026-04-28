@@ -58,39 +58,45 @@ export default function StcPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-foreground p-4 md:p-8 overflow-hidden font-sans">
+    <div className="relative h-full bg-background text-foreground p-4 md:p-8 overflow-y-auto custom-scrollbar font-sans">
       
-      <main className="relative flex-1 flex flex-col items-center overflow-hidden">
+      <main className="relative flex-1 flex flex-col items-center justify-center">
         {/* Modern Industrial Background */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] animate-grid-fade" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
         </div>
 
-        <div className="container relative z-10 px-4 py-12 md:py-16">
+        <div className="container relative z-10 px-4 flex flex-col items-center gap-4 py-4 h-full">
           
-          <section className="flex flex-col items-center text-center mb-16">
+          <section className="flex flex-col items-center text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4"
+            >
+              <span className="text-[10px] font-bold tracking-[0.2em] text-orange-500 uppercase">
+                Utilidades de Infraestructura
+              </span>
+            </motion.div>
+
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-4xl md:text-6xl font-black tracking-tighter mb-4"
+              transition={{ duration: 0.8 }}
+              className="text-display text-4xl md:text-6xl font-black tracking-tighter leading-none mb-2"
             >
-              <span className="text-orange-500 drop-shadow-2xl">
-                UTILIDADES
-              </span>{" "}
-              <span className="text-foreground drop-shadow-2xl">
-                STC & RED
-              </span>
+              <span className="text-foreground block">UTILIDADES</span>
+              <span className="text-accent block">STC & RED</span>
             </motion.h1>
-            
+
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-sm md:text-base font-bold tracking-[0.2em] text-muted-foreground uppercase max-w-2xl"
+              className="text-xs md:text-sm font-medium text-muted-foreground/50 leading-relaxed max-w-xl"
             >
-              Extracción de IPs <span className="text-orange-500">•</span> Generación de Rangos /24
+              Extracción inteligente de IPs y generación de rangos de red con precisión industrial.
             </motion.p>
           </section>
 
@@ -102,7 +108,7 @@ export default function StcPage() {
               color="text-blue-500"
               accept=".db3,.sqlite,.db"
               multiple={true}
-              onUpload={(files) => handleUpload("db3", files)}
+              onUpload={(files: FileList | null) => handleUpload("db3", files)}
               isProcessing={isProcessing}
               delay={0.4}
             />
@@ -114,7 +120,7 @@ export default function StcPage() {
               color="text-orange-500"
               accept=".txt,.log,.csv"
               multiple={false}
-              onUpload={(files) => handleUpload("txt", files)}
+              onUpload={(files: FileList | null) => handleUpload("txt", files)}
               isProcessing={isProcessing}
               delay={0.5}
             />
@@ -195,7 +201,7 @@ function StcActionCard({ icon: Icon, title, desc, color, accept, multiple, onUpl
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
-  function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent<HTMLDivElement>) {
     const { left, top } = currentTarget.getBoundingClientRect()
     mouseX.set(clientX - left)
     mouseY.set(clientY - top)
@@ -212,24 +218,24 @@ function StcActionCard({ icon: Icon, title, desc, color, accept, multiple, onUpl
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
       onMouseMove={handleMouseMove}
-      className="group relative rounded-[2.5rem] border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 p-10 transition-colors hover:border-orange-500/50 overflow-hidden"
+      className="group relative rounded-[1.2rem] border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 p-5 transition-colors hover:border-orange-500/50 overflow-hidden"
     >
       <motion.div
-        className="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 transition duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute -inset-px rounded-[1.2rem] opacity-0 transition duration-300 group-hover:opacity-100"
         style={{ background: spotlightBg }}
       />
       
-      <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-        <div className={`p-5 rounded-2xl bg-orange-500/10 ${color} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
-          <Icon className="h-10 w-10" />
+      <div className="relative z-10 flex flex-col space-y-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-2.5 rounded-xl bg-orange-500/10 ${color} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <h2 className="text-lg font-bold text-foreground group-hover:text-orange-500 transition-colors">{title}</h2>
         </div>
         
-        <div>
-          <h2 className="text-3xl font-black mb-3 text-foreground group-hover:text-orange-500 transition-colors">{title}</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {desc}
-          </p>
-        </div>
+        <p className="text-[11px] text-muted-foreground leading-tight line-clamp-2">
+          {desc}
+        </p>
 
         <div className="w-full relative group/btn">
           <input 
@@ -240,9 +246,18 @@ function StcActionCard({ icon: Icon, title, desc, color, accept, multiple, onUpl
             onChange={(e) => onUpload(e.target.files)}
             disabled={isProcessing}
           />
-          <button className="w-full bg-orange-500 text-white h-14 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-orange-500/20 group-hover/btn:scale-[1.02] transition-transform">
-            <Upload className="h-5 w-5" />
-            Seleccionar Archivos
+          <button className="w-full bg-orange-500 text-white h-10 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 group-hover/btn:scale-[1.02] transition-transform text-[10px] uppercase tracking-widest">
+            {isProcessing ? (
+              <span className="flex items-center gap-2">
+                <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                PROCESANDO...
+              </span>
+            ) : (
+              <>
+                <Upload className="h-3 w-3" />
+                Seleccionar Archivos
+              </>
+            )}
           </button>
         </div>
       </div>

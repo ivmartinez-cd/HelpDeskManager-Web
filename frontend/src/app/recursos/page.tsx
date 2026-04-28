@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-mo
 import { 
   ExternalLink, Copy, Search, Plus, Trash2, 
   Link as LinkIcon, Bookmark, Globe, FileText, 
-  Loader2, CheckCircle2, X, Filter
+  Loader2, CheckCircle2, X, Filter, ChevronDown
 } from "lucide-react"
 
 interface Resource {
@@ -90,34 +90,44 @@ export default function RecursosPage() {
   const categories = ["Todos", ...Array.from(new Set(resources.map(r => r.category)))]
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-foreground p-4 md:p-8 overflow-hidden font-sans">
+    <div className="relative h-full bg-background text-foreground p-4 md:p-8 overflow-y-auto custom-scrollbar font-sans">
       
-      <main className="relative flex-1 flex flex-col items-center overflow-hidden">
+      <main className="relative flex-1 flex flex-col items-center justify-center">
         {/* Modern Industrial Background */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] animate-grid-fade" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
         </div>
 
-        <div className="container relative z-10 px-4 py-12 md:py-16">
+        <div className="container relative z-10 px-4 flex flex-col items-center gap-4 py-4 h-full">
           
-          <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-            <div className="text-left">
+          <header className="flex flex-col items-center text-center gap-2">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4"
+            >
+              <span className="text-[10px] font-bold tracking-[0.2em] text-orange-500 uppercase">
+                Biblioteca de Conocimiento
+              </span>
+            </motion.div>
+            <div className="text-center">
               <motion.h1 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-4xl md:text-6xl font-black tracking-tighter mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="text-display text-4xl md:text-6xl font-black tracking-tighter leading-none mb-2"
               >
-                <span className="text-orange-500 drop-shadow-2xl">DIRECTORIO</span>{" "}
-                <span className="text-foreground drop-shadow-2xl">RECURSOS</span>
+                <span className="text-foreground block">CENTRO DE</span>
+                <span className="text-accent block">RECURSOS</span>
               </motion.h1>
               <motion.p 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-sm md:text-base font-bold tracking-[0.2em] text-muted-foreground uppercase"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-xs md:text-sm font-medium text-muted-foreground/50 leading-relaxed max-w-xl"
               >
-                Documentación técnica <span className="text-orange-500">•</span> Manuales de usuario
+                Acceso centralizado a documentación técnica, guías de usuario y herramientas de soporte.
               </motion.p>
             </div>
             
@@ -127,9 +137,9 @@ export default function RecursosPage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowAddModal(true)}
-              className="bg-orange-500 text-white h-16 px-8 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-orange-500/20"
+              className="bg-orange-500 text-white h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-orange-500/20 mt-2"
             >
-              <Plus className="h-6 w-6" />
+              <Plus className="h-4 w-4" />
               Nuevo Recurso
             </motion.button>
           </header>
@@ -139,32 +149,31 @@ export default function RecursosPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12"
+            className="flex flex-col md:flex-row items-center gap-2 w-full max-w-4xl mb-6"
           >
-            <div className="md:col-span-3 relative group">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-orange-500 transition-colors" />
+            <div className="flex-1 relative group w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-orange-500 transition-colors" />
               <input 
                 type="text" 
                 placeholder="BUSCAR RECURSOS POR NOMBRE O URL..."
-                className="w-full h-16 pl-16 pr-6 rounded-2xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 outline-none focus:border-orange-500/50 transition-all font-bold text-sm tracking-wide"
+                className="w-full h-10 pl-11 pr-4 rounded-xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 outline-none focus:border-orange-500/50 transition-all font-bold text-[10px] tracking-widest uppercase"
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
               />
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-4 md:pb-0 md:flex-wrap">
-              <div className="flex items-center gap-2 h-16 px-4 bg-black/[0.02] dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/10">
-                <Filter className="h-4 w-4 text-orange-500" />
-                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Categoría:</span>
-                <select 
-                  className="bg-transparent outline-none font-bold text-sm text-foreground pr-2"
-                  value={activeCategory}
-                  onChange={e => setActiveCategory(e.target.value)}
-                >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat} className="bg-background">{cat}</option>
-                  ))}
-                </select>
-              </div>
+            
+            <div className="relative min-w-[180px] w-full md:w-auto">
+              <Filter className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+              <select 
+                className="w-full h-10 pl-11 pr-8 rounded-xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 outline-none focus:border-orange-500/50 transition-all appearance-none font-bold text-[10px] tracking-widest uppercase cursor-pointer"
+                value={activeCategory}
+                onChange={e => setActiveCategory(e.target.value)}
+              >
+                {categories.map(cat => (
+                  <option key={cat} value={cat} className="bg-background">{cat.toUpperCase()}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
             </div>
           </motion.div>
 
@@ -178,7 +187,7 @@ export default function RecursosPage() {
               <p className="font-black text-sm uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Sincronizando Base de Datos...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full max-w-[1600px] mx-auto pb-10">
               <AnimatePresence mode="popLayout">
                 {filteredResources.map((res, idx) => (
                   <ResourceCard 
@@ -308,47 +317,47 @@ function ResourceCard({ res, idx, onDelete, onCopy }: any) {
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: idx * 0.05 }}
       onMouseMove={handleMouseMove}
-      className="group relative rounded-[2.5rem] border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 p-8 transition-colors hover:border-orange-500/30 overflow-hidden"
+      className="group relative rounded-[1.2rem] border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 p-5 transition-colors hover:border-orange-500/30 overflow-hidden"
     >
       <motion.div
-        className="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 transition duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute -inset-px rounded-[1.2rem] opacity-0 transition duration-300 group-hover:opacity-100"
         style={{ background: spotlightBg }}
       />
       
       <div className="relative z-10">
-        <div className="flex items-start justify-between mb-8">
-          <div className="p-4 rounded-2xl bg-orange-500/10 text-orange-500 transition-transform group-hover:scale-110 group-hover:-rotate-3">
-            {res.category === "Manuales" ? <FileText className="h-7 w-7" /> : 
-             res.category === "Documentación" ? <Bookmark className="h-7 w-7" /> : 
-             <Globe className="h-7 w-7" />}
+        <div className="flex items-start justify-between mb-4">
+          <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-500 transition-transform group-hover:scale-110 group-hover:-rotate-3">
+            {res.category === "Manuales" ? <FileText className="h-5 w-5" /> : 
+             res.category === "Documentación" ? <Bookmark className="h-5 w-5" /> : 
+             <Globe className="h-5 w-5" />}
           </div>
           <button 
             onClick={() => onDelete(res.id)}
-            className="p-3 text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
+            className="p-2 text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
         
-        <h3 className="text-2xl font-black mb-1 line-clamp-1 group-hover:text-orange-500 transition-colors uppercase tracking-tight">{res.name}</h3>
-        <div className="flex items-center gap-2 mb-8">
-          <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-orange-500/10 text-orange-500 rounded-md tracking-widest">{res.category}</span>
-          <p className="text-[10px] font-mono text-muted-foreground line-clamp-1">{res.url}</p>
+        <h3 className="text-lg font-bold mb-1 line-clamp-1 group-hover:text-orange-500 transition-colors uppercase tracking-tight">{res.name}</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-[9px] font-black uppercase px-2 py-0.5 bg-orange-500/10 text-orange-500 rounded-md tracking-widest">{res.category}</span>
+          <p className="text-[9px] font-mono text-muted-foreground/60 line-clamp-1">{res.url}</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <a 
             href={res.url} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex-1 bg-white/5 hover:bg-orange-500 text-foreground hover:text-white h-12 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm"
+            className="flex-1 bg-white/5 hover:bg-orange-500 text-foreground hover:text-white h-10 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm"
           >
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink className="h-3.5 w-3.5" />
             Acceder
           </a>
           <button 
             onClick={() => onCopy(res.url)}
-            className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors group/copy"
+            className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl transition-colors group/copy"
             title="Copiar URL"
           >
             <Copy className="h-4 w-4 group-active:scale-90 transition-transform" />
