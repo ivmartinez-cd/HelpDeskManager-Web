@@ -41,9 +41,10 @@ export default function StcPage() {
       setResultFile(data.file)
       setStatus("success")
       setMessage(data.message)
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as Error;
       setStatus("error")
-      setMessage(error.message || "Error de conexión.")
+      setMessage(err.message || "Error de conexión.")
     } finally {
       setIsProcessing(false)
     }

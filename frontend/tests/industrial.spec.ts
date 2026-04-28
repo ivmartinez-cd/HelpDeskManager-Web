@@ -34,11 +34,7 @@ test.describe('Industrial Refinado - Accessibility & Resilience', () => {
     // Navigate to Recursos which has skeletons
     await page.goto('/recursos');
     
-    // Check for skeletons (usually have animate-pulse or specific class)
-    // In our case we used a custom Skeleton component
-    const skeletons = page.locator('.animate-pulse');
-    // They might disappear too fast, so we just check if they existed or are visible briefly
-    // Or we check the UI structure
+    // Check if main is visible
     await expect(page.locator('main')).toBeVisible();
   });
 

@@ -12,9 +12,8 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   devIndicators: {
-    // @ts-ignore
+    // @ts-expect-error - appIsrStatus is a valid internal property but missing in current type definitions
     appIsrStatus: false,
-    // @ts-ignore
     buildActivity: false,
   },
 };

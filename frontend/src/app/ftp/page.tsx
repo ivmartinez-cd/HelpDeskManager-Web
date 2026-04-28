@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Navbar } from "@/components/navbar"
 import { motion, AnimatePresence } from "framer-motion"
-import { Server, Search, RefreshCw, Play, CheckCircle2, AlertCircle, Loader2, Download, ExternalLink, Plus, Edit2, Trash2, X, Database, AlertTriangle } from "lucide-react"
+import { Server, Search, RefreshCw, Play, CheckCircle2, AlertCircle, Loader2, Download, Plus, Edit2, Trash2, Database, AlertTriangle } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
 import { toast } from "@/hooks/use-toast"
 
@@ -44,9 +44,9 @@ export default function FtpPage() {
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     setIsLoadingClients(true)
     try {
       const response = await fetch(`${apiUrl}/api/ftp/clients`)
@@ -59,11 +59,12 @@ export default function FtpPage() {
     } finally {
       setIsLoadingClients(false)
     }
-  }
+  }, [apiUrl])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchClients()
-  }, [])
+  }, [fetchClients])
 
   const handleProcess = async () => {
     if (!selectedClient) return
@@ -93,10 +94,11 @@ export default function FtpPage() {
       setDb3File(data.db3_file)
       setStatus("success")
       setMessage(data.message)
-    } catch (error: any) {
-      console.error(error)
+    } catch (error) {
+      const err = error as Error;
+      console.error(err)
       setStatus("error")
-      setMessage(error.message || "Error de conexión con el servidor.")
+      setMessage(err.message || "Error de conexión con el servidor.")
     } finally {
       setIsProcessing(false)
     }
@@ -429,7 +431,7 @@ export default function FtpPage() {
                   </div>
                   <h3 className="text-xl font-bold mb-2">Base de Datos de Clientes</h3>
                   <p className="text-muted-foreground max-w-xs">
-                    Selecciona un cliente de la lista lateral o utiliza el botón "Nuevo Cliente" para añadir una configuración.
+                    Selecciona un cliente de la lista lateral o utiliza el botón &quot;Nuevo Cliente&quot; para añadir una configuración.
                   </p>
                 </div>
               )}

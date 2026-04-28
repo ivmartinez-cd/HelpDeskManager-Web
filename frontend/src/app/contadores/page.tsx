@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   FileText, Download, Loader2, CheckCircle2,
   AlertCircle, Database, Calculator, Wand2, Eraser,
-  PlusCircle, Server, Search, Play, X, ArrowRight,
+  PlusCircle, Server, Search, Play, ArrowRight,
   Settings, Edit, Trash2, Plus, ChevronLeft
 } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
@@ -23,6 +23,13 @@ interface Client {
   password: string;
   path: string;
   pattern: string;
+}
+
+interface CalcResult {
+  imp_dia: number;
+  cont_est: number;
+  imp_mes: number;
+  dias_est: number;
 }
 
 export default function ContadoresPage() {
@@ -63,10 +70,11 @@ export default function ContadoresPage() {
     manual_fecha: "",
     calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" }
   })
-  const [calcResult, setCalcResult] = useState<any>(null)
+  const [calcResult, setCalcResult] = useState<CalcResult | null>(null)
 
   useEffect(() => {
     const today = new Date().toLocaleDateString('es-ES')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setToolData(prev => ({
       ...prev,
       en0_fecha: today,
@@ -75,23 +83,24 @@ export default function ContadoresPage() {
     }))
   }, [])
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     setIsLoadingClients(true)
     try {
       const response = await fetch(`${apiUrl}/api/ftp/clients`)
       const data = await response.json()
       if (data.clients) setClients(data.clients)
-    } catch (error) {
-      console.error("Error fetching clients:", error)
+    } catch (err) {
+      console.error("Error fetching clients:", err)
       toast("Error al cargar lista de clientes", "error")
     } finally {
       setIsLoadingClients(false)
     }
-  }
+  }, [apiUrl])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchClients()
-  }, [])
+  }, [fetchClients])
 
   const handleSaveClient = async () => {
     const isEdit = !!editingClient
@@ -114,9 +123,10 @@ export default function ContadoresPage() {
       setEditingClient(null)
       setIsManagingClients(false)
       setClientFormData({ name: "", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*" })
-    } catch (error: any) {
-      setModalError(error.message)
-      toast(error.message, "error")
+    } catch (err) {
+      const errorObj = err as Error;
+      setModalError(errorObj.message)
+      toast(errorObj.message, "error")
     }
   }
 
@@ -131,8 +141,9 @@ export default function ContadoresPage() {
       
       toast("Cliente eliminado", "success")
       await fetchClients()
-    } catch (error: any) {
-      toast(error.message, "error")
+    } catch (err) {
+      const errorObj = err as Error;
+      toast(errorObj.message, "error")
     }
   }
 
@@ -175,10 +186,11 @@ export default function ContadoresPage() {
       setStatus("success")
       setMessage("¡DB3 procesado y descargado con éxito!")
       toast("Proceso DB3 finalizado", "success")
-    } catch (error: any) {
+    } catch (err) {
       setStatus("error")
-      setMessage(error.message)
-      setModalError(error.message)
+      const errorObj = err as Error;
+      setMessage(errorObj.message)
+      setModalError(errorObj.message)
     } finally {
       setIsProcessing(false)
       setLogs([])
@@ -211,10 +223,11 @@ export default function ContadoresPage() {
       setStatus("success")
       setMessage(data.message)
       toast("Sincronización FTP completada", "success")
-    } catch (error: any) {
+    } catch (err) {
       setStatus("error")
-      setMessage(error.message)
-      setModalError(error.message)
+      const errorObj = err as Error;
+      setMessage(errorObj.message)
+      setModalError(errorObj.message)
     } finally {
       setIsProcessing(false)
       setLogs([])
@@ -266,10 +279,11 @@ export default function ContadoresPage() {
       setStatus("success")
       setMessage(data.message || "Proceso completado.")
       toast(`Herramienta ${tool.toUpperCase()} ejecutada`, "success")
-    } catch (error: any) {
+    } catch (err) {
       setStatus("error")
-      setMessage(error.message)
-      setModalError(error.message)
+      const errorObj = err as Error;
+      setMessage(errorObj.message)
+      setModalError(errorObj.message)
       toast("Error en la ejecución", "error")
     } finally {
       setIsProcessing(false)
@@ -287,7 +301,10 @@ export default function ContadoresPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail)
       setCalcResult(data)
-    } catch (error: any) { setModalError(error.message) }
+    } catch (error) { 
+      const err = error as Error;
+      setModalError(err.message) 
+    }
   }
 
   const closeModal = () => {

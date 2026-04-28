@@ -1,6 +1,6 @@
 "use client"
 
-import { motion, useMotionValue, useTransform } from "framer-motion"
+import { motion, useMotionValue, useTransform, TargetAndTransition, VariantLabels } from "framer-motion"
 import { KeyboardEvent, MouseEvent, ReactNode } from "react"
 
 interface SpotlightCardProps {
@@ -10,7 +10,7 @@ interface SpotlightCardProps {
   bg?: string
   onClick?: () => void
   delay?: number
-  exit?: { [key: string]: any }
+  exit?: TargetAndTransition | VariantLabels
   layout?: boolean | "position" | "size"
 }
 

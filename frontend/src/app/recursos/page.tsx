@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ExternalLink, Copy, Search, Plus, Trash2,
   Link as LinkIcon, Bookmark, Globe, FileText,
-  Loader2, CheckCircle2, X, Filter, ChevronDown, Check, AlertTriangle
+  Loader2, CheckCircle2, Filter, ChevronDown, Check, AlertTriangle
 } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
 import { PageShell } from "@/components/ui/page-shell"
@@ -35,9 +35,7 @@ export default function RecursosPage() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
 
-  useEffect(() => { fetchResources() }, [])
-
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async () => {
     setIsLoading(true)
     try {
       const response = await fetch(`${apiUrl}/api/resources`)
@@ -48,7 +46,12 @@ export default function RecursosPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [apiUrl])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchResources()
+  }, [fetchResources])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
