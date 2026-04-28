@@ -145,6 +145,7 @@
 | 2026-04-28 | C-1 | Navbar: link activo con `usePathname()` + highlight naranja |
 | 2026-04-28 | C-2 | Recursos: feedback visual al copiar URL (checkmark animado 2s) |
 | 2026-04-28 | C-3 | Recursos: modal de confirmación de borrado reemplaza `window.confirm()` |
+| 2026-04-28 | C-3b | Contadores: confirmación inline de borrado de cliente FTP reemplaza `window.confirm()` |
 | 2026-04-28 | C-4 | `SpotlightCard`: `role="button"`, `tabIndex`, `onKeyDown`, `focus-visible:ring` |
 | 2026-04-28 | C-5 | Navbar: menú mobile con hamburger animado (`AnimatePresence`) |
 | 2026-04-28 | M-1 | Gestión de foco en modales (trap & restoration) implementado |

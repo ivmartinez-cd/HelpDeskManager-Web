@@ -58,6 +58,7 @@ export default function ContadoresPage() {
   const [isLoadingClients, setIsLoadingClients] = useState(false)
   const [showClientDropdown, setShowClientDropdown] = useState(false)
   const [clientSearch, setClientSearch] = useState("")
+  const [deletingClientId, setDeletingClientId] = useState<number | null>(null)
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
 
@@ -131,19 +132,19 @@ export default function ContadoresPage() {
   }
 
   const handleDeleteClient = async (id: number) => {
-    if (!confirm("¿Estás seguro de eliminar este cliente?")) return
-
     try {
       const response = await fetch(`${apiUrl}/api/ftp/clients/${id}`, {
         method: "DELETE"
       })
       if (!response.ok) throw new Error("Error al eliminar cliente")
-      
+
       toast("Cliente eliminado", "success")
+      setDeletingClientId(null)
       await fetchClients()
     } catch (err) {
       const errorObj = err as Error;
       toast(errorObj.message, "error")
+      setDeletingClientId(null)
     }
   }
 
@@ -583,30 +584,52 @@ export default function ContadoresPage() {
                             </button>
                             <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar space-y-2">
                               {clients.map(c => (
-                                <div key={c.id} className="p-4 bg-muted/20 border rounded-2xl flex items-center justify-between group hover:border-accent/50 transition-all">
-                                  <div>
-                                    <p className="font-bold text-sm text-foreground">{c.name}</p>
-                                    <p className="text-[10px] text-muted-foreground">{c.host}</p>
-                                  </div>
-                                  <div className="flex gap-1">
-                                    <button 
-                                      onClick={() => {
-                                        setEditingClient(c)
-                                        setClientFormData({
-                                          name: c.name, host: c.host, user: c.user, password: c.password, path: c.path, pattern: c.pattern
-                                        })
-                                      }}
-                                      className="p-2 hover:bg-accent/10 rounded-lg text-muted-foreground hover:text-accent transition-colors"
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </button>
-                                    <button 
-                                      onClick={() => handleDeleteClient(c.id)}
-                                      className="p-2 hover:bg-destructive/10 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </button>
-                                  </div>
+                                <div key={c.id} className="p-4 bg-muted/20 border rounded-2xl transition-all hover:border-accent/50">
+                                  {deletingClientId === c.id ? (
+                                    <div className="flex items-center justify-between gap-2">
+                                      <p className="text-xs font-bold text-destructive">¿Eliminar <span className="text-foreground">{c.name}</span>?</p>
+                                      <div className="flex gap-1 shrink-0">
+                                        <button
+                                          onClick={() => handleDeleteClient(c.id)}
+                                          className="px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-xs font-bold hover:opacity-90 transition-all"
+                                        >
+                                          Eliminar
+                                        </button>
+                                        <button
+                                          onClick={() => setDeletingClientId(null)}
+                                          className="px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-bold hover:bg-muted/80 transition-all"
+                                        >
+                                          Cancelar
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <p className="font-bold text-sm text-foreground">{c.name}</p>
+                                        <p className="text-[10px] text-muted-foreground">{c.host}</p>
+                                      </div>
+                                      <div className="flex gap-1">
+                                        <button
+                                          onClick={() => {
+                                            setEditingClient(c)
+                                            setClientFormData({
+                                              name: c.name, host: c.host, user: c.user, password: c.password, path: c.path, pattern: c.pattern
+                                            })
+                                          }}
+                                          className="p-2 hover:bg-accent/10 rounded-lg text-muted-foreground hover:text-accent transition-colors"
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                          onClick={() => setDeletingClientId(c.id)}
+                                          className="p-2 hover:bg-destructive/10 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
