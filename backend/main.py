@@ -202,7 +202,7 @@ async def startup_seed():
 @app.post("/api/ftp/process-client")
 async def process_ftp_client(
     client_name: str = Body(..., embed=True), 
-    fecha_maxima: str = "",
+    fecha_maxima: str = Body(default="", embed=True),
     db: Session = Depends(get_db)
 ):
     """Descarga el DB3 de un cliente vía FTP (usando datos de la DB) y lo procesa."""

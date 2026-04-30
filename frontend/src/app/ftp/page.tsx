@@ -27,6 +27,7 @@ export default function FtpPage() {
   const [csvFile, setCsvFile] = useState("")
   const [db3File, setDb3File] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
+  const [fechaMaxima, setFechaMaxima] = useState("")
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -76,12 +77,19 @@ export default function FtpPage() {
     setDb3File("")
 
     try {
+      const formattedDate = fechaMaxima 
+        ? fechaMaxima.split('-').reverse().join('/') 
+        : "";
+
       const response = await fetch(`${apiUrl}/api/ftp/process-client`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ client_name: selectedClient.name }),
+        body: JSON.stringify({ 
+          client_name: selectedClient.name,
+          fecha_maxima: formattedDate
+        }),
       })
 
       const data = await response.json()
@@ -332,6 +340,16 @@ export default function FtpPage() {
                       El sistema descargará todos los archivos coincidentes con el patrón <code className="bg-muted px-1.5 py-0.5 rounded text-xs">{selectedClient.pattern}</code>, los fusionará y generará el reporte.
                     </p>
                     
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Fecha Límite de Procesamiento (Opcional)</label>
+                      <input 
+                        type="date"
+                        className="w-full h-14 px-6 rounded-2xl border bg-black/[0.02] dark:bg-white/5 font-bold outline-none transition-all border-black/5 dark:border-white/10 focus:border-orange-500/50"
+                        value={fechaMaxima}
+                        onChange={(e) => setFechaMaxima(e.target.value)}
+                      />
+                    </div>
+
                     <button
                       onClick={handleProcess}
                       disabled={isProcessing || status === "success"}
