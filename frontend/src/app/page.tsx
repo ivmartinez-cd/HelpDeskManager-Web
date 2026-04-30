@@ -25,7 +25,7 @@ function ModuleCard({
       <SpotlightCard
         rounded="rounded-[2rem]"
         bg="bg-white dark:bg-white/5"
-        className="h-full p-6 hover:shadow-2xl hover:shadow-orange-500/10"
+        className="home-module-card h-full hover:shadow-2xl hover:shadow-orange-500/10"
         delay={delay}
       >
         <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 transition-transform group-hover:scale-110">
@@ -56,14 +56,14 @@ export default function Home() {
 
   return (
     <PageShell>
-      <div className="flex-1 flex flex-col items-center justify-center px-4 gap-10 md:gap-12 py-8">
+      <div className="home-page">
         {/* Hero */}
-        <section className="flex flex-col items-center text-center">
+        <section className="home-hero">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="mb-6 px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 backdrop-blur-sm"
+            className="home-eyebrow px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 backdrop-blur-sm"
           >
             <span className="text-[9px] font-black tracking-[0.3em] text-accent uppercase">
               Sistema de Gestión de Operaciones v3.0
@@ -74,7 +74,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-display text-6xl md:text-[8.5rem] font-black tracking-tighter leading-[0.8] mb-8"
+            className="home-title text-display font-black tracking-tighter leading-[0.8]"
           >
             <span className="text-foreground block">HELPDESK</span>
             <span className="text-accent block">MANAGER</span>
@@ -84,7 +84,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 1 }}
-            className="max-w-lg mx-auto"
+            className="home-copy max-w-lg mx-auto"
           >
             <p className="text-sm md:text-base font-medium text-muted-foreground/60 leading-relaxed tracking-wide">
               Optimización técnica y procesamiento de datos con estándares de precisión industrial para el equipo de soporte.
@@ -93,7 +93,7 @@ export default function Home() {
         </section>
 
         {/* Module Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-7xl mx-auto">
+        <div className="home-card-grid mx-auto">
           <ModuleCard
             href="/contadores"
             icon={Calculator}
@@ -117,7 +117,7 @@ export default function Home() {
           />
         </div>
 
-        <footer className="w-full opacity-40 hover:opacity-100 transition-opacity">
+        <footer className="home-footer">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             <p>© 2026 HelpDesk Manager Web • Hecho por Iván Martínez</p>
             <div className="flex gap-6">
