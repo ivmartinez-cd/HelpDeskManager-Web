@@ -73,7 +73,6 @@ export function Modal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
             className="absolute inset-0 bg-background/80 backdrop-blur-xl"
             aria-hidden="true"
           />
