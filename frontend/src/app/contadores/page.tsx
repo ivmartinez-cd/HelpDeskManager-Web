@@ -69,6 +69,7 @@ export default function ContadoresPage() {
     suma_fecha: "",
     auto_fecha: "",
     manual_fecha: "",
+    ftp_fecha: "",
     calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" }
   })
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null)
@@ -80,7 +81,8 @@ export default function ContadoresPage() {
       ...prev,
       en0_fecha: today,
       suma_fecha: today,
-      auto_fecha: today
+      auto_fecha: today,
+      ftp_fecha: today
     }))
   }, [])
 
@@ -212,7 +214,10 @@ export default function ContadoresPage() {
       const response = await fetch(`${apiUrl}/api/ftp/process-client`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ client_name: selectedClient }),
+        body: JSON.stringify({ 
+          client_name: selectedClient,
+          fecha_maxima: toolData.ftp_fecha
+        }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail)
@@ -709,6 +714,18 @@ export default function ContadoresPage() {
                             </div>
                           )}
                         </div>
+
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha Máxima de Procesamiento</label>
+                          <input
+                            type="text"
+                            placeholder="DD/MM/YYYY"
+                            className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground focus:ring-2 focus:ring-orange-500/20 outline-none transition-all"
+                            value={toolData.ftp_fecha}
+                            onChange={e => setToolData({ ...toolData, ftp_fecha: e.target.value })}
+                          />
+                        </div>
+
                         <button
                           onClick={runFtpProcess}
                           disabled={!selectedClient || isProcessing}
