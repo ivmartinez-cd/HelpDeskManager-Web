@@ -83,6 +83,17 @@ def get_sds_device_meters(customer_id: int, max_date: str) -> List[Dict[str, Any
     else:
         raise Exception(f"Error al obtener contadores SDS: {response.status_code} - {response.text}")
 
+def _get_device_serial_map(token: str, customer_id: int) -> Dict[int, str]:
+    """Devuelve un dict {deviceId: serialNumber} para un cliente dado."""
+    url = f"{SDS_BASE_URL}/api/devices"
+    headers = {"Authorization": token, "Accept": "application/json"}
+    response = requests.get(url, headers=headers, params={"customerId": customer_id})
+    if response.status_code == 200:
+        devices = response.json()
+        return {d["deviceId"]: d.get("serialNumber", "") for d in devices if "deviceId" in d}
+    return {}
+
+
 def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str, output_dir: str) -> str:
     """
     Descarga los contadores SDS y los exporta en el mismo formato CSV que la Descarga FTP:
@@ -96,6 +107,10 @@ def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str
     if not meters:
         raise Exception(f"No se encontraron contadores para el cliente '{customer_name}' en la fecha especificada.")
 
+    # Obtener mapa deviceId -> serialNumber con el mismo token
+    token = _get_auth_token()
+    serial_map = _get_device_serial_map(token, customer_id)
+
     # Formatear nombre de archivo (igual que el FTP: _AutoCSV.csv)
     date_str = max_date.split("T")[0].replace("-", "")
     safe_name = "".join([c for c in customer_name if c.isalnum() or c in (' ', '_')]).strip().replace(' ', '_')
@@ -104,8 +119,10 @@ def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str
 
     rows = []
     for device in meters:
-        device_id = device.get("deviceId", "")
-        # Convertir readingDate (YYYY-MM-DD) a DD/MM/YYYY
+        device_id = device.get("deviceId")
+        # Usar serial number real; si no existe fallback al deviceId
+        serie = serial_map.get(device_id, str(device_id) if device_id else "")
+
         raw_date = device.get("readingDate") or (device.get("readingDateTime", "")[:10])
         try:
             from datetime import datetime as _dt
@@ -117,7 +134,7 @@ def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str
         colour = int(device.get("a4Colour") or 0)
 
         row = {
-            "SERIE":       device_id,
+            "SERIE":       serie,
             "FECHA":       fecha,
             "TIPO":        22,
             "CLASE_10":    10,
@@ -129,7 +146,6 @@ def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str
         }
         rows.append(row)
 
-    # Escribir CSV con separador ; igual que el formato FTP (UTF-8, CRLF)
     fieldnames = ["SERIE", "FECHA", "TIPO", "CLASE_10", "CONTADOR_10", "CLASE_20", "CONTADOR_20", "MOTIVO", "OBSERVACION"]
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=";")
@@ -137,3 +153,4 @@ def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str
         writer.writerows(rows)
 
     return str(output_path)
+
