@@ -15,7 +15,6 @@ def _get_auth_token() -> str:
     """Obtiene el Bearer token de la API de SDS usando Key y Secret."""
     url = f"{SDS_BASE_URL}/login"
     
-    # Concatenamos Key:Secret y hacemos Base64
     credentials = f"{SDS_API_KEY}:{SDS_API_SECRET}"
     encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
     
@@ -26,33 +25,24 @@ def _get_auth_token() -> str:
     
     response = requests.post(url, headers=headers)
     if response.status_code == 200:
-        # El token viene como Bearer eyJ... en el header Authorization, o en el JSON
-        # Normalmente las APIs lo devuelven en el body o en el header "Authorization"
-        # La documentación indica que devuelve el token. Probablemente esté en el Response Header.
-        auth_header = response.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            return auth_header
-        
-        # En caso de que venga en el JSON del body:
+        # El token viene en el body JSON como access_token
         try:
             data = response.json()
-            if "token" in data:
-                return f"Bearer {data['token']}"
-        except:
+            token = data.get('access_token') or data.get('token')
+            if token:
+                return f"Bearer {token}"
+        except Exception:
             pass
-            
-        # Asumimos que si auth_header existe, se devuelve tal cual
+        # Fallback: intentar desde el header de respuesta
+        auth_header = response.headers.get("Authorization")
         if auth_header:
             return auth_header
-            
-        # Caso de emergencia, si devuelve el token como texto plano
-        text_token = response.text.strip('"')
-        return f"Bearer {text_token}"
+        raise Exception("No se pudo extraer el token del response de login SDS.")
     else:
         raise Exception(f"Error al autenticar en SDS: {response.status_code} - {response.text}")
 
 def get_sds_clients() -> List[Dict[str, Any]]:
-    """Obtiene la lista de clientes (customers) desde SDS."""
+    """Obtiene la lista de clientes ACTIVOS desde SDS."""
     token = _get_auth_token()
     url = f"{SDS_BASE_URL}/api/customers"
     headers = {
@@ -62,9 +52,13 @@ def get_sds_clients() -> List[Dict[str, Any]]:
     
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        return response.json()
+        all_customers = response.json()
+        # Filtrar solo clientes activos
+        active_customers = [c for c in all_customers if c.get("status", "").upper() == "ACTIVE"]
+        return sorted(active_customers, key=lambda c: c.get("name", ""))
     else:
         raise Exception(f"Error al obtener clientes SDS: {response.status_code} - {response.text}")
+
 
 def get_sds_device_meters(customer_id: int, max_date: str) -> List[Dict[str, Any]]:
     """
