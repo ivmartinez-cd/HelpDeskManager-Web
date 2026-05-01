@@ -147,11 +147,11 @@ def export_sds_meters_to_csv(
         is_color      = colour_pages > 0
 
         if suma_color and is_color:
-            # Modo suma: un solo registro con total combinado, TIPO=20, CLASE_10=20
+            # Modo suma: un solo registro con total combinado, CLASE_10=20 (siempre TIPO=22)
             row = {
                 "SERIE":       serie,
                 "FECHA":       fecha,
-                "TIPO":        20,
+                "TIPO":        22,
                 "CLASE_10":    20,
                 "CONTADOR_10": engine_cycles,
                 "CLASE_20":    "",
