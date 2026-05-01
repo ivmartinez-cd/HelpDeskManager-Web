@@ -85,48 +85,55 @@ def get_sds_device_meters(customer_id: int, max_date: str) -> List[Dict[str, Any
 
 def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str, output_dir: str) -> str:
     """
-    Descarga los contadores y los guarda en un CSV.
+    Descarga los contadores SDS y los exporta en el mismo formato CSV que la Descarga FTP:
+      SERIE;FECHA;TIPO;CLASE_10;CONTADOR_10;CLASE_20;CONTADOR_20;MOTIVO;OBSERVACION
+    - engineCycles  -> TIPO=15, CLASE_10=10, CONTADOR_10
+    - a4Colour      -> TIPO=7,  CLASE_20=20, CONTADOR_20  (solo si > 0)
     Retorna la ruta absoluta al archivo generado.
     """
     meters = get_sds_device_meters(customer_id, max_date)
-    
+
     if not meters:
         raise Exception(f"No se encontraron contadores para el cliente '{customer_name}' en la fecha especificada.")
-        
-    # Formatear el nombre del archivo
+
+    # Formatear nombre de archivo (igual que el FTP: _AutoCSV.csv)
     date_str = max_date.split("T")[0].replace("-", "")
     safe_name = "".join([c for c in customer_name if c.isalnum() or c in (' ', '_')]).strip().replace(' ', '_')
-    filename = f"SDS_{safe_name}_{date_str}.csv"
+    filename = f"SDS_{safe_name}_{date_str}_AutoCSV.csv"
     output_path = Path(output_dir) / filename
-    
-    # Extraer todas las posibles claves para los headers (aplanando un poco si es necesario)
-    # Dependiendo de la estructura, extraeremos campos clave como deviceId, engineCycles, a4Mono, etc.
-    # Como no sabemos todas las claves con seguridad, usamos las del primer registro como base.
-    # Pero nos aseguramos de que "engineCycles" esté.
-    
-    if len(meters) > 0:
-        # Obtenemos todos los headers que existen en al menos un registro
-        headers_set = set()
-        for m in meters:
-            headers_set.update(m.keys())
-            
-        headers = list(headers_set)
-        
-        # Ordenamos los headers de forma amigable (engineCycles al principio, etc.)
-        preferred_order = ["deviceId", "readingDate", "engineCycles", "a4Mono", "a4Colour", "a3Mono", "a3Colour"]
-        final_headers = []
-        for h in preferred_order:
-            if h in headers:
-                final_headers.append(h)
-                headers.remove(h)
-        final_headers.extend(sorted(headers))
-        
-        with open(output_path, "w", newline="", encoding="utf-8") as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=final_headers)
-            writer.writeheader()
-            for row in meters:
-                # Escribimos solo las claves presentes en row
-                safe_row = {k: v for k, v in row.items() if k in final_headers}
-                writer.writerow(safe_row)
-                
+
+    rows = []
+    for device in meters:
+        device_id = device.get("deviceId", "")
+        # Convertir readingDate (YYYY-MM-DD) a DD/MM/YYYY
+        raw_date = device.get("readingDate") or (device.get("readingDateTime", "")[:10])
+        try:
+            from datetime import datetime as _dt
+            fecha = _dt.strptime(raw_date, "%Y-%m-%d").strftime("%d/%m/%Y")
+        except Exception:
+            fecha = raw_date
+
+        engine_cycles = int(device.get("engineCycles") or 0)
+        colour = int(device.get("a4Colour") or 0)
+
+        row = {
+            "SERIE":       device_id,
+            "FECHA":       fecha,
+            "TIPO":        15,
+            "CLASE_10":    10,
+            "CONTADOR_10": engine_cycles,
+            "CLASE_20":    20 if colour > 0 else "",
+            "CONTADOR_20": colour if colour > 0 else 0,
+            "MOTIVO":      "",
+            "OBSERVACION": "",
+        }
+        rows.append(row)
+
+    # Escribir CSV con separador ; igual que el formato FTP (UTF-8, CRLF)
+    fieldnames = ["SERIE", "FECHA", "TIPO", "CLASE_10", "CONTADOR_10", "CLASE_20", "CONTADOR_20", "MOTIVO", "OBSERVACION"]
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=";")
+        writer.writeheader()
+        writer.writerows(rows)
+
     return str(output_path)
