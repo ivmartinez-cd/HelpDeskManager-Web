@@ -61,7 +61,9 @@ export default function ContadoresPage() {
   const [deletingClientId, setDeletingClientId] = useState<number | null>(null)
 
   // SDS Management States
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sdsClients, setSdsClients] = useState<any[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedSdsClient, setSelectedSdsClient] = useState<any>(null)
   const [isLoadingSdsClients, setIsLoadingSdsClients] = useState(false)
   const [showSdsClientDropdown, setShowSdsClientDropdown] = useState(false)
@@ -130,6 +132,7 @@ export default function ContadoresPage() {
 
   useEffect(() => {
     if (activeTool === "sds" && sdsClients.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchSdsClients()
     }
   }, [activeTool, fetchSdsClients, sdsClients.length])
@@ -287,7 +290,7 @@ export default function ContadoresPage() {
       } else {
         isoDate = new Date().toISOString()
       }
-    } catch (e) {
+    } catch {
       isoDate = new Date().toISOString()
     }
 
