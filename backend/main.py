@@ -467,11 +467,15 @@ async def sds_clients_list():
 async def sds_process_meters(
     customer_id: int = Body(..., embed=True),
     customer_name: str = Body(..., embed=True),
-    fecha_maxima: str = Body(..., embed=True)
+    fecha_maxima: str = Body(..., embed=True),
+    suma_color: bool = Body(False, embed=True),
 ):
     """Obtiene los contadores de SDS y los exporta a CSV."""
     try:
-        csv_path_str = export_sds_meters_to_csv(customer_id, customer_name, fecha_maxima, str(OUTPUT_DIR))
+        csv_path_str = export_sds_meters_to_csv(
+            customer_id, customer_name, fecha_maxima, str(OUTPUT_DIR),
+            suma_color=suma_color
+        )
         csv_path = Path(csv_path_str)
         return {
             "status": "success",
@@ -482,6 +486,7 @@ async def sds_process_meters(
         import traceback
         print(f"ERROR procesando contadores SDS:\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn

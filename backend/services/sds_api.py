@@ -94,33 +94,44 @@ def _get_device_serial_map(token: str, customer_id: int) -> Dict[int, str]:
     return {}
 
 
-def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str, output_dir: str) -> str:
+def export_sds_meters_to_csv(
+    customer_id: int,
+    customer_name: str,
+    max_date: str,
+    output_dir: str,
+    suma_color: bool = False,
+) -> str:
     """
-    Descarga los contadores SDS y los exporta en el mismo formato CSV que la Descarga FTP:
-      SERIE;FECHA;TIPO;CLASE_10;CONTADOR_10;CLASE_20;CONTADOR_20;MOTIVO;OBSERVACION
-    - engineCycles  -> TIPO=15, CLASE_10=10, CONTADOR_10
-    - a4Colour      -> TIPO=7,  CLASE_20=20, CONTADOR_20  (solo si > 0)
-    Retorna la ruta absoluta al archivo generado.
+    Exporta contadores SDS en formato CSV idéntico al de Descarga FTP.
+    
+    Modo suma_color=False (default):
+      - TIPO=22, CLASE_10=10, CONTADOR_10=monoPages
+      - CLASE_20=20, CONTADOR_20=colourPages  (solo si el equipo tiene color)
+    
+    Modo suma_color=True (equipos color):
+      - TIPO=20, CLASE_10=20, CONTADOR_10=engineCycles (mono+color combinados)
+      - Sin CLASE_20 (ya está sumado)
+      - Equipos solo mono: TIPO=22, CLASE_10=10, CONTADOR_10=monoPages
     """
     meters = get_sds_device_meters(customer_id, max_date)
 
     if not meters:
         raise Exception(f"No se encontraron contadores para el cliente '{customer_name}' en la fecha especificada.")
 
-    # Obtener mapa deviceId -> serialNumber con el mismo token
+    # Obtener mapa deviceId -> serialNumber
     token = _get_auth_token()
     serial_map = _get_device_serial_map(token, customer_id)
 
-    # Formatear nombre de archivo (igual que el FTP: _AutoCSV.csv)
+    # Formatear nombre de archivo
     date_str = max_date.split("T")[0].replace("-", "")
     safe_name = "".join([c for c in customer_name if c.isalnum() or c in (' ', '_')]).strip().replace(' ', '_')
-    filename = f"SDS_{safe_name}_{date_str}_AutoCSV.csv"
+    suffix = "_SumaColor" if suma_color else ""
+    filename = f"SDS_{safe_name}_{date_str}{suffix}_AutoCSV.csv"
     output_path = Path(output_dir) / filename
 
     rows = []
     for device in meters:
         device_id = device.get("deviceId")
-        # Usar serial number real; si no existe fallback al deviceId
         serie = serial_map.get(device_id, str(device_id) if device_id else "")
 
         raw_date = device.get("readingDate") or (device.get("readingDateTime", "")[:10])
@@ -131,20 +142,38 @@ def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str
             fecha = raw_date
 
         engine_cycles = int(device.get("engineCycles") or 0)
-        colour = int(device.get("a4Colour") or 0)
+        mono_pages    = int(device.get("monoPages")    or 0)
+        colour_pages  = int(device.get("colourPages")  or 0)
+        is_color      = colour_pages > 0
 
-        row = {
-            "SERIE":       serie,
-            "FECHA":       fecha,
-            "TIPO":        22,
-            "CLASE_10":    10,
-            "CONTADOR_10": engine_cycles,
-            "CLASE_20":    20 if colour > 0 else "",
-            "CONTADOR_20": colour if colour > 0 else 0,
-            "MOTIVO":      "",
-            "OBSERVACION": "",
-        }
-        rows.append(row)
+        if suma_color and is_color:
+            # Modo suma: un solo registro con total combinado, TIPO=20, CLASE_10=20
+            row = {
+                "SERIE":       serie,
+                "FECHA":       fecha,
+                "TIPO":        20,
+                "CLASE_10":    20,
+                "CONTADOR_10": engine_cycles,
+                "CLASE_20":    "",
+                "CONTADOR_20": 0,
+                "MOTIVO":      "",
+                "OBSERVACION": "",
+            }
+            rows.append(row)
+        else:
+            # Modo discriminado: monoPages en CLASE_10, colourPages en CLASE_20
+            row = {
+                "SERIE":       serie,
+                "FECHA":       fecha,
+                "TIPO":        22,
+                "CLASE_10":    10,
+                "CONTADOR_10": mono_pages,
+                "CLASE_20":    20 if is_color else "",
+                "CONTADOR_20": colour_pages if is_color else 0,
+                "MOTIVO":      "",
+                "OBSERVACION": "",
+            }
+            rows.append(row)
 
     fieldnames = ["SERIE", "FECHA", "TIPO", "CLASE_10", "CONTADOR_10", "CLASE_20", "CONTADOR_20", "MOTIVO", "OBSERVACION"]
     with open(output_path, "w", newline="", encoding="utf-8") as f:
@@ -153,4 +182,3 @@ def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str
         writer.writerows(rows)
 
     return str(output_path)
-

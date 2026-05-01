@@ -68,6 +68,7 @@ export default function ContadoresPage() {
   const [isLoadingSdsClients, setIsLoadingSdsClients] = useState(false)
   const [showSdsClientDropdown, setShowSdsClientDropdown] = useState(false)
   const [sdsClientSearch, setSdsClientSearch] = useState("")
+  const [sdsSumaColor, setSdsSumaColor] = useState(false)
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
 
@@ -301,7 +302,8 @@ export default function ContadoresPage() {
         body: JSON.stringify({ 
           customer_id: selectedSdsClient.customerId,
           customer_name: selectedSdsClient.name,
-          fecha_maxima: isoDate
+          fecha_maxima: isoDate,
+          suma_color: sdsSumaColor
         }),
       })
       const data = await response.json()
@@ -908,6 +910,28 @@ export default function ContadoresPage() {
                         onChange={e => setToolData({ ...toolData, sds_fecha: e.target.value })}
                       />
                     </div>
+
+                    {/* Checkbox Suma Color */}
+                    <label className="flex items-center gap-3 cursor-pointer group select-none">
+                      <div
+                        onClick={() => setSdsSumaColor(prev => !prev)}
+                        className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
+                          sdsSumaColor ? "bg-blue-500" : "bg-border"
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                            sdsSumaColor ? "translate-x-5" : "translate-x-0"
+                          }`}
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-foreground">
+                        Suma color
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        (equipo color: suma ciclos totales en CLASE 20, TIPO 20)
+                      </span>
+                    </label>
 
                     <button
                       onClick={runSdsProcess}
