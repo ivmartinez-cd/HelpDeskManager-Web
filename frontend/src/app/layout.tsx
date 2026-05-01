@@ -64,7 +64,7 @@ export default function RootLayout({
               Saltar al contenido principal
             </a>
             <Navbar />
-            <main id="main-content" className="flex-grow overflow-hidden relative">
+            <main id="main-content" className="flex-1 flex flex-col overflow-hidden relative">
               {children}
             </main>
             <Toaster />
