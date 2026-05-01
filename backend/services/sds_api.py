@@ -119,7 +119,7 @@ def export_sds_meters_to_csv(customer_id: int, customer_name: str, max_date: str
         row = {
             "SERIE":       device_id,
             "FECHA":       fecha,
-            "TIPO":        15,
+            "TIPO":        22,
             "CLASE_10":    10,
             "CONTADOR_10": engine_cycles,
             "CLASE_20":    20 if colour > 0 else "",
