@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from services.db3_to_csv import procesar_db_a_csv
 from services.ftp_db3 import download_db3_from_ftp
+from services.sds_api import get_sds_clients, export_sds_meters_to_csv
 
 app = FastAPI(title="HelpDeskManager API", version="3.0.0")
 
@@ -450,6 +451,37 @@ async def process_db3(file: UploadFile = File(...), fecha_maxima: str = Form("")
         if temp_path.exists():
             temp_path.unlink()
             print(f"DEBUG: Archivo temporal {temp_path} eliminado")
+
+@app.get("/api/sds/clients")
+async def sds_clients_list():
+    """Devuelve la lista de clientes desde la API de SDS."""
+    try:
+        clients = get_sds_clients()
+        return {"status": "success", "clients": clients}
+    except Exception as e:
+        import traceback
+        print(f"ERROR obteniendo clientes SDS:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/sds/process")
+async def sds_process_meters(
+    customer_id: int = Body(..., embed=True),
+    customer_name: str = Body(..., embed=True),
+    fecha_maxima: str = Body(..., embed=True)
+):
+    """Obtiene los contadores de SDS y los exporta a CSV."""
+    try:
+        csv_path_str = export_sds_meters_to_csv(customer_id, customer_name, fecha_maxima, str(OUTPUT_DIR))
+        csv_path = Path(csv_path_str)
+        return {
+            "status": "success",
+            "message": f"¡Contadores de {customer_name} exportados con éxito!",
+            "csv_file": csv_path.name
+        }
+    except Exception as e:
+        import traceback
+        print(f"ERROR procesando contadores SDS:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

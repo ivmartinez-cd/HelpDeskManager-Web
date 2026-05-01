@@ -6,7 +6,7 @@ import {
   FileText, Download, Loader2, CheckCircle2,
   AlertCircle, Database, Calculator, Wand2, Eraser,
   PlusCircle, Server, Search, Play, ArrowRight,
-  Settings, Edit, Trash2, Plus, ChevronLeft
+  Settings, Edit, Trash2, Plus, ChevronLeft, CloudDownload
 } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
 import { PageShell } from "@/components/ui/page-shell"
@@ -60,6 +60,13 @@ export default function ContadoresPage() {
   const [clientSearch, setClientSearch] = useState("")
   const [deletingClientId, setDeletingClientId] = useState<number | null>(null)
 
+  // SDS Management States
+  const [sdsClients, setSdsClients] = useState<any[]>([])
+  const [selectedSdsClient, setSelectedSdsClient] = useState<any>(null)
+  const [isLoadingSdsClients, setIsLoadingSdsClients] = useState(false)
+  const [showSdsClientDropdown, setShowSdsClientDropdown] = useState(false)
+  const [sdsClientSearch, setSdsClientSearch] = useState("")
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
 
   const [toolData, setToolData] = useState({
@@ -70,6 +77,7 @@ export default function ContadoresPage() {
     auto_fecha: "",
     manual_fecha: "",
     ftp_fecha: "",
+    sds_fecha: "",
     calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" }
   })
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null)
@@ -82,7 +90,8 @@ export default function ContadoresPage() {
       en0_fecha: today,
       suma_fecha: today,
       auto_fecha: today,
-      ftp_fecha: today
+      ftp_fecha: today,
+      sds_fecha: today
     }))
   }, [])
 
@@ -104,6 +113,26 @@ export default function ContadoresPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchClients()
   }, [fetchClients])
+
+  const fetchSdsClients = useCallback(async () => {
+    setIsLoadingSdsClients(true)
+    try {
+      const response = await fetch(`${apiUrl}/api/sds/clients`)
+      const data = await response.json()
+      if (data.clients) setSdsClients(data.clients)
+    } catch (err) {
+      console.error("Error fetching SDS clients:", err)
+      toast("Error al cargar lista de clientes SDS", "error")
+    } finally {
+      setIsLoadingSdsClients(false)
+    }
+  }, [apiUrl])
+
+  useEffect(() => {
+    if (activeTool === "sds" && sdsClients.length === 0) {
+      fetchSdsClients()
+    }
+  }, [activeTool, fetchSdsClients, sdsClients.length])
 
   const handleSaveClient = async () => {
     const isEdit = !!editingClient
@@ -240,6 +269,59 @@ export default function ContadoresPage() {
     }
   }
 
+  const runSdsProcess = async () => {
+    if (!selectedSdsClient) return
+    setIsProcessing(true)
+    setStatus("idle")
+    setResultFiles([])
+
+    addLog(`Conectando con API de HP SDS para ${selectedSdsClient.name}...`, 0)
+    addLog("Obteniendo ciclos de motor...", 1500)
+
+    let isoDate = ""
+    try {
+      // asumimos DD/MM/YYYY
+      const parts = toolData.sds_fecha.split("/")
+      if (parts.length === 3) {
+        isoDate = `${parts[2]}-${parts[1]}-${parts[0]}T23:59:59`
+      } else {
+        isoDate = new Date().toISOString()
+      }
+    } catch (e) {
+      isoDate = new Date().toISOString()
+    }
+
+    try {
+      const response = await fetch(`${apiUrl}/api/sds/process`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          customer_id: selectedSdsClient.customerId,
+          customer_name: selectedSdsClient.name,
+          fecha_maxima: isoDate
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.detail)
+
+      addLog("Generando archivo CSV...", 4000)
+
+      setResultFiles([data.csv_file])
+      setStatus("success")
+      setMessage(data.message)
+      toast("Descarga de SDS completada", "success")
+    } catch (err) {
+      setStatus("error")
+      const errorObj = err as Error;
+      setMessage(errorObj.message)
+      setModalError(errorObj.message)
+    } finally {
+      setIsProcessing(false)
+      setLogs([])
+    }
+  }
+
+
   const runTool = async (tool: string, toolFiles: FileList | null) => {
     if (!toolFiles || toolFiles.length === 0) return
     setIsProcessing(true)
@@ -335,6 +417,14 @@ export default function ContadoresPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
             <ActionCard
+              icon={CloudDownload}
+              title="Descargar SDS"
+              desc="Obtén los contadores de impresoras directamente desde el API de HP SDS."
+              color="text-blue-500"
+              onClick={() => setActiveTool("sds")}
+              delay={0.3}
+            />
+            <ActionCard
               icon={Server}
               title="Descarga FTP"
               desc="Obtén las bases de datos directamente desde los servidores de los clientes."
@@ -390,6 +480,7 @@ export default function ContadoresPage() {
         isOpen={!!activeTool}
         onClose={closeModal}
         title={
+          activeTool === "sds" ? "Descargar SDS" :
           activeTool === "ftp" ? "Descarga FTP" :
           activeTool === "manual" ? "Procesar DB3" :
           activeTool === "en0" ? "Estimación en 0" :
@@ -736,6 +827,93 @@ export default function ContadoresPage() {
                         </button>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {activeTool === "sds" && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Seleccionar Cliente SDS</label>
+                      {isLoadingSdsClients ? (
+                        <div className="h-14 flex items-center justify-center border rounded-2xl bg-muted/20">
+                          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <div
+                            className="w-full h-14 px-5 rounded-2xl border bg-background flex items-center justify-between cursor-pointer hover:border-blue-500/50 transition-all shadow-sm"
+                            onClick={() => setShowSdsClientDropdown(!showSdsClientDropdown)}
+                          >
+                            <span className={selectedSdsClient ? "text-foreground font-medium" : "text-muted-foreground"}>
+                              {selectedSdsClient ? selectedSdsClient.name : "Selecciona un cliente..."}
+                            </span>
+                            <PlusCircle className={`h-5 w-5 text-muted-foreground transition-transform ${showSdsClientDropdown ? "rotate-45" : ""}`} />
+                          </div>
+                          <AnimatePresence>
+                            {showSdsClientDropdown && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-3xl shadow-2xl z-[60] overflow-hidden"
+                              >
+                                <div className="p-4 border-b bg-muted/20">
+                                  <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <input
+                                      autoFocus
+                                      type="text"
+                                      placeholder="Buscar cliente SDS..."
+                                      className="w-full h-10 pl-10 pr-4 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
+                                      value={sdsClientSearch}
+                                      onChange={(e) => setSdsClientSearch(e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="max-h-[250px] overflow-y-auto p-2 custom-scrollbar">
+                                  {sdsClients.filter(c => c.name.toLowerCase().includes(sdsClientSearch.toLowerCase())).map(c => (
+                                    <button
+                                      key={c.customerId}
+                                      onClick={() => {
+                                        setSelectedSdsClient(c)
+                                        setShowSdsClientDropdown(false)
+                                        setSdsClientSearch("")
+                                      }}
+                                      className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${selectedSdsClient?.customerId === c.customerId ? "bg-blue-500 text-white font-bold" : "hover:bg-accent text-foreground"}`}
+                                    >
+                                      {c.name}
+                                    </button>
+                                  ))}
+                                  {sdsClients.filter(c => c.name.toLowerCase().includes(sdsClientSearch.toLowerCase())).length === 0 && (
+                                    <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron clientes.</p>
+                                  )}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha Máxima de Proceso</label>
+                      <input
+                        type="text"
+                        placeholder="DD/MM/YYYY"
+                        className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                        value={toolData.sds_fecha}
+                        onChange={e => setToolData({ ...toolData, sds_fecha: e.target.value })}
+                      />
+                    </div>
+
+                    <button
+                      onClick={runSdsProcess}
+                      disabled={!selectedSdsClient || isProcessing}
+                      className="w-full h-14 bg-blue-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                    >
+                      <Download className="h-5 w-5" />
+                      Descargar Contadores
+                    </button>
                   </div>
                 )}
 
