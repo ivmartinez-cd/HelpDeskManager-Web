@@ -18,16 +18,16 @@ export function PageHeader({ badge, titleLine1, titleLine2, description, action 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="mb-3 px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 backdrop-blur-sm"
+        className="mb-4 px-5 py-2 rounded-full border border-accent/20 bg-accent/5 backdrop-blur-sm"
       >
-        <span className="text-[10px] font-black tracking-[0.3em] text-accent uppercase">{badge}</span>
+        <span className="text-[10px] md:text-xs font-black tracking-[0.35em] text-accent uppercase">{badge}</span>
       </motion.div>
 
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="text-display text-4xl md:text-5xl font-black tracking-tighter leading-none mb-2"
+        className="text-display text-[clamp(2.5rem,5vw,5.5rem)] font-black tracking-tighter leading-[0.9] mb-4"
       >
         <span className="text-foreground block">{titleLine1}</span>
         <span className="text-accent block">{titleLine2}</span>
@@ -38,7 +38,7 @@ export function PageHeader({ badge, titleLine1, titleLine2, description, action 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-xs md:text-sm font-medium text-muted-foreground/50 leading-relaxed max-w-xl"
+          className="text-sm md:text-[clamp(0.875rem,1.2vw,1.125rem)] font-medium text-muted-foreground/50 leading-relaxed max-w-3xl"
         >
           {description}
         </motion.p>

@@ -176,7 +176,7 @@ export default function RecursosPage() {
         {/* Grid de recursos */}
         <div className="w-full flex flex-col pb-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-[1600px] mx-auto w-full">
               {[...Array(8)].map((_, i) => (
                 <ResourceSkeleton key={i} />
               ))}
@@ -192,7 +192,7 @@ export default function RecursosPage() {
               <p className="text-muted-foreground font-medium uppercase text-xs tracking-widest">Prueba con otra búsqueda o añade un nuevo enlace.</p>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-[1600px] mx-auto w-full">
               <AnimatePresence mode="popLayout">
                 {filteredResources.map((res, idx) => (
                   <ResourceCard
