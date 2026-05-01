@@ -38,7 +38,7 @@ export function PageHeader({ badge, titleLine1, titleLine2, description, action 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-sm md:text-[clamp(0.875rem,1.2vw,1.125rem)] font-medium text-muted-foreground/50 leading-relaxed max-w-3xl"
+          className="text-[clamp(1rem,1.5vw,1.25rem)] font-medium text-muted-foreground/50 leading-relaxed max-w-4xl"
         >
           {description}
         </motion.p>

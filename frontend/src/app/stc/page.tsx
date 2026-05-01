@@ -53,7 +53,7 @@ export default function StcPage() {
   return (
     <PageShell>
       <div className="h-full overflow-y-auto custom-scrollbar flex flex-col px-4">
-        <div className="m-auto w-full max-w-6xl flex flex-col items-center gap-8 md:gap-12 py-8">
+        <div className="m-auto w-full max-w-[1600px] flex flex-col items-center gap-[clamp(2rem,5vh,4rem)] py-[clamp(1.5rem,4vh,3rem)]">
           <PageHeader
             badge="Utilidades de Infraestructura"
             titleLine1="UTILIDADES"

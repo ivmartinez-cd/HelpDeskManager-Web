@@ -119,7 +119,7 @@ export default function RecursosPage() {
   return (
     <PageShell>
       <div className="h-full overflow-y-auto custom-scrollbar flex flex-col px-4">
-        <div className="m-auto w-full flex flex-col gap-8 md:gap-12 py-8">
+        <div className="m-auto w-full max-w-[1600px] flex flex-col gap-[clamp(2rem,5vh,4rem)] py-[clamp(1.5rem,4vh,3rem)]">
         <PageHeader
           badge="Biblioteca de Conocimiento"
           titleLine1="CENTRO DE"
@@ -176,7 +176,7 @@ export default function RecursosPage() {
         {/* Grid de recursos */}
         <div className="w-full flex flex-col pb-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-[1600px] mx-auto w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
               {[...Array(8)].map((_, i) => (
                 <ResourceSkeleton key={i} />
               ))}
@@ -192,7 +192,7 @@ export default function RecursosPage() {
               <p className="text-muted-foreground font-medium uppercase text-xs tracking-widest">Prueba con otra búsqueda o añade un nuevo enlace.</p>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-[1600px] mx-auto w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
               <AnimatePresence mode="popLayout">
                 {filteredResources.map((res, idx) => (
                   <ResourceCard

@@ -325,7 +325,7 @@ export default function ContadoresPage() {
   return (
     <PageShell>
       <div className="h-full overflow-y-auto custom-scrollbar flex flex-col px-4">
-        <div className="m-auto w-full max-w-[1600px] flex flex-col gap-8 md:gap-12 py-8">
+        <div className="m-auto w-full max-w-[1600px] flex flex-col gap-[clamp(2rem,5vh,4rem)] py-[clamp(1.5rem,4vh,3rem)]">
           <PageHeader
             badge="Panel de Herramientas de Datos"
             titleLine1="CENTRO DE"
