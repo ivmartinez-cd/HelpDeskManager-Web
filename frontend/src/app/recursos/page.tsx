@@ -173,9 +173,9 @@ export default function RecursosPage() {
         </motion.div>
 
         {/* Grid de recursos — área con scroll interno oculto */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pb-4">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pb-4 flex flex-col">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full my-auto">
               {[...Array(8)].map((_, i) => (
                 <ResourceSkeleton key={i} />
               ))}
@@ -184,14 +184,14 @@ export default function RecursosPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="h-full flex flex-col items-center justify-center border-2 border-dashed rounded-[3rem] border-black/5 dark:border-white/5 bg-black/[0.01] dark:bg-white/[0.01] p-16 text-center"
+              className="h-full w-full my-auto flex flex-col items-center justify-center border-2 border-dashed rounded-[3rem] border-black/5 dark:border-white/5 bg-black/[0.01] dark:bg-white/[0.01] p-16 text-center"
             >
               <LinkIcon className="h-16 w-16 mx-auto mb-6 text-muted-foreground/20" />
               <h3 className="text-2xl font-black mb-2 uppercase tracking-tighter">Sin resultados</h3>
               <p className="text-muted-foreground font-medium uppercase text-xs tracking-widest">Prueba con otra búsqueda o añade un nuevo enlace.</p>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full my-auto">
               <AnimatePresence mode="popLayout">
                 {filteredResources.map((res, idx) => (
                   <ResourceCard

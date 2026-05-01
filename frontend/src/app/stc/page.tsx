@@ -60,8 +60,8 @@ export default function StcPage() {
           description="Extracción inteligente de IPs y generación de rangos de red con precisión industrial."
         />
 
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full pb-4">
-          <div className="flex flex-col items-center gap-6 max-w-4xl mx-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full pb-4 flex flex-col">
+          <div className="flex flex-col items-center gap-6 max-w-4xl mx-auto my-auto w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               <StcActionCard
                 icon={Database}

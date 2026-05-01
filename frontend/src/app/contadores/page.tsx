@@ -332,8 +332,8 @@ export default function ContadoresPage() {
           description="Automatización de reportes y gestión de bases de datos con precisión industrial."
         />
 
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full pb-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 max-w-[1600px] mx-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full pb-4 flex flex-col">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 max-w-[1600px] mx-auto my-auto w-full">
             <ActionCard
               icon={Server}
               title="Descarga FTP"
