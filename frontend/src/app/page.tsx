@@ -57,6 +57,7 @@ export default function Home() {
   return (
     <PageShell>
       <div className="home-page">
+        <div className="m-auto w-full flex flex-col gap-8 md:gap-12 lg:gap-16">
         {/* Hero */}
         <section className="home-hero">
           <motion.div
@@ -116,8 +117,9 @@ export default function Home() {
             delay={0.8}
           />
         </div>
+        </div>
 
-        <footer className="home-footer">
+        <footer className="home-footer mt-auto pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             <p>© 2026 HelpDesk Manager Web • Hecho por Iván Martínez</p>
             <div className="flex gap-6">

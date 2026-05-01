@@ -118,7 +118,8 @@ export default function RecursosPage() {
 
   return (
     <PageShell>
-      <div className="h-full flex flex-col px-4">
+      <div className="h-full overflow-y-auto custom-scrollbar flex flex-col px-4">
+        <div className="m-auto w-full flex flex-col gap-8 md:gap-12 py-8">
         <PageHeader
           badge="Biblioteca de Conocimiento"
           titleLine1="CENTRO DE"
@@ -139,12 +140,12 @@ export default function RecursosPage() {
           }
         />
 
-        {/* Filtros — fijos, sin scroll */}
+        {/* Filtros */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="shrink-0 flex flex-col md:flex-row items-center gap-2 w-full max-w-4xl mx-auto mb-3"
+          className="flex flex-col md:flex-row items-center gap-2 w-full max-w-4xl mx-auto"
         >
           <div className="flex-1 relative group w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-orange-500 transition-colors" />
@@ -172,10 +173,10 @@ export default function RecursosPage() {
           </div>
         </motion.div>
 
-        {/* Grid de recursos — área con scroll interno oculto */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pb-4 flex flex-col">
+        {/* Grid de recursos */}
+        <div className="w-full flex flex-col pb-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full my-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full">
               {[...Array(8)].map((_, i) => (
                 <ResourceSkeleton key={i} />
               ))}
@@ -184,14 +185,14 @@ export default function RecursosPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="h-full w-full my-auto flex flex-col items-center justify-center border-2 border-dashed rounded-[3rem] border-black/5 dark:border-white/5 bg-black/[0.01] dark:bg-white/[0.01] p-16 text-center"
+              className="w-full flex flex-col items-center justify-center border-2 border-dashed rounded-[3rem] border-black/5 dark:border-white/5 bg-black/[0.01] dark:bg-white/[0.01] p-16 text-center"
             >
               <LinkIcon className="h-16 w-16 mx-auto mb-6 text-muted-foreground/20" />
               <h3 className="text-2xl font-black mb-2 uppercase tracking-tighter">Sin resultados</h3>
               <p className="text-muted-foreground font-medium uppercase text-xs tracking-widest">Prueba con otra búsqueda o añade un nuevo enlace.</p>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full my-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1600px] mx-auto w-full">
               <AnimatePresence mode="popLayout">
                 {filteredResources.map((res, idx) => (
                   <ResourceCard
@@ -204,6 +205,7 @@ export default function RecursosPage() {
               </AnimatePresence>
             </div>
           )}
+        </div>
         </div>
       </div>
 

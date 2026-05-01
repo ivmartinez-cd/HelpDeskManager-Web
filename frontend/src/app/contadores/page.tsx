@@ -324,16 +324,16 @@ export default function ContadoresPage() {
 
   return (
     <PageShell>
-      <div className="h-full flex flex-col items-center px-4">
-        <PageHeader
-          badge="Panel de Herramientas de Datos"
-          titleLine1="CENTRO DE"
-          titleLine2="CONTADORES"
-          description="Automatización de reportes y gestión de bases de datos con precisión industrial."
-        />
+      <div className="h-full overflow-y-auto custom-scrollbar flex flex-col px-4">
+        <div className="m-auto w-full max-w-[1600px] flex flex-col gap-8 md:gap-12 py-8">
+          <PageHeader
+            badge="Panel de Herramientas de Datos"
+            titleLine1="CENTRO DE"
+            titleLine2="CONTADORES"
+            description="Automatización de reportes y gestión de bases de datos con precisión industrial."
+          />
 
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full pb-4 flex flex-col">
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 max-w-[1600px] mx-auto my-auto w-full">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 w-full">
             <ActionCard
               icon={Server}
               title="Descarga FTP"

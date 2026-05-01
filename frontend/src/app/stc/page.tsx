@@ -52,16 +52,16 @@ export default function StcPage() {
 
   return (
     <PageShell>
-      <div className="h-full flex flex-col items-center px-4">
-        <PageHeader
-          badge="Utilidades de Infraestructura"
-          titleLine1="UTILIDADES"
-          titleLine2="STC & RED"
-          description="Extracción inteligente de IPs y generación de rangos de red con precisión industrial."
-        />
+      <div className="h-full overflow-y-auto custom-scrollbar flex flex-col px-4">
+        <div className="m-auto w-full max-w-4xl flex flex-col items-center gap-8 md:gap-12 py-8">
+          <PageHeader
+            badge="Utilidades de Infraestructura"
+            titleLine1="UTILIDADES"
+            titleLine2="STC & RED"
+            description="Extracción inteligente de IPs y generación de rangos de red con precisión industrial."
+          />
 
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full pb-4 flex flex-col">
-          <div className="flex flex-col items-center gap-6 max-w-4xl mx-auto my-auto w-full">
+          <div className="flex flex-col items-center gap-6 w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               <StcActionCard
                 icon={Database}
