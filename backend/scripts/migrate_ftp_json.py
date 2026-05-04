@@ -1,8 +1,8 @@
 import json
 import os
-from sqlalchemy.orm import Session
-from database import SessionLocal, engine
+from database import SessionLocal
 from models import FTPClient
+
 
 def migrate():
     json_path = "ftp_clientes.json"
@@ -26,7 +26,7 @@ def migrate():
                     user=cfg.get("user"),
                     password=cfg.get("password"),
                     path=cfg.get("path", "/"),
-                    pattern=cfg.get("pattern", "PrinterMonitorClient.db3.*")
+                    pattern=cfg.get("pattern", "PrinterMonitorClient.db3.*"),
                 )
                 db.add(client)
                 count += 1
@@ -37,6 +37,7 @@ def migrate():
         print(f"Error during migration: {e}")
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     migrate()

@@ -17,7 +17,9 @@ def load_ftp_config(config_path: str) -> Dict[str, Dict[str, str]]:
         data = json.load(f)
 
     if not isinstance(data, dict):
-        raise ValueError("El JSON de FTP debe ser un objeto (dict) con clientes como keys.")
+        raise ValueError(
+            "El JSON de FTP debe ser un objeto (dict) con clientes como keys."
+        )
 
     normalized: Dict[str, Dict[str, str]] = {}
     for k, v in data.items():
@@ -41,7 +43,9 @@ def _list_remote_files(
     if not candidatos:
         if status_cb:
             status_cb("No hay archivos disponibles")
-        raise FileNotFoundError(f"No encontré archivos con patrón '{pattern}' en el directorio FTP actual.")
+        raise FileNotFoundError(
+            f"No encontré archivos con patrón '{pattern}' en el directorio FTP actual."
+        )
 
     candidatos.sort()
     return candidatos
@@ -134,7 +138,9 @@ def _merge_db3_files(
     os.makedirs(os.path.dirname(merged_path), exist_ok=True)
 
     if status_cb:
-        status_cb(f"Fusionando {len(local_files)} DB3 en: {os.path.basename(merged_path)}")
+        status_cb(
+            f"Fusionando {len(local_files)} DB3 en: {os.path.basename(merged_path)}"
+        )
 
     base_con = sqlite3.connect(base_db)
     base_con.row_factory = sqlite3.Row
@@ -229,18 +235,22 @@ def _merge_db3_files(
                         if not cols_wo_pk:
                             continue
                         col_list = ", ".join([f'"{c}"' for c in cols_wo_pk])
-                        rows = src_con.execute(f'SELECT {col_list} FROM "{table}";').fetchall()
+                        rows = src_con.execute(
+                            f'SELECT {col_list} FROM "{table}";'
+                        ).fetchall()
                         for row in rows:
                             merged_con.execute(
-                                f'INSERT INTO "{table}" ({col_list}) VALUES ({",".join(["?"]*len(row))});',
+                                f'INSERT INTO "{table}" ({col_list}) VALUES ({",".join(["?"] * len(row))});',
                                 tuple(row),
                             )
                     else:
                         col_list = ", ".join([f'"{c}"' for c in cols])
-                        rows = src_con.execute(f'SELECT {col_list} FROM "{table}";').fetchall()
+                        rows = src_con.execute(
+                            f'SELECT {col_list} FROM "{table}";'
+                        ).fetchall()
                         for row in rows:
                             merged_con.execute(
-                                f'INSERT OR IGNORE INTO "{table}" ({col_list}) VALUES ({",".join(["?"]*len(row))});',
+                                f'INSERT OR IGNORE INTO "{table}" ({col_list}) VALUES ({",".join(["?"] * len(row))});',
                                 tuple(row),
                             )
             finally:
@@ -360,7 +370,9 @@ def load_ftp_config_raw(config_path: str) -> Dict[str, Dict[str, Any]]:
         data = json.load(f)
 
     if not isinstance(data, dict):
-        raise ValueError("El JSON de FTP debe ser un objeto (dict) con clientes como keys.")
+        raise ValueError(
+            "El JSON de FTP debe ser un objeto (dict) con clientes como keys."
+        )
 
     out: Dict[str, Dict[str, Any]] = {}
     for k, v in data.items():
@@ -404,7 +416,9 @@ def validate_ftp_client_cfg(cfg: Dict[str, Any]) -> None:
         raise ValueError("pattern inválido.")
 
 
-def add_ftp_client_to_json(config_path: str, client_name: str, cfg: Dict[str, Any]) -> None:
+def add_ftp_client_to_json(
+    config_path: str, client_name: str, cfg: Dict[str, Any]
+) -> None:
     name = (client_name or "").strip()
     if not name:
         raise ValueError("Nombre de cliente vacío.")
@@ -427,7 +441,9 @@ def add_ftp_client_to_json(config_path: str, client_name: str, cfg: Dict[str, An
     save_ftp_config_raw(config_path, data)
 
 
-def update_ftp_client_in_json(config_path: str, client_name: str, cfg: Dict[str, Any]) -> None:
+def update_ftp_client_in_json(
+    config_path: str, client_name: str, cfg: Dict[str, Any]
+) -> None:
     name = (client_name or "").strip()
     if not name:
         raise ValueError("Nombre de cliente vacío.")

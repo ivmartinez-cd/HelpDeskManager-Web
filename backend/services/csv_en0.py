@@ -50,11 +50,13 @@ def filtrar_falta_contador_csv(
 
     # Filtrar 'FALTA CONTADOR' (Mono / Color incluidos)
     datos = datos[
-        datos["Tipo"].isin([
-            "FALTA CONTADOR",
-            "FALTA CONTADOR Mono",
-            "FALTA CONTADOR Color",
-        ])
+        datos["Tipo"].isin(
+            [
+                "FALTA CONTADOR",
+                "FALTA CONTADOR Mono",
+                "FALTA CONTADOR Color",
+            ]
+        )
     ].copy()
 
     if datos.empty:
@@ -62,10 +64,21 @@ def filtrar_falta_contador_csv(
 
     # Columnas a eliminar si existen
     cols_drop = [
-        "Empresa1", "Sucursal1", "Articulo1", "Sector1", "FechaTomaContadorActual",
-        "ContActual", "Impresiones_Realizadas", "BackupDe", "CenCosto",
+        "Empresa1",
+        "Sucursal1",
+        "Articulo1",
+        "Sector1",
+        "FechaTomaContadorActual",
+        "ContActual",
+        "Impresiones_Realizadas",
+        "BackupDe",
+        "CenCosto",
     ]
-    datos.drop(columns=[c for c in cols_drop if c in datos.columns], inplace=True, errors="ignore")
+    datos.drop(
+        columns=[c for c in cols_drop if c in datos.columns],
+        inplace=True,
+        errors="ignore",
+    )
 
     # Renombres si existen esas columnas originales
     rename_map = {
@@ -79,9 +92,13 @@ def filtrar_falta_contador_csv(
 
     # Asegurar columnas destino y asignar valores
     if "SERIE" not in datos.columns:
-        raise KeyError("No se encontró la columna 'SERIE' ni 'Nro_serie' para renombrar.")
+        raise KeyError(
+            "No se encontró la columna 'SERIE' ni 'Nro_serie' para renombrar."
+        )
     if "CONTADOR" not in datos.columns:
-        raise KeyError("No se encontró la columna 'CONTADOR' ni 'ImpreContadorAnterior' para renombrar.")
+        raise KeyError(
+            "No se encontró la columna 'CONTADOR' ni 'ImpreContadorAnterior' para renombrar."
+        )
 
     datos["FECHA"] = fecha_nueva  # DD/MM/YYYY
     if "TIPO" not in datos.columns:
@@ -144,25 +161,27 @@ def filtrar_falta_contador_csv(
     datos = datos[columnas_finales]
 
     # Consolidar una sola fila por SERIE
-    datos = (
-        datos
-        .groupby(["SERIE", "FECHA", "TIPO"], as_index=False)
-        .agg({
+    datos = datos.groupby(["SERIE", "FECHA", "TIPO"], as_index=False).agg(
+        {
             "CLASE_10": "first",
             "CONTADOR_10": "max",
             "CLASE_20": "first",
             "CONTADOR_20": "max",
             "MOTIVO": "first",
             "OBSERVACION": "first",
-        })
+        }
     )
 
     # --- FIX: si SOLO existe clase 20, moverla a la primera columna ---
     # Condición: tiene CLASE_20=20 y no tiene CLASE_10 (vacía) y contador_10 es 0 o NaN
-    cl10_vacia = (datos["CLASE_10"].astype(str).str.strip() == "") | (datos["CLASE_10"].isna())
+    cl10_vacia = (datos["CLASE_10"].astype(str).str.strip() == "") | (
+        datos["CLASE_10"].isna()
+    )
     c10_cero = datos["CONTADOR_10"].isna() | (datos["CONTADOR_10"] == 0)
 
-    solo_color = (datos["CLASE_20"].astype(str).str.strip() == "20") & cl10_vacia & c10_cero
+    solo_color = (
+        (datos["CLASE_20"].astype(str).str.strip() == "20") & cl10_vacia & c10_cero
+    )
 
     # Shift a la izquierda
     datos.loc[solo_color, "CLASE_10"] = "20"
@@ -173,11 +192,15 @@ def filtrar_falta_contador_csv(
 
     # Salida
     carpeta_base = carpeta_salida or os.path.dirname(archivo_csv_entrada)
-    nombre_carpeta = os.path.basename(carpeta_base) or os.path.basename(os.path.dirname(archivo_csv_entrada))
+    nombre_carpeta = os.path.basename(carpeta_base) or os.path.basename(
+        os.path.dirname(archivo_csv_entrada)
+    )
     nombre_archivo = f"{nombre_cliente}_{nombre_carpeta}_CSVen0.csv"
     ruta_salida = os.path.join(carpeta_base, nombre_archivo)
 
     # Exportar (UTF-8 sin BOM, CRLF)
-    datos.to_csv(ruta_salida, sep=";", index=False, encoding="utf-8", lineterminator="\r\n")
+    datos.to_csv(
+        ruta_salida, sep=";", index=False, encoding="utf-8", lineterminator="\r\n"
+    )
 
     return ruta_salida

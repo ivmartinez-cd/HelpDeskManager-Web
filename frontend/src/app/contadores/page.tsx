@@ -189,12 +189,14 @@ export default function ContadoresPage() {
     setStatus("idle")
     setResultFiles([])
 
-    addLog("Iniciando carga de archivo DB3...", 0)
-    addLog("Validando estructura de base de datos...", 1000)
+    addLog(`Iniciando carga de ${files.length} archivo(s) DB3...`, 0)
+    addLog("Validando estructura de bases de datos...", 1000)
     addLog("Filtrando registros por fecha...", 2500)
 
     const formData = new FormData()
-    formData.append("file", files[0])
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i])
+    }
     formData.append("fecha_maxima", toolData.manual_fecha)
 
     try {
@@ -207,20 +209,46 @@ export default function ContadoresPage() {
         throw new Error(errorData.detail || "Error al procesar DB3")
       }
 
-      addLog("Generando archivo CSV...", 4000)
-      addLog("Proceso completado con éxito.", 5500)
+      addLog("Consolidando datos y generando CSV...", 4000)
+      
+      // Manejar advertencias (archivos corruptos saltados)
+      const warningsHeader = response.headers.get("X-Warnings")
+      let warningCount = 0
+      if (warningsHeader) {
+        try {
+          const warnings = JSON.parse(warningsHeader)
+          warningCount = warnings.length
+          warnings.forEach((w: string, idx: number) => {
+            addLog(`⚠️ ${w}`, 4500 + (idx * 500))
+          })
+          toast(`${warningCount} archivo(s) omitido(s). Revisa los logs.`, "warning")
+        } catch (e) {
+          console.error("Error parseando warnings", e)
+        }
+      }
+
+      addLog("Proceso completado.", 5500)
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = files[0].name.replace(".db3", ".csv")
+      
+      const fileName = files.length === 1 
+        ? files[0].name.replace(".db3", ".csv")
+        : `Consolidado_${files.length - warningCount}_archivos.csv`
+        
+      a.download = fileName
       document.body.appendChild(a)
       a.click()
       a.remove()
 
       setStatus("success")
-      setMessage("¡DB3 procesado y descargado con éxito!")
+      if (warningCount > 0) {
+        setMessage(`Procesados ${files.length - warningCount} de ${files.length} archivos. ${warningCount} archivos fueron omitidos por errores.`)
+      } else {
+        setMessage(`¡${files.length} archivo(s) procesado(s) y descargado(s) con éxito!`)
+      }
       toast("Proceso DB3 finalizado", "success")
     } catch (err) {
       setStatus("error")
@@ -956,7 +984,7 @@ export default function ContadoresPage() {
                         onChange={e => setToolData({ ...toolData, manual_fecha: e.target.value })}
                       />
                     </div>
-                    <FileInput label="Seleccionar archivo .db3" accept=".db3" onChange={(files) => runManualProcess(files)} />
+                    <FileInput label="Seleccionar archivos .db3" multiple accept=".db3" onChange={(files) => runManualProcess(files)} />
                   </div>
                 )}
 

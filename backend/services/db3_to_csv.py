@@ -1,27 +1,36 @@
 import os
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import numpy as np
 import pandas as pd
 
 # Modelos especiales que fuerzan CLASE=20 cuando counterclass_id=40
 MODELOS_ESPECIALES = {
-    "C4010ND", "CLX_6260_Series", "CLX_9201", "HP_PageWide_Color_MFP_E58650", "X4300LX", "CLP_680_Series",
+    "C4010ND",
+    "CLX_6260_Series",
+    "CLX_9201",
+    "HP_PageWide_Color_MFP_E58650",
+    "X4300LX",
+    "CLP_680_Series",
     "FD_E8_48_50_20_50_61_67_65_57_69_64_65_20_50_72_6F_20_34_35_32_64_77_20_50_72_69_6E_74_65_72",
     "FD_E8_48_50_20_43_6F_6C_6F_72_20_4C_61_73_65_72_4A_65_74_20_4D_46_50_20_4D_35_37_37",
-    "Samsung_CLP_680_Series", "CLP_670_Series", "P774ADM05",
+    "Samsung_CLP_680_Series",
+    "CLP_670_Series",
+    "P774ADM05",
     "FD_E8_48_50_20_50_61_67_65_57_69_64_65_20_4D_46_50_20_50_35_37_37_35_30",
     "FD_E8_48_50_20_43_6F_6C_6F_72_20_4C_61_73_65_72_4A_65_74_20_4D_36_35_31",
     "FD_E8_48_50_20_43_6F_6C_6F_72_20_4C_61_73_65_72_4A_65_74_20_4D_36_35_32",
     "FD_E8_48_50_20_4C_61_73_65_72_4A_65_74_20_4D_35_30_36",
     "FD_E8_48_50_20_4C_61_73_65_72_4A_65_74_20_4D_36_30_35",
     "FD_E8_48_50_20_4C_61_73_65_72_4A_65_74_20_4D_36_30_38",
-    "HP_PageWide_MFP_P57750", "HP_Color_LaserJet_MFP_M577"
+    "HP_PageWide_MFP_P57750",
+    "HP_Color_LaserJet_MFP_M577",
 }
 
 # -------------------- utilidades base --------------------
+
 
 def validar_fecha_ddmmyyyy(fecha: str) -> bool:
     """True si la fecha tiene formato DD/MM/YYYY."""
@@ -31,14 +40,17 @@ def validar_fecha_ddmmyyyy(fecha: str) -> bool:
     except ValueError:
         return False
 
+
 def _fecha_param(fecha_maxima_str: str) -> str:
     """Convierte 'DD/MM/YYYY' a 'YYYY-MM-DD 00:00:00' + 1 día (límite exclusivo)."""
     dt = datetime.strptime(fecha_maxima_str, "%d/%m/%Y") + timedelta(days=1)
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
+
 def conectar_db(filename: str) -> sqlite3.Connection:
     """Devuelve una conexión sqlite3; el caller maneja excepciones."""
     return sqlite3.connect(filename)
+
 
 def verificar_estructura(conn: sqlite3.Connection) -> bool:
     """Chequea columnas esperadas en tabla 'counters'."""
@@ -48,7 +60,10 @@ def verificar_estructura(conn: sqlite3.Connection) -> bool:
     requeridas = {"serialnumber", "readdate", "readvalue", "model", "counterclass_id"}
     return requeridas.issubset(cols)
 
-def ejecutar_consulta(conn: sqlite3.Connection, fecha_maxima: Optional[str]) -> pd.DataFrame:
+
+def ejecutar_consulta(
+    conn: sqlite3.Connection, fecha_maxima: Optional[str]
+) -> pd.DataFrame:
     """
     Lee counters (clases 40/10/20). Si fecha_maxima (DD/MM/YYYY) se provee, aplica readdate < fecha+1d.
     """
@@ -61,20 +76,24 @@ def ejecutar_consulta(conn: sqlite3.Connection, fecha_maxima: Optional[str]) -> 
             raise ValueError("fecha_maxima debe tener formato DD/MM/YYYY")
         query = base_query + " AND readdate < ?"
         # parse_dates convierte 'readdate' a datetime ya desde SQL
-        return pd.read_sql(query, conn, params=(_fecha_param(fecha_maxima),), parse_dates=["readdate"])
+        return pd.read_sql(
+            query, conn, params=(_fecha_param(fecha_maxima),), parse_dates=["readdate"]
+        )
     return pd.read_sql(base_query, conn, parse_dates=["readdate"])
 
+
 # -------------------- flujo principal DB -> CSV --------------------
+
 
 def procesar_db_a_csv(
     archivos_db: List[str],
     fecha_maxima: Optional[str],
     nombre_base_salida: str,
     carpeta_salida: Optional[str] = None,
-) -> str:
+) -> Tuple[str, List[str]]:
     """
     Une lecturas desde múltiples DB SQLite, aplica reglas TIPO/CLASE y exporta
-    CSV en formato ANCHO (columnas para 10 y 20): 
+    CSV en formato ANCHO (columnas para 10 y 20):
       SERIE, FECHA, TIPO, CLASE_10, CONTADOR_10, CLASE_20, CONTADOR_20, MOTIVO, OBSERVACION
     (UTF-8 sin BOM, CRLF).
     """
@@ -87,38 +106,59 @@ def procesar_db_a_csv(
 
     # Leer y unir
     dfs: List[pd.DataFrame] = []
-    for path in archivos_db:
-        if not os.path.isfile(path):
-            raise FileNotFoundError(f"No se encontró el archivo de base de datos: {path}")
-        with conectar_db(path) as conn:
-            if not verificar_estructura(conn):
-                print(f"DEBUG ERROR: Estructura incorrecta en {path}")
-                raise RuntimeError(f"Estructura inesperada en DB: {path}")
-            
-            # Debug: ver cuántas filas hay en total
-            cur = conn.cursor()
-            cur.execute("SELECT COUNT(*) FROM counters")
-            total_rows = cur.fetchone()[0]
-            print(f"DEBUG: El archivo {path} tiene {total_rows} filas en la tabla 'counters'")
-            
-            cur.execute("SELECT DISTINCT counterclass_id FROM counters")
-            classes = [r[0] for r in cur.fetchall()]
-            print(f"DEBUG: Clases encontradas en el archivo: {classes}")
+    warnings: List[str] = []
 
-            df = ejecutar_consulta(conn, fecha_maxima)
-            if df is None or df.empty:
-                print(f"DEBUG: La consulta devolvió 0 filas para las clases (40,10,20) y fecha {fecha_maxima}")
+    for path in archivos_db:
+        filename = os.path.basename(path)
+        try:
+            if not os.path.isfile(path):
+                warnings.append(f"Archivo no encontrado: {filename}")
                 continue
-            dfs.append(df)
+
+            conn = conectar_db(path)
+            try:
+                if not verificar_estructura(conn):
+                    print(f"DEBUG ERROR: Estructura incorrecta en {path}")
+                    warnings.append(f"Estructura inesperada en DB: {filename}")
+                    continue
+
+                # Debug: ver cuántas filas hay en total
+                cur = conn.cursor()
+                cur.execute("SELECT COUNT(*) FROM counters")
+                total_rows = cur.fetchone()[0]
+                print(
+                    f"DEBUG: El archivo {path} tiene {total_rows} filas en la tabla 'counters'"
+                )
+
+                df = ejecutar_consulta(conn, fecha_maxima)
+                if df is None or df.empty:
+                    print(
+                        f"DEBUG: La consulta devolvió 0 filas para las clases (40,10,20) y fecha {fecha_maxima} en {filename}"
+                    )
+                    warnings.append(f"Sin datos válidos en: {filename}")
+                    continue
+                dfs.append(df)
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"ERROR procesando archivo {filename}: {str(e)}")
+            warnings.append(f"Error procesando {filename}: {str(e)}")
+            continue
 
     if not dfs:
-        raise RuntimeError("No se obtuvieron datos de las bases proporcionadas.")
+        raise RuntimeError(
+            f"No se obtuvieron datos de las bases proporcionadas. Errores: {', '.join(warnings)}"
+        )
 
     df = pd.concat(dfs, ignore_index=True)
 
     # ----- Transformaciones base -----
     # TIPO: 40 -> 15; otros -> 7
-    df.insert(df.columns.get_loc("readvalue"), "TIPO", np.where(df["counterclass_id"].eq(40), 15, 7))
+    df.insert(
+        df.columns.get_loc("readvalue"),
+        "TIPO",
+        np.where(df["counterclass_id"].eq(40), 15, 7),
+    )
 
     # CLASE (40 + modelo especial -> 20; 40 -> 10; resto mantiene)
     df["CLASE"] = np.where(
@@ -128,12 +168,14 @@ def procesar_db_a_csv(
     )
 
     # Renombrar a finales
-    df = df.rename(columns={
-        "serialnumber": "SERIE",
-        "readdate":     "FECHA",
-        "model":        "MODELO",
-        "readvalue":    "CONTADOR",
-    })
+    df = df.rename(
+        columns={
+            "serialnumber": "SERIE",
+            "readdate": "FECHA",
+            "model": "MODELO",
+            "readvalue": "CONTADOR",
+        }
+    )
 
     # Ordenar por fecha (más reciente primero) y formatear
     df["FECHA"] = pd.to_datetime(df["FECHA"], errors="coerce")
@@ -148,7 +190,9 @@ def procesar_db_a_csv(
 
     # ---------- Formato ANCHO (dos columnas para 10 y 20) ----------
     # Lado "10": incluye CLASE 10 y también CLASE 20 con TIPO 15 (herencia de total=40→20)
-    df10 = df[(df["CLASE"] == "10") | ((df["CLASE"] == "20") & (df["TIPO"] == 15))].copy()
+    df10 = df[
+        (df["CLASE"] == "10") | ((df["CLASE"] == "20") & (df["TIPO"] == 15))
+    ].copy()
     df10 = df10.rename(columns={"CLASE": "CLASE_10", "CONTADOR": "CONTADOR_10"})
 
     # Lado "20": todas las CLASE 20
@@ -160,7 +204,7 @@ def procesar_db_a_csv(
         df10[["SERIE", "FECHA", "TIPO", "CLASE_10", "CONTADOR_10"]],
         df20[["SERIE", "FECHA", "TIPO", "CLASE_20", "CONTADOR_20"]],
         on=("SERIE", "FECHA", "TIPO"),
-        how="outer"
+        how="outer",
     )
 
     # ================== BLOQUE: mover "solo 20" a primera columna ==================
@@ -184,7 +228,9 @@ def procesar_db_a_csv(
     # ----- Exportación -----
     base_folder = carpeta_salida or os.path.dirname(archivos_db[0]) or os.getcwd()
     os.makedirs(base_folder, exist_ok=True)
-    nombre_archivo = f"{nombre_base_salida}_{os.path.basename(base_folder) or 'root'}_AutoCSV.csv"
+    nombre_archivo = (
+        f"{nombre_base_salida}_{os.path.basename(base_folder) or 'root'}_AutoCSV.csv"
+    )
     file_path = os.path.join(base_folder, nombre_archivo)
 
     # Ordenar por SERIE/FECHA/TIPO
@@ -195,14 +241,21 @@ def procesar_db_a_csv(
     out["OBSERVACION"] = ""
 
     # Elegir el orden de columnas final (sin renombrar las existentes)
-    out = out[[
-        "SERIE", "FECHA", "TIPO",
-        "CLASE_10", "CONTADOR_10",
-        "CLASE_20", "CONTADOR_20",
-        "MOTIVO", "OBSERVACION"
-    ]]
+    out = out[
+        [
+            "SERIE",
+            "FECHA",
+            "TIPO",
+            "CLASE_10",
+            "CONTADOR_10",
+            "CLASE_20",
+            "CONTADOR_20",
+            "MOTIVO",
+            "OBSERVACION",
+        ]
+    ]
 
     # Exportar (UTF-8 sin BOM, CRLF)
     out.to_csv(file_path, sep=";", index=False, encoding="utf-8", lineterminator="\r\n")
 
-    return file_path
+    return file_path, warnings

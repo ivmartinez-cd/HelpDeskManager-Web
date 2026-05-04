@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 from database import Base
 import datetime
 
+
 class FTPClient(Base):
     __tablename__ = "ftp_clients"
 
@@ -13,6 +14,7 @@ class FTPClient(Base):
     path = Column(String, default="/")
     pattern = Column(String, default="PrinterMonitorClient.db3.*")
 
+
 class ResourceLink(Base):
     __tablename__ = "resource_links"
 
@@ -21,4 +23,6 @@ class ResourceLink(Base):
     url = Column(String)
     category = Column(String, default="Otros")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+    )

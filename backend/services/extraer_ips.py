@@ -26,6 +26,7 @@ def select_files_gui(parent=None) -> List[str]:
     try:
         import tkinter as tk
         from tkinter import filedialog
+
         tmp_root = None
         if parent is None:
             tmp_root = tk.Tk()
@@ -36,9 +37,20 @@ def select_files_gui(parent=None) -> List[str]:
             title="Selecciona uno o más archivos (SQLite)",
             filetypes=[
                 ("Todos los archivos", "*"),
-                ("SQLite probables", ("*.db3", "*.db", "*.sqlite", "*.sqlite3",
-                                      "*.db3.*", "*.sqlite.*", "*.sqlite3.*", "*.db.*")),
-            ]
+                (
+                    "SQLite probables",
+                    (
+                        "*.db3",
+                        "*.db",
+                        "*.sqlite",
+                        "*.sqlite3",
+                        "*.db3.*",
+                        "*.sqlite.*",
+                        "*.sqlite3.*",
+                        "*.db.*",
+                    ),
+                ),
+            ],
         )
         if tmp_root is not None:
             tmp_root.destroy()
@@ -49,10 +61,12 @@ def select_files_gui(parent=None) -> List[str]:
 
 def ask_paths_stdin() -> List[str]:
     """Permite ingresar rutas o patrones (wildcards). Soporta ; , o espacio como separadores."""
-    print("Ingresá rutas o patrones (wildcards) separados por ';' o ',' y presioná Enter:")
+    print(
+        "Ingresá rutas o patrones (wildcards) separados por ';' o ',' y presioná Enter:"
+    )
     print("Ej:  C:\\carpeta\\PrinterMonitorClient.db3.*; D:\\otra\\*.sqlite")
     raw = input("> ").strip()
-    sep = ';' if ';' in raw else (',' if ',' in raw else ' ')
+    sep = ";" if ";" in raw else ("," if "," in raw else " ")
     tokens = [p.strip().strip('"') for p in raw.split(sep) if p.strip()]
     # Expandir comodines (glob)
     expanded: List[str] = []
@@ -123,7 +137,9 @@ def extract_ips_from_db(db_path: str) -> Iterable[str]:
         with sqlite3.connect(uri, uri=True) as conn:
             ip_col = find_ip_column(conn)
             if not ip_col:
-                print(f"[AVISO] No se encontró columna 'ip' (o similar) en 'counters' en: {db_path}")
+                print(
+                    f"[AVISO] No se encontró columna 'ip' (o similar) en 'counters' en: {db_path}"
+                )
                 return []
             with closing(conn.cursor()) as cur:
                 cur.execute(f'SELECT "{ip_col}" FROM counters')
@@ -149,11 +165,13 @@ def parse_ipv4(s: str) -> Optional[ipaddress.IPv4Address]:
 
 # ---------------------- Selección de ruta de guardado ----------------------
 
+
 def ask_save_path_gui(default_filename: str, parent=None) -> str:
     """Diálogo 'Guardar como…'. Si no hay parent, crea un root temporal."""
     try:
         import tkinter as tk
         from tkinter import filedialog
+
         tmp_root = None
         if parent is None:
             tmp_root = tk.Tk()
@@ -171,6 +189,7 @@ def ask_save_path_gui(default_filename: str, parent=None) -> str:
         return path or ""
     except Exception:
         return ""
+
 
 def ask_save_path_stdin(default_filename: str) -> str:
     """Fallback por consola para elegir la ruta de guardado."""
@@ -199,12 +218,15 @@ def get_save_path(default_filename: str, *, parent=None, gui_only: bool) -> str:
 
 # ---------------------- NUEVO: función reutilizable para la UI ----------------------
 
+
 # --- Función principal con parent y sin stdin (pensada para usarse desde tu app)
-def generate_ip_ranges(paths: Optional[List[str]] = None,
-                       save_path: Optional[str] = None,
-                       *,
-                       parent=None,
-                       gui_only: bool = True) -> Tuple[str, int]:
+def generate_ip_ranges(
+    paths: Optional[List[str]] = None,
+    save_path: Optional[str] = None,
+    *,
+    parent=None,
+    gui_only: bool = True,
+) -> Tuple[str, int]:
     """
     Extrae IPv4 desde DBs SQLite, agrupa por /24 y guarda 'A.B.C.1-A.B.C.254' en una sola línea.
     - parent: widget Tk para que los diálogos sean modales a tu ventana.
@@ -256,8 +278,8 @@ def generate_ip_ranges(paths: Optional[List[str]] = None,
     return out_path, count
 
 
-
 # ---------------------- Modo script (consola) ----------------------
+
 
 def main():
     try:

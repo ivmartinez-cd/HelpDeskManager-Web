@@ -104,7 +104,9 @@ def normalizar_campos(df: pd.DataFrame) -> pd.DataFrame:
 # =========================
 # 5) NUEVA TOMA
 # =========================
-def agregar_nueva_toma(df: pd.DataFrame, fecha_nueva: str | None = None) -> pd.DataFrame:
+def agregar_nueva_toma(
+    df: pd.DataFrame, fecha_nueva: str | None = None
+) -> pd.DataFrame:
     """
     Agrega:
       - FechaTomaContadorNueva
@@ -166,8 +168,7 @@ def preparar_csv_importacion(df: pd.DataFrame) -> pd.DataFrame:
 # 7) CSV 2: FORMATO 14 / 10 / 20 con Mono/Color
 # =========================
 def preparar_csv_formato_14_10_20(
-    df: pd.DataFrame,
-    fecha_hoy: str | None = None
+    df: pd.DataFrame, fecha_hoy: str | None = None
 ) -> pd.DataFrame:
     """
     Genera el CSV adicional con columnas:
@@ -196,28 +197,34 @@ def preparar_csv_formato_14_10_20(
         raise KeyError("No existe la columna 'ContadorNuevo' para armar el CSV 2")
 
     if "NombreClase" not in df.columns:
-        raise KeyError("No existe la columna 'NombreClase' (Mono/Color) para armar el CSV 2")
+        raise KeyError(
+            "No existe la columna 'NombreClase' (Mono/Color) para armar el CSV 2"
+        )
 
     # Normalizamos NombreClase para comparar
     clase = df["NombreClase"].astype(str).str.strip().str.lower()
 
     # Si Mono => contador en clase10; si Color => contador en clase20
-    contador_nuevo = pd.to_numeric(df["ContadorNuevo"], errors="coerce").fillna(0).astype(int)
+    contador_nuevo = (
+        pd.to_numeric(df["ContadorNuevo"], errors="coerce").fillna(0).astype(int)
+    )
 
     contador10 = contador_nuevo.where(clase.eq("mono"), other="")
     contador20 = contador_nuevo.where(clase.eq("color"), other="")
 
-    df2 = pd.DataFrame({
-        "SERIE": df["SERIE"].astype(str).str.strip().str.upper(),
-        "FECHA": fecha_hoy,
-        "TIPO": 14,
-        "CLASE10": 10,
-        "CONTADOR": contador10,
-        "CLASE20": 20,
-        "CONTADOR20": contador20,
-        "MOTIVO": "",
-        "OBSERVACIONES": "",
-    })
+    df2 = pd.DataFrame(
+        {
+            "SERIE": df["SERIE"].astype(str).str.strip().str.upper(),
+            "FECHA": fecha_hoy,
+            "TIPO": 14,
+            "CLASE10": 10,
+            "CONTADOR": contador10,
+            "CLASE20": 20,
+            "CONTADOR20": contador20,
+            "MOTIVO": "",
+            "OBSERVACIONES": "",
+        }
+    )
 
     return df2
 
@@ -274,7 +281,9 @@ def pedir_fecha_estimacion() -> str:
     Devuelve string dd/mm/aaaa.
     """
     while True:
-        entrada = input("Ingresá la FECHA de estimación (dd/mm/aaaa) [Enter = hoy]: ").strip()
+        entrada = input(
+            "Ingresá la FECHA de estimación (dd/mm/aaaa) [Enter = hoy]: "
+        ).strip()
 
         if entrada == "":
             return date.today().strftime("%d/%m/%Y")
@@ -295,8 +304,7 @@ if __name__ == "__main__":
     fecha_estimacion = pedir_fecha_estimacion()
 
     out1, out2 = ejecutar_generacion_dos_csv(
-        ruta_csv_detalle=ruta_csv,
-        fecha_nueva=fecha_estimacion
+        ruta_csv_detalle=ruta_csv, fecha_nueva=fecha_estimacion
     )
 
     print("✅ CSV 1 (importación) generado en:")

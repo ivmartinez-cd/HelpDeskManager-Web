@@ -9,6 +9,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from database import SessionLocal
 from models import FTPClient
 
+
 def list_files(client_name):
     db = SessionLocal()
     try:
@@ -23,10 +24,14 @@ def list_files(client_name):
             ftp.login(client.user, client.password)
             ftp.cwd(client.path)
             files = ftp.nlst()
-            
-            candidatos = [f for f in files if fnmatch.fnmatch(f.lower(), client.pattern.lower())]
-            
-            print(f"\n--- Archivos encontrados para {client_name} (patrón: {client.pattern}) ---")
+
+            candidatos = [
+                f for f in files if fnmatch.fnmatch(f.lower(), client.pattern.lower())
+            ]
+
+            print(
+                f"\n--- Archivos encontrados para {client_name} (patrón: {client.pattern}) ---"
+            )
             if not candidatos:
                 print("No se encontraron archivos que coincidan.")
             else:
@@ -42,6 +47,7 @@ def list_files(client_name):
             ftp.close()
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

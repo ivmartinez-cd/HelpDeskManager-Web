@@ -120,9 +120,9 @@ export function Modal({
               <AnimatePresence mode="wait">
                 {error && (
                   <motion.div
-                    initial={{ opacity: 0, height: 0, mb: 0 }}
-                    animate={{ opacity: 1, height: "auto", mb: 24 }}
-                    exit={{ opacity: 0, height: 0, mb: 0 }}
+                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    animate={{ opacity: 1, height: "auto", marginBottom: 24 }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                     className="overflow-hidden"
                   >
                     <div className="mb-6 p-4 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center gap-3 text-destructive">

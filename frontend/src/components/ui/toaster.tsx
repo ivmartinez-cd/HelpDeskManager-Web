@@ -23,12 +23,14 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
     success: <CheckCircle2 className="h-5 w-5 text-green-500" />,
     error: <AlertTriangle className="h-5 w-5 text-red-500" />,
     info: <Info className="h-5 w-5 text-blue-500" />,
+    warning: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
   }
 
   const borderColors = {
     success: "border-green-500/20",
     error: "border-red-500/20",
     info: "border-blue-500/20",
+    warning: "border-yellow-500/20",
   }
 
   return (

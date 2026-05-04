@@ -10,10 +10,14 @@ def _validar_fecha_ddmmyyyy(fecha_usuario: str) -> str:
     try:
         return datetime.strptime(fecha_usuario, "%d/%m/%Y").strftime("%d/%m/%Y")
     except ValueError:
-        raise ValueError("La fecha ingresada no tiene el formato correcto (DD/MM/AAAA).")
+        raise ValueError(
+            "La fecha ingresada no tiene el formato correcto (DD/MM/AAAA)."
+        )
 
 
-def _procesar_un_excel_a_df(archivo_xls: str, fecha_actual: str, hojas_a_sumar: int) -> pd.DataFrame:
+def _procesar_un_excel_a_df(
+    archivo_xls: str, fecha_actual: str, hojas_a_sumar: int
+) -> pd.DataFrame:
     # leer excel
     try:
         datos = pd.read_excel(archivo_xls)
@@ -26,9 +30,22 @@ def _procesar_un_excel_a_df(archivo_xls: str, fecha_actual: str, hojas_a_sumar: 
 
     # columnas a eliminar (si no están, no falla)
     columnas_a_eliminar = [
-        "Empresa", "Centro Costo", "CMeses", "Conts", "Bonif", "Renta",
-        "Diferencia", "Clase", "Modelo", "Sector", "Direccion IP",
-        "Toma Anterior", "Toma Actual", "Cdor Anterior", "Tipo", "Tipo.1"
+        "Empresa",
+        "Centro Costo",
+        "CMeses",
+        "Conts",
+        "Bonif",
+        "Renta",
+        "Diferencia",
+        "Clase",
+        "Modelo",
+        "Sector",
+        "Direccion IP",
+        "Toma Anterior",
+        "Toma Actual",
+        "Cdor Anterior",
+        "Tipo",
+        "Tipo.1",
     ]
     datos.drop(columns=columnas_a_eliminar, errors="ignore", inplace=True)
 
@@ -55,9 +72,9 @@ def _procesar_un_excel_a_df(archivo_xls: str, fecha_actual: str, hojas_a_sumar: 
             np.where(
                 (datos["Estado"] == "Activa en Cliente") & (datos["Cdor Actual"] != 1),
                 datos["Cdor Actual"] + int(hojas_a_sumar),
-                ""
-            )
-        )
+                "",
+            ),
+        ),
     )
 
     # reordenar cerca de SERIE si existe
@@ -66,7 +83,12 @@ def _procesar_un_excel_a_df(archivo_xls: str, fecha_actual: str, hojas_a_sumar: 
         columnas = datos.columns.tolist()
         for c in ["FECHA", "TIPO", "CLASE", "CONTADOR"]:
             columnas.remove(c)
-        columnas[indice_serie + 1:indice_serie + 1] = ["FECHA", "TIPO", "CLASE", "CONTADOR"]
+        columnas[indice_serie + 1 : indice_serie + 1] = [
+            "FECHA",
+            "TIPO",
+            "CLASE",
+            "CONTADOR",
+        ]
         datos = datos[columnas]
 
     return datos
@@ -120,6 +142,7 @@ def convertir_xls_a_csv_arcos_headless(
 
 def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=None):
     from tkinter import filedialog, simpledialog, messagebox
+
     """
     Convierte uno o varios XLS/XLSX al formato CSV requerido.
     Si no se proveen parametros, abre dialogos para pedirlos.
@@ -130,7 +153,7 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
         archivos_xls = filedialog.askopenfilenames(
             title="Selecciona archivo(s) XLS/XLSX",
             filetypes=[("Archivos Excel", "*.xls *.xlsx")],
-            parent=parent
+            parent=parent,
         )
         if not archivos_xls:
             return (False, [])
@@ -144,8 +167,7 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
     # --- carpeta de salida ---
     if not carpeta_salida:
         carpeta_salida = filedialog.askdirectory(
-            title="Selecciona carpeta de destino",
-            parent=parent
+            title="Selecciona carpeta de destino", parent=parent
         )
         if not carpeta_salida:
             # por defecto, la del primer archivo
@@ -153,27 +175,33 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
 
     # --- fecha ---
     fecha_usuario = simpledialog.askstring(
-        "Entrada de Fecha",
-        "Ingrese la fecha (DD/MM/AAAA):",
-        parent=parent
+        "Entrada de Fecha", "Ingrese la fecha (DD/MM/AAAA):", parent=parent
     )
     if not fecha_usuario:
-        messagebox.showwarning("Advertencia", "No se ingresó ninguna fecha.", parent=parent)
+        messagebox.showwarning(
+            "Advertencia", "No se ingresó ninguna fecha.", parent=parent
+        )
         return (False, [])
     try:
         fecha_actual = datetime.strptime(fecha_usuario, "%d/%m/%Y").strftime("%d/%m/%Y")
     except ValueError:
-        messagebox.showerror("Error", "La fecha ingresada no tiene el formato correcto (DD/MM/AAAA).", parent=parent)
+        messagebox.showerror(
+            "Error",
+            "La fecha ingresada no tiene el formato correcto (DD/MM/AAAA).",
+            parent=parent,
+        )
         return (False, [])
 
     # --- hojas a sumar ---
     hojas_a_sumar = simpledialog.askinteger(
         "Copias a sumar",
         "Ingrese la cantidad de hojas que desea sumar a los equipos a estimar:",
-        parent=parent
+        parent=parent,
     )
     if hojas_a_sumar is None:
-        messagebox.showwarning("Advertencia", "No se ingresó ninguna cantidad. Se tomará 0.", parent=parent)
+        messagebox.showwarning(
+            "Advertencia", "No se ingresó ninguna cantidad. Se tomará 0.", parent=parent
+        )
         hojas_a_sumar = 0
 
     rutas_salida = []
@@ -183,7 +211,9 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
         try:
             datos = pd.read_excel(archivo_xls)
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudo leer:\n{archivo_xls}\n\n{e}", parent=parent)
+            messagebox.showerror(
+                "Error", f"No se pudo leer:\n{archivo_xls}\n\n{e}", parent=parent
+            )
             return (False, [])
 
         # renombrar serie (si existe)
@@ -192,9 +222,22 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
 
         # columnas a eliminar (si no están, no falla)
         columnas_a_eliminar = [
-            "Empresa","Centro Costo","CMeses","Conts","Bonif","Renta",
-            "Diferencia","Clase","Modelo","Sector","Direccion IP",
-            "Toma Anterior","Toma Actual","Cdor Anterior","Tipo","Tipo.1"
+            "Empresa",
+            "Centro Costo",
+            "CMeses",
+            "Conts",
+            "Bonif",
+            "Renta",
+            "Diferencia",
+            "Clase",
+            "Modelo",
+            "Sector",
+            "Direccion IP",
+            "Toma Anterior",
+            "Toma Actual",
+            "Cdor Anterior",
+            "Tipo",
+            "Tipo.1",
         ]
         datos.drop(columns=columnas_a_eliminar, errors="ignore", inplace=True)
 
@@ -204,7 +247,7 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
             messagebox.showerror(
                 "Error",
                 f"Faltan columnas requeridas en {os.path.basename(archivo_xls)}:\n{', '.join(faltantes)}",
-                parent=parent
+                parent=parent,
             )
             return (False, [])
 
@@ -222,20 +265,26 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
                 datos["Cdor Actual"] == 1,
                 datos["Cdor Actual"],
                 np.where(
-                    (datos["Estado"] == "Activa en Cliente") & (datos["Cdor Actual"] != 1),
+                    (datos["Estado"] == "Activa en Cliente")
+                    & (datos["Cdor Actual"] != 1),
                     datos["Cdor Actual"] + int(hojas_a_sumar),
-                    ""
-                )
-            )
+                    "",
+                ),
+            ),
         )
 
         # reordenar cerca de SERIE si existe
         if "SERIE" in datos.columns:
             indice_serie = datos.columns.get_loc("SERIE")
             columnas = datos.columns.tolist()
-            for c in ["FECHA","TIPO","CLASE","CONTADOR"]:
+            for c in ["FECHA", "TIPO", "CLASE", "CONTADOR"]:
                 columnas.remove(c)
-            columnas[indice_serie+1:indice_serie+1] = ["FECHA","TIPO","CLASE","CONTADOR"]
+            columnas[indice_serie + 1 : indice_serie + 1] = [
+                "FECHA",
+                "TIPO",
+                "CLASE",
+                "CONTADOR",
+            ]
             datos = datos[columnas]
 
         # guardar CSV
@@ -246,7 +295,7 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
             initialfile=os.path.basename(sugerido),
             defaultextension=".csv",
             filetypes=[("Archivos CSV", "*.csv")],
-            parent=parent
+            parent=parent,
         )
         if not archivo_csv:
             # si cancela guardar para este archivo, cancelar toda la operación
@@ -255,9 +304,15 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
         try:
             datos.to_csv(archivo_csv, index=False, sep=";")
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudo guardar:\n{archivo_csv}\n\n{e}", parent=parent)
+            messagebox.showerror(
+                "Error", f"No se pudo guardar:\n{archivo_csv}\n\n{e}", parent=parent
+            )
             return (False, [])
         rutas_salida.append(archivo_csv)
 
-    messagebox.showinfo("Éxito", f"Archivo(s) CSV guardado(s):\n" + "\n".join(rutas_salida), parent=parent)
+    messagebox.showinfo(
+        "Éxito",
+        "Archivo(s) CSV guardado(s):\n" + "\n".join(rutas_salida),
+        parent=parent,
+    )
     return (True, rutas_salida)

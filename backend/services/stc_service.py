@@ -2,10 +2,10 @@ import sqlite3
 import ipaddress
 import re
 from typing import List, Set, Optional, Tuple
-from pathlib import Path
 from contextlib import closing
 
 CANDIDATE_IP_COLUMNS = {"ip", "ip_address", "direccion_ip", "ip_addr"}
+
 
 def find_ip_column(conn: sqlite3.Connection) -> Optional[str]:
     try:
@@ -25,6 +25,7 @@ def find_ip_column(conn: sqlite3.Connection) -> Optional[str]:
         pass
     return None
 
+
 def extract_ips_from_db(db_path: str) -> List[str]:
     ips = []
     try:
@@ -41,9 +42,10 @@ def extract_ips_from_db(db_path: str) -> List[str]:
         print(f"Error extrayendo IPs de {db_path}: {e}")
     return ips
 
+
 def parse_ipv4(s: str) -> Optional[str]:
     # Regex simple para IPv4
-    match = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', s)
+    match = re.search(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", s)
     if match:
         ip_str = match.group(1)
         try:
@@ -54,6 +56,7 @@ def parse_ipv4(s: str) -> Optional[str]:
             pass
     return None
 
+
 def generate_ranges_from_ips(ips: List[str]) -> Tuple[str, int]:
     prefixes_24: Set[str] = set()
     for raw in ips:
@@ -61,13 +64,14 @@ def generate_ranges_from_ips(ips: List[str]) -> Tuple[str, int]:
         if ip_str:
             parts = ip_str.split(".")
             prefixes_24.add(f"{parts[0]}.{parts[1]}.{parts[2]}")
-    
+
     if not prefixes_24:
         return "", 0
-        
+
     ordered = sorted(prefixes_24, key=lambda pfx: ipaddress.IPv4Address(pfx + ".0"))
     ranges_line = ",".join(f"{p}.1-{p}.254" for p in ordered)
     return ranges_line, len(ordered)
+
 
 def process_db3_to_ips(db3_paths: List[str]) -> Tuple[str, int]:
     all_ips = []
@@ -75,7 +79,8 @@ def process_db3_to_ips(db3_paths: List[str]) -> Tuple[str, int]:
         all_ips.extend(extract_ips_from_db(path))
     return generate_ranges_from_ips(all_ips)
 
+
 def process_txt_to_ips(txt_content: str) -> Tuple[str, int]:
     # Encontrar todas las IPs en el texto
-    ips = re.findall(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', txt_content)
+    ips = re.findall(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", txt_content)
     return generate_ranges_from_ips(ips)
