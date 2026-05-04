@@ -26,13 +26,13 @@ def filtrar_falta_contador_csv(
     _validar_fecha_dmy(fecha_nueva)
 
     try:
-        datos = pd.read_csv(archivo_csv_entrada, delimiter=delimiter_entrada)
+        # Detectar automáticamente el separador y manejar BOM de Excel
+        datos = pd.read_csv(archivo_csv_entrada, sep=None, engine="python", encoding="utf-8-sig")
     except Exception as exc:
-        # Reintento con coma si falla punto y coma
-        try:
-            datos = pd.read_csv(archivo_csv_entrada, delimiter=",")
-        except:
-            raise ValueError(f"No se pudo leer el CSV de entrada: {exc}")
+        raise ValueError(f"No se pudo leer el CSV de entrada: {exc}")
+
+    # Limpiar espacios en blanco en los encabezados
+    datos.columns = datos.columns.astype(str).str.strip()
 
     if "Tipo" not in datos.columns:
         raise KeyError("La columna 'Tipo' no existe en el CSV de entrada.")

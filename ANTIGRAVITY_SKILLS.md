@@ -14,8 +14,10 @@ This document serves as the foundational reference for the application and devel
 - **Referencing**: Skills can be invoked or discussed using the `@[skill-name]` notation.
 - **Loading**: When a skill is relevant, the agent should read the corresponding `SKILL.md` to internalize the methodology before proceeding.
 
-### 2. Implementation Workflow
-Every task performed under the Antigravity framework should follow these stages:
+### 2. Implementation Workflow (MANDATORY)
+Every task performed under the Antigravity framework MUST follow these stages:
+- **Phase 0: Brainstorming (REQUIRED)**: Use `@[brainstorming]` to validate assumptions, clarify requirements, and explore design alternatives **BEFORE** any code is written or implementation plans are proposed.
+  - *Rule*: Never skip to implementation or planning without explicit confirmation of the "Understanding Lock" from the user.
 - **Phase 1: Research & Plan**: Use specialized research skills (`search-specialist`, `deep-research`) to understand the domain.
 - **Phase 2: Systematic Execution**: Follow the step-by-step instructions in the loaded `SKILL.md`.
 - **Phase 3: Verification**: Use testing and verification skills (`systematic-debugging`, `android_ui_verification`) to ensure correctness.
