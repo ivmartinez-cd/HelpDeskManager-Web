@@ -31,7 +31,7 @@ def test_db3_to_csv_dummy(tmp_path):
     output_dir.mkdir()
 
     # Process it
-    csv_path = procesar_db_a_csv(
+    csv_path, warnings = procesar_db_a_csv(
         archivos_db=[str(db_path)],
         fecha_maxima="",
         nombre_base_salida="test_output",

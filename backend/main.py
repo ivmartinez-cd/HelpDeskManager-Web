@@ -289,7 +289,7 @@ async def process_ftp_client(
         local_path = locales[0]  # Es el archivo fusionado
         print(f"DEBUG: Descarga y Fusión completada. Procesando {local_path}...")
 
-        output_file_path = procesar_db_a_csv(
+        output_file_path, warnings = procesar_db_a_csv(
             archivos_db=[local_path],
             fecha_maxima=fecha_maxima,
             nombre_base_salida=f"{client_name}_FTP",
@@ -308,6 +308,7 @@ async def process_ftp_client(
             "message": f"¡{client_name} procesado con éxito!",
             "csv_file": output_path.name,
             "db3_file": db3_output_name,
+            "warnings": warnings,
         }
 
     except Exception as e:
