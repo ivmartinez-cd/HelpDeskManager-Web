@@ -187,7 +187,7 @@ function StcActionCard({ icon: Icon, title, desc, color, accept, multiple, onUpl
             onChange={(e) => onUpload(e.target.files)}
             disabled={isProcessing}
           />
-          <button className="w-full bg-orange-500 text-white h-10 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 group-hover/btn:scale-[1.02] transition-transform text-[10px] uppercase tracking-widest">
+          <button className="w-full bg-orange-500 text-white h-10 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 group-hover/btn:scale-[1.02] transition-transform text-[10px] uppercase tracking-widest pointer-events-none">
             {isProcessing ? (
               <span className="flex items-center gap-2">
                 <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
