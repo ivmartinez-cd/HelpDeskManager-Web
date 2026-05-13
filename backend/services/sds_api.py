@@ -107,13 +107,13 @@ def export_sds_meters_to_csv(
     Exporta contadores SDS en formato CSV idéntico al de Descarga FTP.
 
     Modo suma_color=False (default):
-      - TIPO=22, CLASE_10=10, CONTADOR_10=monoPages
+      - TIPO=21, CLASE_10=10, CONTADOR_10=monoPages
       - CLASE_20=20, CONTADOR_20=colourPages  (solo si el equipo tiene color)
 
     Modo suma_color=True (equipos color):
-      - TIPO=20, CLASE_10=20, CONTADOR_10=engineCycles (mono+color combinados)
+      - TIPO=21, CLASE_10=20, CONTADOR_10=engineCycles (mono+color combinados)
       - Sin CLASE_20 (ya está sumado)
-      - Equipos solo mono: TIPO=22, CLASE_10=10, CONTADOR_10=monoPages
+      - Equipos solo mono: TIPO=21, CLASE_10=10, CONTADOR_10=monoPages
     """
     meters = get_sds_device_meters(customer_id, max_date)
 
@@ -121,6 +121,16 @@ def export_sds_meters_to_csv(
         raise Exception(
             f"No se encontraron contadores para el cliente '{customer_name}' en la fecha especificada."
         )
+
+    # --- FILTRADO POR FECHA MÍNIMA (Hardcoded a 30 días) ---
+    from datetime import datetime as _dt, timedelta as _td
+
+    try:
+        # max_date viene como YYYY-MM-DDTHH:mm:ss
+        max_dt = _dt.fromisoformat(max_date.split("T")[0])
+        min_dt = max_dt - _td(days=30)
+    except Exception:
+        min_dt = None
 
     # Obtener mapa deviceId -> serialNumber
     token = _get_auth_token()
@@ -144,9 +154,11 @@ def export_sds_meters_to_csv(
 
         raw_date = device.get("readingDate") or (device.get("readingDateTime", "")[:10])
         try:
-            from datetime import datetime as _dt
-
-            fecha = _dt.strptime(raw_date, "%Y-%m-%d").strftime("%d/%m/%Y")
+            device_dt = _dt.strptime(raw_date, "%Y-%m-%d")
+            # Aplicar filtro de 30 días: si la lectura es más vieja que max_date - 30 días, se ignora
+            if min_dt and device_dt < min_dt:
+                continue
+            fecha = device_dt.strftime("%d/%m/%Y")
         except Exception:
             fecha = raw_date
 
@@ -156,11 +168,11 @@ def export_sds_meters_to_csv(
         is_color = colour_pages > 0
 
         if suma_color and is_color:
-            # Modo suma: un solo registro con total combinado, CLASE_10=20 (siempre TIPO=22)
+            # Modo suma: un solo registro con total combinado, CLASE_10=20 (siempre TIPO=21)
             row = {
                 "SERIE": serie,
                 "FECHA": fecha,
-                "TIPO": 22,
+                "TIPO": 21,
                 "CLASE_10": 20,
                 "CONTADOR_10": engine_cycles,
                 "CLASE_20": "",
@@ -174,7 +186,7 @@ def export_sds_meters_to_csv(
             row = {
                 "SERIE": serie,
                 "FECHA": fecha,
-                "TIPO": 22,
+                "TIPO": 21,
                 "CLASE_10": 10,
                 "CONTADOR_10": mono_pages,
                 "CLASE_20": 20 if is_color else "",

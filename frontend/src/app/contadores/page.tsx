@@ -435,6 +435,10 @@ export default function ContadoresPage() {
     setResultFiles([])
     setModalError(null)
     setCalcResult(null)
+    setShowClientDropdown(false)
+    setShowSdsClientDropdown(false)
+    setClientSearch("")
+    setSdsClientSearch("")
   }
 
   return (
@@ -524,7 +528,7 @@ export default function ContadoresPage() {
         maxWidth="max-w-lg"
         error={modalError}
       >
-        <div className={`space-y-6 relative z-10 transition-all duration-300 ${showClientDropdown ? "pb-64" : ""}`}>
+        <div className={`space-y-6 relative z-10 transition-all duration-300 ${(showClientDropdown || showSdsClientDropdown) ? "pb-64" : ""}`}>
           <AnimatePresence mode="wait">
             {isProcessing ? (
               <motion.div
@@ -957,7 +961,7 @@ export default function ContadoresPage() {
                         Suma color
                       </span>
                       <span className="text-[11px] text-muted-foreground">
-                        (equipo color: suma ciclos totales en CLASE 20, TIPO 20)
+                        (equipo color: suma ciclos totales en CLASE 20, TIPO 21)
                       </span>
                     </label>
 
