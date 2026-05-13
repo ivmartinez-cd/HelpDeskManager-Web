@@ -126,10 +126,18 @@ def export_sds_meters_to_csv(
     from datetime import datetime as _dt, timedelta as _td
 
     try:
-        # max_date viene como YYYY-MM-DDTHH:mm:ss
-        max_dt = _dt.fromisoformat(max_date.split("T")[0])
+        # max_date puede venir como YYYY-MM-DDTHH:mm:ss o YYYY-M-D...
+        date_part = max_date.split("T")[0]
+        if "-" in date_part:
+            y, m, d = date_part.split("-")
+            max_dt = _dt(int(y), int(m), int(d))
+        else:
+            max_dt = _dt.fromisoformat(date_part)
+        
         min_dt = max_dt - _td(days=30)
-    except Exception:
+        print(f"DEBUG SDS: Filtrando entre {min_dt} y {max_dt}")
+    except Exception as e:
+        print(f"DEBUG SDS: Error parseando fecha maxima ({max_date}): {e}")
         min_dt = None
 
     # Obtener mapa deviceId -> serialNumber

@@ -315,7 +315,8 @@ export default function ContadoresPage() {
       // asumimos DD/MM/YYYY
       const parts = toolData.sds_fecha.split("/")
       if (parts.length === 3) {
-        isoDate = `${parts[2]}-${parts[1]}-${parts[0]}T23:59:59`
+        const [d, m, y] = parts
+        isoDate = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T23:59:59`
       } else {
         isoDate = new Date().toISOString()
       }
