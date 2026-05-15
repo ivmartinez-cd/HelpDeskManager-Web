@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import Link from "next/link"
 import { Calculator, Monitor, Link as LinkIcon, ArrowRight } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -58,65 +57,56 @@ export default function Home() {
     <PageShell>
       <div className="home-page">
         <div className="m-auto w-full flex flex-col gap-8 md:gap-12 lg:gap-16">
-        {/* Hero */}
-        <section className="home-hero">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="home-eyebrow px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 backdrop-blur-sm"
-          >
-            <span className="text-[9px] font-black tracking-[0.3em] text-accent uppercase">
-              Sistema de Gestión de Operaciones v3.0
-            </span>
-          </motion.div>
+          {/* Hero */}
+          <section className="home-hero">
+            <div className="home-eyebrow px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 backdrop-blur-sm animate-fade-in-scale">
+              <span className="text-[9px] font-black tracking-[0.3em] text-accent uppercase">
+                Sistema de Gestión de Operaciones v3.0
+              </span>
+            </div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="home-title text-display font-black tracking-tighter leading-[0.8]"
-          >
-            <span className="text-foreground block">HELPDESK</span>
-            <span className="text-accent block">MANAGER</span>
-          </motion.h1>
+            <h1
+              className="home-title text-display font-black tracking-tighter leading-[0.8] animate-fade-in-up"
+              style={{ animationDelay: "0.1s" }}
+            >
+              <span className="text-foreground block">HELPDESK</span>
+              <span className="text-accent block">MANAGER</span>
+            </h1>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="home-copy max-w-lg mx-auto"
-          >
-            <p className="text-sm md:text-base font-medium text-muted-foreground/60 leading-relaxed tracking-wide">
-              Optimización técnica y procesamiento de datos con estándares de precisión industrial para el equipo de soporte.
-            </p>
-          </motion.div>
-        </section>
+            <div
+              className="home-copy max-w-lg mx-auto animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
+              <p className="text-sm md:text-base font-medium text-muted-foreground/60 leading-relaxed tracking-wide">
+                Optimización técnica y procesamiento de datos con estándares de precisión industrial para el equipo de soporte.
+              </p>
+            </div>
+          </section>
 
-        {/* Module Cards */}
-        <div className="home-card-grid mx-auto">
-          <ModuleCard
-            href="/contadores"
-            icon={Calculator}
-            title="Contadores"
-            description="Procesamiento masivo de DB3 con algoritmos de estimación y reportes."
-            delay={0.6}
-          />
-          <ModuleCard
-            href="/stc"
-            icon={Monitor}
-            title="STC"
-            description="Extracción inteligente de IPs y generación de rangos de red."
-            delay={0.7}
-          />
-          <ModuleCard
-            href="/recursos"
-            icon={LinkIcon}
-            title="Recursos"
-            description="Biblioteca centralizada de manuales, guías y accesos directos."
-            delay={0.8}
-          />
-        </div>
+          {/* Module Cards */}
+          <div className="home-card-grid mx-auto">
+            <ModuleCard
+              href="/contadores"
+              icon={Calculator}
+              title="Contadores"
+              description="Procesamiento masivo de DB3 con algoritmos de estimación y reportes."
+              delay={0.4}
+            />
+            <ModuleCard
+              href="/stc"
+              icon={Monitor}
+              title="STC"
+              description="Extracción inteligente de IPs y generación de rangos de red."
+              delay={0.5}
+            />
+            <ModuleCard
+              href="/recursos"
+              icon={LinkIcon}
+              title="Recursos"
+              description="Biblioteca centralizada de manuales, guías y accesos directos."
+              delay={0.6}
+            />
+          </div>
         </div>
 
         <footer className="home-footer mt-auto pt-8">

@@ -1,5 +1,4 @@
 import { memo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, PlusCircle, Search, Settings, Play, ChevronLeft, Edit, Trash2, Plus } from "lucide-react"
 import type { Client } from "../_hooks/use-ftp-clients"
 
@@ -49,7 +48,7 @@ export const FtpForm = memo(function FtpForm(p: FtpFormProps) {
         </div>
 
         {(p.editingClient || p.formData.name) ? (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 bg-muted/20 p-6 rounded-[2rem] border border-border">
+          <div className="space-y-4 bg-muted/20 p-6 rounded-[2rem] border border-border animate-fade-in-up">
             <div className="grid grid-cols-2 gap-4">
               {(["name", "host", "user", "password", "path", "pattern"] as const).map(field => (
                 <div key={field} className="space-y-1">
@@ -80,7 +79,7 @@ export const FtpForm = memo(function FtpForm(p: FtpFormProps) {
                 Cancelar
               </button>
             </div>
-          </motion.div>
+          </div>
         ) : (
           <div className="space-y-2">
             <button
@@ -147,14 +146,8 @@ export const FtpForm = memo(function FtpForm(p: FtpFormProps) {
               </span>
               <PlusCircle className={`h-5 w-5 text-muted-foreground transition-transform ${p.showDropdown ? "rotate-45" : ""}`} />
             </div>
-            <AnimatePresence>
-              {p.showDropdown && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-3xl shadow-2xl z-[60] overflow-hidden"
-                >
+            {p.showDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-3xl shadow-2xl z-[60] overflow-hidden animate-slide-from-top">
                   <div className="p-4 border-b bg-muted/20">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -182,9 +175,8 @@ export const FtpForm = memo(function FtpForm(p: FtpFormProps) {
                       <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron clientes.</p>
                     )}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+          )}
           </div>
         )}
       </div>

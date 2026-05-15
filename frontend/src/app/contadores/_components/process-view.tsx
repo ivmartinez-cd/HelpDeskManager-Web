@@ -1,5 +1,4 @@
 import { memo, type ReactNode } from "react"
-import { motion } from "framer-motion"
 import { FileText, Download, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 import type { LogEntry, ProcessStatus } from "../_hooks/use-process"
 
@@ -131,9 +130,9 @@ export const ModalContent = memo(function ModalContent({
       ) : status !== "idle" ? (
         <ResultView status={status} message={message} resultFiles={resultFiles} apiUrl={apiUrl} onRetry={onRetry} />
       ) : (
-        <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+        <div className="space-y-6 animate-fade-in">
           {children}
-        </motion.div>
+        </div>
       )}
     </div>
   )

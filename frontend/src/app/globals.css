@@ -48,6 +48,42 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-grid-fade: grid-fade 8s linear infinite;
+  --animate-fade-in-up: fade-in-up 0.5s ease-out both;
+  --animate-fade-in-scale: fade-in-scale 0.5s ease-out both;
+  --animate-fade-in: fade-in 0.5s ease-out both;
+  --animate-slide-from-right: slide-from-right 0.3s ease-out both;
+  --animate-slide-from-top: slide-from-top 0.2s ease-out both;
+  --animate-pulse-scale: pulse-scale 2s ease-in-out infinite;
+  --animate-page-enter: page-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in-scale {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slide-from-right {
+    from { opacity: 0; transform: translateX(20px) scale(0.9); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes slide-from-top {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse-scale {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(1.2); }
+  }
+  @keyframes page-enter {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
   @keyframes accordion-down {
     from {

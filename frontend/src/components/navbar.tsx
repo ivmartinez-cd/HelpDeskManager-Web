@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { ModeToggle } from "./mode-toggle"
 import { Monitor, Calculator, ExternalLink, Link as LinkIcon, Menu, X } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
 
 const navLinks = [
   { href: "/contadores", label: "Contadores", icon: Calculator },
@@ -64,31 +63,25 @@ export function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="md:hidden overflow-hidden border-t bg-background/95 backdrop-blur"
-          >
-            <nav className="flex flex-col gap-1 p-3">
-              {navLinks.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  className={linkClass(href)}
-                >
-                  <Icon className="h-4 w-4" />
-                  {label}
-                </Link>
-              ))}
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div
+        className={`md:hidden overflow-hidden border-t bg-background/95 backdrop-blur transition-all duration-200 ease-in-out ${
+          mobileOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="flex flex-col gap-1 p-3">
+          {navLinks.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMobileOpen(false)}
+              className={linkClass(href)}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
     </header>
   )
 }
