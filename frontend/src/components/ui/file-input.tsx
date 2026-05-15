@@ -4,7 +4,7 @@ import { Upload } from "lucide-react"
 
 interface FileInputProps {
   label: string
-  accept: string
+  accept?: string
   multiple?: boolean
   onChange: (files: FileList | null) => void
   error?: boolean

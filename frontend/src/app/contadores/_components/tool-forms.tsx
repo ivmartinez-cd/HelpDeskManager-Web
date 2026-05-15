@@ -22,7 +22,7 @@ export const ManualForm = memo(function ManualForm({ fecha, onFechaChange, onRun
           onChange={e => onFechaChange(e.target.value)}
         />
       </div>
-      <FileInput label="Seleccionar archivos .db3" multiple accept=".db3" onChange={onRun} />
+      <FileInput label="Seleccionar archivos .db3" multiple onChange={onRun} />
     </div>
   )
 })
