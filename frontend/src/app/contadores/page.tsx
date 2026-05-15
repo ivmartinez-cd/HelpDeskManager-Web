@@ -1,76 +1,50 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import {
-  FileText, Download, Loader2, CheckCircle2,
-  AlertCircle, Database, Calculator, Wand2, Eraser,
-  PlusCircle, Server, Search, Play, ArrowRight,
-  Settings, Edit, Trash2, Plus, ChevronLeft, CloudDownload
+  FileText, Database, Calculator, Wand2, Eraser,
+  PlusCircle, Server, CloudDownload
 } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
 import { PageShell } from "@/components/ui/page-shell"
 import { PageHeader } from "@/components/ui/page-header"
-import { SpotlightCard } from "@/components/ui/spotlight-card"
-import { FileInput } from "@/components/ui/file-input"
 import { toast } from "@/hooks/use-toast"
 
-interface Client {
-  id: number;
-  name: string;
-  host: string;
-  user: string;
-  password: string;
-  path: string;
-  pattern: string;
+import { useProcess } from "./_hooks/use-process"
+import { useFtpClients } from "./_hooks/use-ftp-clients"
+import { useSdsClients } from "./_hooks/use-sds-clients"
+import { ActionCard } from "./_components/action-card"
+import { ModalContent } from "./_components/process-view"
+import { FtpForm } from "./_components/ftp-form"
+import { SdsForm } from "./_components/sds-form"
+import { ManualForm, En0Form, SumaForm, AutoForm, CalcForm } from "./_components/tool-forms"
+
+import type { CalcResult } from "./_hooks/types"
+
+const TOOLS = [
+  { id: "sds", icon: CloudDownload, title: "Descargar SDS", desc: "Obtén los contadores de impresoras directamente desde el API de HP SDS.", color: "text-blue-500", delay: 0.3 },
+  { id: "ftp", icon: Server, title: "Descarga FTP", desc: "Obtén las bases de datos directamente desde los servidores de los clientes.", color: "text-indigo-500", delay: 0.4 },
+  { id: "manual", icon: Database, title: "Procesar DB3", desc: "Sube manualmente archivos .db3 para convertirlos a CSV localmente.", color: "text-orange-500", delay: 0.5 },
+  { id: "en0", icon: Eraser, title: "Estimación en 0", desc: "Resetea equipos que no reportaron usando el último contador conocido.", color: "text-rose-500", delay: 0.6 },
+  { id: "suma", icon: PlusCircle, title: "Suma Fija", desc: "Aplica incrementos masivos de hojas a partir de archivos Excel.", color: "text-emerald-500", delay: 0.7 },
+  { id: "auto", icon: Wand2, title: "Autoestimación", desc: "Genera proyecciones automáticas basadas en el historial de consumo.", color: "text-amber-500", delay: 0.8 },
+  { id: "calc", icon: Calculator, title: "Calculadora", desc: "Herramienta interactiva para proyecciones manuales por fecha.", color: "text-sky-500", delay: 0.9 },
+] as const
+
+type ToolId = typeof TOOLS[number]["id"]
+
+const TOOL_TITLES: Record<ToolId, string> = {
+  sds: "Descargar SDS", ftp: "Descarga FTP", manual: "Procesar DB3",
+  en0: "Estimación en 0", suma: "Suma Fija", auto: "Autoestimación", calc: "Calculadora"
 }
 
-interface CalcResult {
-  imp_dia: number;
-  cont_est: number;
-  imp_mes: number;
-  dias_est: number;
-}
+const today = () => new Date().toLocaleDateString("es-ES")
 
 export default function ContadoresPage() {
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle")
-  const [message, setMessage] = useState("")
-  const [resultFiles, setResultFiles] = useState<string[]>([])
-  const [activeTool, setActiveTool] = useState<string | null>(null)
-  const [logs, setLogs] = useState<{ msg: string; time: string }[]>([])
-  const [modalError, setModalError] = useState<string | null>(null)
-
-  // FTP Management States
-  const [isManagingClients, setIsManagingClients] = useState(false)
-  const [editingClient, setEditingClient] = useState<Client | null>(null)
-  const [clientFormData, setClientFormData] = useState<Omit<Client, "id">>({
-    name: "", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*"
-  })
-
-  const addLog = (msg: string, delay: number = 0) => {
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    setTimeout(() => setLogs(prev => [...prev.slice(-4), { msg, time }]), delay)
-  }
-
-  const [clients, setClients] = useState<Client[]>([])
-  const [selectedClient, setSelectedClient] = useState("")
-  const [isLoadingClients, setIsLoadingClients] = useState(false)
-  const [showClientDropdown, setShowClientDropdown] = useState(false)
-  const [clientSearch, setClientSearch] = useState("")
-  const [deletingClientId, setDeletingClientId] = useState<number | null>(null)
-
-  // SDS Management States
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [sdsClients, setSdsClients] = useState<any[]>([])
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedSdsClient, setSelectedSdsClient] = useState<any>(null)
-  const [isLoadingSdsClients, setIsLoadingSdsClients] = useState(false)
-  const [showSdsClientDropdown, setShowSdsClientDropdown] = useState(false)
-  const [sdsClientSearch, setSdsClientSearch] = useState("")
-  const [sdsSumaColor, setSdsSumaColor] = useState(false)
-
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
+  const [activeTool, setActiveTool] = useState<ToolId | null>(null)
+  const [sdsSumaColor, setSdsSumaColor] = useState(false)
+  const [calcResult, setCalcResult] = useState<CalcResult | null>(null)
 
   const [toolData, setToolData] = useState({
     en0_cliente: "",
@@ -81,238 +55,133 @@ export default function ContadoresPage() {
     manual_fecha: "",
     ftp_fecha: "",
     sds_fecha: "",
-    calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" }
+    calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" },
   })
-  const [calcResult, setCalcResult] = useState<CalcResult | null>(null)
 
   useEffect(() => {
-    const today = new Date().toLocaleDateString('es-ES')
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setToolData(prev => ({
-      ...prev,
-      en0_fecha: today,
-      suma_fecha: today,
-      auto_fecha: today,
-      ftp_fecha: today,
-      sds_fecha: today
-    }))
+    const t = today()
+    setToolData(prev => ({ ...prev, en0_fecha: t, suma_fecha: t, auto_fecha: t, ftp_fecha: t, sds_fecha: t }))
   }, [])
 
-  const fetchClients = useCallback(async () => {
-    setIsLoadingClients(true)
-    try {
-      const response = await fetch(`${apiUrl}/api/ftp/clients`)
-      const data = await response.json()
-      if (data.clients) setClients(data.clients)
-    } catch (err) {
-      console.error("Error fetching clients:", err)
-      toast("Error al cargar lista de clientes", "error")
-    } finally {
-      setIsLoadingClients(false)
-    }
-  }, [apiUrl])
+  const proc = useProcess()
+  const ftp = useFtpClients(apiUrl)
+  const sds = useSdsClients(apiUrl)
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchClients()
-  }, [fetchClients])
-
-  const fetchSdsClients = useCallback(async () => {
-    setIsLoadingSdsClients(true)
-    try {
-      const response = await fetch(`${apiUrl}/api/sds/clients`)
-      const data = await response.json()
-      if (data.clients) setSdsClients(data.clients)
-    } catch (err) {
-      console.error("Error fetching SDS clients:", err)
-      toast("Error al cargar lista de clientes SDS", "error")
-    } finally {
-      setIsLoadingSdsClients(false)
+    if (activeTool === "sds" && sds.sdsClients.length === 0) {
+      sds.fetchSdsClients()
     }
-  }, [apiUrl])
+  }, [activeTool, sds])
 
-  useEffect(() => {
-    if (activeTool === "sds" && sdsClients.length === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      fetchSdsClients()
-    }
-  }, [activeTool, fetchSdsClients, sdsClients.length])
+  const closeModal = useCallback(() => {
+    setActiveTool(null)
+    proc.resetProcess()
+    setCalcResult(null)
+    ftp.resetDropdown()
+    sds.resetDropdown()
+  }, [proc, ftp, sds])
 
-  const handleSaveClient = async () => {
-    const isEdit = !!editingClient
-    const url = isEdit ? `${apiUrl}/api/ftp/clients/${editingClient!.id}` : `${apiUrl}/api/ftp/clients`
-    const method = isEdit ? "PUT" : "POST"
-
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(clientFormData)
-      })
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || "Error al guardar cliente")
-      }
-      
-      toast(isEdit ? "Cliente actualizado" : "Cliente creado", "success")
-      await fetchClients()
-      setEditingClient(null)
-      setIsManagingClients(false)
-      setClientFormData({ name: "", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*" })
-    } catch (err) {
-      const errorObj = err as Error;
-      setModalError(errorObj.message)
-      toast(errorObj.message, "error")
-    }
-  }
-
-  const handleDeleteClient = async (id: number) => {
-    try {
-      const response = await fetch(`${apiUrl}/api/ftp/clients/${id}`, {
-        method: "DELETE"
-      })
-      if (!response.ok) throw new Error("Error al eliminar cliente")
-
-      toast("Cliente eliminado", "success")
-      setDeletingClientId(null)
-      await fetchClients()
-    } catch (err) {
-      const errorObj = err as Error;
-      toast(errorObj.message, "error")
-      setDeletingClientId(null)
-    }
-  }
-
-  const runManualProcess = async (files: FileList | null) => {
+  const runManualProcess = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
-    setIsProcessing(true)
-    setStatus("idle")
-    setResultFiles([])
-
-    addLog(`Iniciando carga de ${files.length} archivo(s) DB3...`, 0)
-    addLog("Validando estructura de bases de datos...", 1000)
-    addLog("Filtrando registros por fecha...", 2500)
+    proc.setIsProcessing(true)
+    proc.setStatus("idle")
+    proc.setResultFiles([])
+    proc.addLog(`Iniciando carga de ${files.length} archivo(s) DB3...`, 0)
+    proc.addLog("Validando estructura de bases de datos...", 1000)
+    proc.addLog("Filtrando registros por fecha...", 2500)
 
     const formData = new FormData()
-    for (let i = 0; i < files.length; i++) {
-      formData.append("files", files[i])
-    }
+    for (let i = 0; i < files.length; i++) formData.append("files", files[i])
     formData.append("fecha_maxima", toolData.manual_fecha)
 
     try {
-      const response = await fetch(`${apiUrl}/api/contadores/process-db3`, {
-        method: "POST",
-        body: formData,
-      })
+      const response = await fetch(`${apiUrl}/api/contadores/process-db3`, { method: "POST", body: formData })
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || "Error al procesar DB3")
+        const err = await response.json()
+        throw new Error(err.detail || "Error al procesar DB3")
       }
+      proc.addLog("Consolidando datos y generando CSV...", 4000)
 
-      addLog("Consolidando datos y generando CSV...", 4000)
-      
-      // Manejar advertencias (archivos corruptos saltados)
       const warningsHeader = response.headers.get("X-Warnings")
       let warningCount = 0
       if (warningsHeader) {
         try {
           const warnings = JSON.parse(warningsHeader)
           warningCount = warnings.length
-          warnings.forEach((w: string, idx: number) => {
-            addLog(`⚠️ ${w}`, 4500 + (idx * 500))
-          })
+          warnings.forEach((w: string, idx: number) => proc.addLog(`⚠️ ${w}`, 4500 + idx * 500))
           toast(`${warningCount} archivo(s) omitido(s). Revisa los logs.`, "warning")
-        } catch (e) {
-          console.error("Error parseando warnings", e)
-        }
+        } catch (e) { console.error("Error parseando warnings", e) }
       }
 
-      addLog("Proceso completado.", 5500)
-
+      proc.addLog("Proceso completado.", 5500)
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      
-      const fileName = files.length === 1 
-        ? files[0].name.replace(".db3", ".csv")
-        : `Consolidado_${files.length - warningCount}_archivos.csv`
-        
-      a.download = fileName
+      a.download = files.length === 1 ? files[0].name.replace(/\.db3.*$/i, ".csv") : `Consolidado_${files.length - warningCount}_archivos.csv`
       document.body.appendChild(a)
       a.click()
       a.remove()
 
-      setStatus("success")
-      if (warningCount > 0) {
-        setMessage(`Procesados ${files.length - warningCount} de ${files.length} archivos. ${warningCount} archivos fueron omitidos por errores.`)
-      } else {
-        setMessage(`¡${files.length} archivo(s) procesado(s) y descargado(s) con éxito!`)
-      }
+      proc.setStatus("success")
+      proc.setMessage(warningCount > 0
+        ? `Procesados ${files.length - warningCount} de ${files.length} archivos. ${warningCount} omitidos por errores.`
+        : `¡${files.length} archivo(s) procesado(s) y descargado(s) con éxito!`)
       toast("Proceso DB3 finalizado", "success")
     } catch (err) {
-      setStatus("error")
-      const errorObj = err as Error;
-      setMessage(errorObj.message)
-      setModalError(errorObj.message)
+      const e = err as Error
+      proc.setStatus("error")
+      proc.setMessage(e.message)
+      proc.setModalError(e.message)
     } finally {
-      setIsProcessing(false)
-      setLogs([])
+      proc.setIsProcessing(false)
+      proc.setResultFiles([])
     }
-  }
+  }, [apiUrl, toolData.manual_fecha, proc])
 
-  const runFtpProcess = async () => {
-    if (!selectedClient) return
-    setIsProcessing(true)
-    setStatus("idle")
-    setResultFiles([])
-
-    addLog(`Conectando al servidor FTP de ${selectedClient}...`, 0)
-    addLog("Autenticando credenciales...", 1500)
-    addLog("Buscando bases de datos recientes...", 3000)
+  const runFtpProcess = useCallback(async () => {
+    if (!ftp.selectedClient) return
+    proc.setIsProcessing(true)
+    proc.setStatus("idle")
+    proc.setResultFiles([])
+    proc.addLog(`Conectando al servidor FTP de ${ftp.selectedClient}...`, 0)
+    proc.addLog("Autenticando credenciales...", 1500)
+    proc.addLog("Buscando bases de datos recientes...", 3000)
 
     try {
       const response = await fetch(`${apiUrl}/api/ftp/process-client`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          client_name: selectedClient,
-          fecha_maxima: toolData.ftp_fecha
-        }),
+        body: JSON.stringify({ client_name: ftp.selectedClient, fecha_maxima: toolData.ftp_fecha }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail)
-
-      addLog("Descarga exitosa. Iniciando conversión...", 5000)
-      addLog("Generando proyecciones temporales...", 7000)
-
-      setResultFiles([data.csv_file, data.db3_file])
-      setStatus("success")
-      setMessage(data.message)
+      proc.addLog("Descarga exitosa. Iniciando conversión...", 5000)
+      proc.addLog("Generando proyecciones temporales...", 7000)
+      proc.setResultFiles([data.csv_file, data.db3_file])
+      proc.setStatus("success")
+      proc.setMessage(data.message)
       toast("Sincronización FTP completada", "success")
     } catch (err) {
-      setStatus("error")
-      const errorObj = err as Error;
-      setMessage(errorObj.message)
-      setModalError(errorObj.message)
+      const e = err as Error
+      proc.setStatus("error")
+      proc.setMessage(e.message)
+      proc.setModalError(e.message)
     } finally {
-      setIsProcessing(false)
-      setLogs([])
+      proc.setIsProcessing(false)
     }
-  }
+  }, [apiUrl, ftp.selectedClient, toolData.ftp_fecha, proc])
 
-  const runSdsProcess = async () => {
-    if (!selectedSdsClient) return
-    setIsProcessing(true)
-    setStatus("idle")
-    setResultFiles([])
-
-    addLog(`Conectando con API de HP SDS para ${selectedSdsClient.name}...`, 0)
-    addLog("Obteniendo ciclos de motor...", 1500)
+  const runSdsProcess = useCallback(async () => {
+    if (!sds.selectedSdsClient) return
+    proc.setIsProcessing(true)
+    proc.setStatus("idle")
+    proc.setResultFiles([])
+    proc.addLog(`Conectando con API de HP SDS para ${sds.selectedSdsClient.name}...`, 0)
+    proc.addLog("Obteniendo ciclos de motor...", 1500)
 
     let isoDate = ""
     try {
-      // asumimos DD/MM/YYYY
       const parts = toolData.sds_fecha.split("/")
       if (parts.length === 3) {
         const [d, m, y] = parts
@@ -320,100 +189,84 @@ export default function ContadoresPage() {
       } else {
         isoDate = new Date().toISOString()
       }
-    } catch {
-      isoDate = new Date().toISOString()
-    }
+    } catch { isoDate = new Date().toISOString() }
 
     try {
       const response = await fetch(`${apiUrl}/api/sds/process`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          customer_id: selectedSdsClient.customerId,
-          customer_name: selectedSdsClient.name,
-          fecha_maxima: isoDate,
-          suma_color: sdsSumaColor
-        }),
+        body: JSON.stringify({ customer_id: sds.selectedSdsClient.customerId, customer_name: sds.selectedSdsClient.name, fecha_maxima: isoDate, suma_color: sdsSumaColor }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail)
-
-      addLog("Generando archivo CSV...", 4000)
-
-      setResultFiles([data.csv_file])
-      setStatus("success")
-      setMessage(data.message)
+      proc.addLog("Generando archivo CSV...", 4000)
+      proc.setResultFiles([data.csv_file])
+      proc.setStatus("success")
+      proc.setMessage(data.message)
       toast("Descarga de SDS completada", "success")
     } catch (err) {
-      setStatus("error")
-      const errorObj = err as Error;
-      setMessage(errorObj.message)
-      setModalError(errorObj.message)
+      const e = err as Error
+      proc.setStatus("error")
+      proc.setMessage(e.message)
+      proc.setModalError(e.message)
     } finally {
-      setIsProcessing(false)
-      setLogs([])
+      proc.setIsProcessing(false)
     }
-  }
+  }, [apiUrl, sds.selectedSdsClient, toolData.sds_fecha, sdsSumaColor, proc])
 
-
-  const runTool = async (tool: string, toolFiles: FileList | null) => {
-    if (!toolFiles || toolFiles.length === 0) return
-    setIsProcessing(true)
-    setStatus("idle")
-    setResultFiles([])
-
-    addLog(`Iniciando herramienta: ${tool.toUpperCase()}...`, 0)
-    addLog("Preparando archivos para transferencia...", 1000)
+  const runTool = useCallback(async (tool: string, files: FileList | null) => {
+    if (!files || files.length === 0) return
+    proc.setIsProcessing(true)
+    proc.setStatus("idle")
+    proc.setResultFiles([])
+    proc.addLog(`Iniciando herramienta: ${tool.toUpperCase()}...`, 0)
+    proc.addLog("Preparando archivos para transferencia...", 1000)
 
     const formData = new FormData()
     let endpoint = ""
 
     if (tool === "en0") {
       endpoint = "/api/tools/en0"
-      formData.append("file", toolFiles[0])
+      formData.append("file", files[0])
       formData.append("fecha", toolData.en0_fecha)
       formData.append("cliente", toolData.en0_cliente || "CLIENTE")
-      addLog("Limpiando equipos a cero...", 2500)
+      proc.addLog("Limpiando equipos a cero...", 2500)
     } else if (tool === "suma") {
       endpoint = "/api/tools/suma-fija"
-      for (let i = 0; i < toolFiles.length; i++) formData.append("files", toolFiles[i])
+      for (let i = 0; i < files.length; i++) formData.append("files", files[i])
       formData.append("fecha", toolData.suma_fecha)
       formData.append("hojas", toolData.suma_hojas.toString())
-      addLog(`Aplicando suma fija de ${toolData.suma_hojas} hojas...`, 2500)
+      proc.addLog(`Aplicando suma fija de ${toolData.suma_hojas} hojas...`, 2500)
     } else if (tool === "auto") {
       endpoint = "/api/tools/autoestim"
-      formData.append("file", toolFiles[0])
+      formData.append("file", files[0])
       formData.append("fecha", toolData.auto_fecha)
-      addLog("Generando proyecciones IA...", 2500)
+      proc.addLog("Generando proyecciones IA...", 2500)
     }
 
     try {
       const response = await fetch(`${apiUrl}${endpoint}`, { method: "POST", body: formData })
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail || "Error en la herramienta")
-
-      addLog("Recibiendo resultados del servidor...", 4500)
-      addLog("Verificando integridad del reporte...", 6000)
-
-      if (data.file) setResultFiles([data.file])
-      if (data.files) setResultFiles(data.files)
-
-      setStatus("success")
-      setMessage(data.message || "Proceso completado.")
+      proc.addLog("Recibiendo resultados del servidor...", 4500)
+      proc.addLog("Verificando integridad del reporte...", 6000)
+      if (data.file) proc.setResultFiles([data.file])
+      if (data.files) proc.setResultFiles(data.files)
+      proc.setStatus("success")
+      proc.setMessage(data.message || "Proceso completado.")
       toast(`Herramienta ${tool.toUpperCase()} ejecutada`, "success")
     } catch (err) {
-      setStatus("error")
-      const errorObj = err as Error;
-      setMessage(errorObj.message)
-      setModalError(errorObj.message)
+      const e = err as Error
+      proc.setStatus("error")
+      proc.setMessage(e.message)
+      proc.setModalError(e.message)
       toast("Error en la ejecución", "error")
     } finally {
-      setIsProcessing(false)
-      setLogs([])
+      proc.setIsProcessing(false)
     }
-  }
+  }, [apiUrl, toolData, proc])
 
-  const runCalc = async () => {
+  const runCalc = useCallback(async () => {
     try {
       const response = await fetch(`${apiUrl}/api/tools/calc`, {
         method: "POST",
@@ -423,24 +276,12 @@ export default function ContadoresPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail)
       setCalcResult(data)
-    } catch (error) { 
-      const err = error as Error;
-      setModalError(err.message) 
+    } catch (err) {
+      proc.setModalError((err as Error).message)
     }
-  }
+  }, [apiUrl, toolData.calc, proc])
 
-  const closeModal = () => {
-    setActiveTool(null)
-    setStatus("idle")
-    setMessage("")
-    setResultFiles([])
-    setModalError(null)
-    setCalcResult(null)
-    setShowClientDropdown(false)
-    setShowSdsClientDropdown(false)
-    setClientSearch("")
-    setSdsClientSearch("")
-  }
+  const hasDropdownOpen = ftp.showDropdown || sds.showDropdown
 
   return (
     <PageShell>
@@ -454,62 +295,9 @@ export default function ContadoresPage() {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
-            <ActionCard
-              icon={CloudDownload}
-              title="Descargar SDS"
-              desc="Obtén los contadores de impresoras directamente desde el API de HP SDS."
-              color="text-blue-500"
-              onClick={() => setActiveTool("sds")}
-              delay={0.3}
-            />
-            <ActionCard
-              icon={Server}
-              title="Descarga FTP"
-              desc="Obtén las bases de datos directamente desde los servidores de los clientes."
-              color="text-indigo-500"
-              onClick={() => setActiveTool("ftp")}
-              delay={0.4}
-            />
-            <ActionCard
-              icon={Database}
-              title="Procesar DB3"
-              desc="Sube manualmente archivos .db3 para convertirlos a CSV localmente."
-              color="text-orange-500"
-              onClick={() => setActiveTool("manual")}
-              delay={0.5}
-            />
-            <ActionCard
-              icon={Eraser}
-              title="Estimación en 0"
-              desc="Resetea equipos que no reportaron usando el último contador conocido."
-              color="text-rose-500"
-              onClick={() => setActiveTool("en0")}
-              delay={0.6}
-            />
-            <ActionCard
-              icon={PlusCircle}
-              title="Suma Fija"
-              desc="Aplica incrementos masivos de hojas a partir de archivos Excel."
-              color="text-emerald-500"
-              onClick={() => setActiveTool("suma")}
-              delay={0.7}
-            />
-            <ActionCard
-              icon={Wand2}
-              title="Autoestimación"
-              desc="Genera proyecciones automáticas basadas en el historial de consumo."
-              color="text-amber-500"
-              onClick={() => setActiveTool("auto")}
-              delay={0.8}
-            />
-            <ActionCard
-              icon={Calculator}
-              title="Calculadora"
-              desc="Herramienta interactiva para proyecciones manuales por fecha."
-              color="text-sky-500"
-              onClick={() => setActiveTool("calc")}
-              delay={0.9}
-            />
+            {TOOLS.map(t => (
+              <ActionCard key={t.id} icon={t.icon} title={t.title} desc={t.desc} color={t.color} onClick={() => setActiveTool(t.id)} delay={t.delay} />
+            ))}
           </div>
         </div>
       </div>
@@ -517,584 +305,109 @@ export default function ContadoresPage() {
       <Modal
         isOpen={!!activeTool}
         onClose={closeModal}
-        title={
-          activeTool === "sds" ? "Descargar SDS" :
-          activeTool === "ftp" ? "Descarga FTP" :
-          activeTool === "manual" ? "Procesar DB3" :
-          activeTool === "en0" ? "Estimación en 0" :
-          activeTool === "suma" ? "Suma Fija" :
-          activeTool === "auto" ? "Autoestimación" :
-          activeTool === "calc" ? "Calculadora" : ""
-        }
+        title={activeTool ? TOOL_TITLES[activeTool] : ""}
         maxWidth="max-w-lg"
-        error={modalError}
+        error={proc.modalError}
       >
-        <div className={`space-y-6 relative z-10 transition-all duration-300 ${(showClientDropdown || showSdsClientDropdown) ? "pb-64" : ""}`}>
-          <AnimatePresence mode="wait">
-            {isProcessing ? (
-              <motion.div
-                key="processing"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.1 }}
-                className="py-12 flex flex-col items-center justify-center gap-6"
-              >
-                <div className="relative h-20 w-20">
-                  <div className="absolute inset-0 rounded-full border-4 border-accent/20" />
-                  <div className="absolute inset-0 rounded-full border-4 border-accent border-t-transparent animate-spin" />
-                  <Loader2 className="absolute inset-0 m-auto h-8 w-8 text-accent animate-pulse" />
-                </div>
-                <div className="w-full space-y-3">
-                  <div className="text-center">
-                    <h3 className="text-xl font-bold mb-1 text-foreground">Procesando solicitud</h3>
-                    <p className="text-muted-foreground animate-pulse text-xs text-display">Ejecución en curso...</p>
-                  </div>
-                  <div className="bg-muted/50 dark:bg-black/40 rounded-2xl p-4 border border-border dark:border-white/10 font-mono text-[10px] h-36 overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                    <div className="space-y-1.5">
-                      {logs.map((log, i) => (
-                        <motion.p
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          key={i}
-                          className="text-accent flex items-center gap-2"
-                        >
-                          <span className="text-accent/30 font-bold">[{log.time}]</span>
-                          <span className="text-foreground/90">{log.msg}</span>
-                        </motion.p>
-                      ))}
-                      <motion.p
-                        animate={{ opacity: [0.3, 1, 0.3] }}
-                        transition={{ repeat: Infinity, duration: 1.5 }}
-                        className="text-accent/50 italic"
-                      >
-                        _ analizando subprocesos técnicos...
-                      </motion.p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ) : status === "success" || status === "error" ? (
-              <motion.div
-                key="result"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6 py-4"
-              >
-                <div className={`p-6 rounded-[2rem] flex flex-col items-center text-center gap-4 ${status === "success" ? "bg-green-500/10 border border-green-500/20 text-green-600" : "bg-destructive/10 border border-destructive/20 text-destructive"}`}>
-                  <div className={`p-4 rounded-2xl ${status === "success" ? "bg-green-500/20" : "bg-destructive/20"}`}>
-                    {status === "success" ? <CheckCircle2 className="h-10 w-10" /> : <AlertCircle className="h-10 w-10" />}
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-display font-black tracking-tighter uppercase">{status === "success" ? "¡Completado!" : "Error en el proceso"}</h3>
-                    <p className="font-medium text-sm opacity-80">{message}</p>
-                  </div>
-                </div>
-
-                {status === "success" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-2 gap-3"
-                  >
-                    <div className="p-4 bg-accent/5 border border-accent/10 rounded-2xl">
-                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Resultado</p>
-                      <p className="text-xs font-bold text-foreground">Procesado OK</p>
-                    </div>
-                    <div className="p-4 bg-accent/5 border border-accent/10 rounded-2xl">
-                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Seguridad</p>
-                      <p className="text-xs font-bold text-foreground">Validado</p>
-                    </div>
-                  </motion.div>
-                )}
-
-                {resultFiles.length > 0 && (
-                  <div className="space-y-3">
-                    <p className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Archivos listos para descargar</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      {resultFiles.map(f => (
-                        <a
-                          key={f}
-                          href={`${apiUrl}/api/download/${f}`}
-                          download
-                          className="flex items-center justify-between p-5 bg-background/50 border rounded-2xl hover:border-orange-500/50 hover:shadow-lg transition-all group"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 bg-orange-500/10 rounded-xl">
-                              <FileText className="h-6 w-6 text-orange-500" />
-                            </div>
-                            <div className="text-left">
-                              <p className="font-bold text-sm truncate max-w-[200px] text-foreground">{f}</p>
-                              <p className="text-[9px] text-muted-foreground uppercase font-bold">Documento Generado</p>
-                            </div>
-                          </div>
-                          <Download className="h-5 w-5 text-orange-500 group-hover:scale-110 transition-transform" />
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setStatus("idle")}
-                  className="w-full h-14 bg-secondary hover:bg-secondary/80 rounded-2xl font-bold transition-all text-foreground"
-                >
-                  Volver a intentar
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                {activeTool === "ftp" && (
-                  <div className="space-y-4">
-                    {isManagingClients ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <button 
-                            onClick={() => {
-                              setIsManagingClients(false)
-                              setEditingClient(null)
-                            }}
-                            className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                            VOLVER A SELECCIÓN
-                          </button>
-                          {!editingClient && (
-                            <h3 className="text-sm font-black uppercase tracking-widest text-accent">Gestión de Clientes</h3>
-                          )}
-                        </div>
-
-                        {editingClient || clientFormData.name ? (
-                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 bg-muted/20 p-6 rounded-[2rem] border border-border">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Nombre Cliente</label>
-                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.name} onChange={e => setClientFormData({...clientFormData, name: e.target.value})} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Host FTP</label>
-                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.host} onChange={e => setClientFormData({...clientFormData, host: e.target.value})} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Usuario</label>
-                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.user} onChange={e => setClientFormData({...clientFormData, user: e.target.value})} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Contraseña</label>
-                                <input type="password" title="Contraseña FTP" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.password} onChange={e => setClientFormData({...clientFormData, password: e.target.value})} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Ruta Remota</label>
-                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.path} onChange={e => setClientFormData({...clientFormData, path: e.target.value})} />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Patrón DB3</label>
-                                <input type="text" className="w-full h-11 px-4 rounded-xl border bg-background text-sm" value={clientFormData.pattern} onChange={e => setClientFormData({...clientFormData, pattern: e.target.value})} />
-                              </div>
-                            </div>
-                            <div className="flex gap-2 pt-2">
-                              <button onClick={handleSaveClient} className="flex-1 h-12 bg-accent text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg shadow-accent/20">
-                                {editingClient ? "Actualizar Cliente" : "Guardar Nuevo Cliente"}
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setEditingClient(null)
-                                  setClientFormData({ name: "", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*" })
-                                }} 
-                                className="px-6 h-12 bg-muted rounded-xl font-bold hover:bg-muted/80 transition-all"
-                              >
-                                Cancelar
-                              </button>
-                            </div>
-                          </motion.div>
-                        ) : (
-                          <div className="space-y-2">
-                            <button 
-                              onClick={() => setClientFormData({ name: "NUEVO CLIENTE", host: "", user: "", password: "", path: "/", pattern: "PrinterMonitorClient.db3.*" })}
-                              className="w-full h-14 border-2 border-dashed border-accent/20 rounded-2xl flex items-center justify-center gap-2 text-accent font-bold hover:bg-accent/5 transition-all mb-4"
-                            >
-                              <Plus className="h-5 w-5" />
-                              AGREGAR NUEVO CLIENTE
-                            </button>
-                            <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar space-y-2">
-                              {clients.map(c => (
-                                <div key={c.id} className="p-4 bg-muted/20 border rounded-2xl transition-all hover:border-accent/50">
-                                  {deletingClientId === c.id ? (
-                                    <div className="flex items-center justify-between gap-2">
-                                      <p className="text-xs font-bold text-destructive">¿Eliminar <span className="text-foreground">{c.name}</span>?</p>
-                                      <div className="flex gap-1 shrink-0">
-                                        <button
-                                          onClick={() => handleDeleteClient(c.id)}
-                                          className="px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-xs font-bold hover:opacity-90 transition-all"
-                                        >
-                                          Eliminar
-                                        </button>
-                                        <button
-                                          onClick={() => setDeletingClientId(null)}
-                                          className="px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-bold hover:bg-muted/80 transition-all"
-                                        >
-                                          Cancelar
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <p className="font-bold text-sm text-foreground">{c.name}</p>
-                                        <p className="text-[10px] text-muted-foreground">{c.host}</p>
-                                      </div>
-                                      <div className="flex gap-1">
-                                        <button
-                                          onClick={() => {
-                                            setEditingClient(c)
-                                            setClientFormData({
-                                              name: c.name, host: c.host, user: c.user, password: c.password, path: c.path, pattern: c.pattern
-                                            })
-                                          }}
-                                          className="p-2 hover:bg-accent/10 rounded-lg text-muted-foreground hover:text-accent transition-colors"
-                                        >
-                                          <Edit className="h-4 w-4" />
-                                        </button>
-                                        <button
-                                          onClick={() => setDeletingClientId(c.id)}
-                                          className="p-2 hover:bg-destructive/10 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between ml-1">
-                            <label className="text-[10px] font-bold uppercase text-muted-foreground">Seleccionar Cliente</label>
-                            <button 
-                              onClick={() => setIsManagingClients(true)}
-                              className="flex items-center gap-1.5 text-[10px] font-black text-accent hover:text-orange-400 transition-colors uppercase tracking-wider"
-                            >
-                              <Settings className="h-3 w-3" />
-                              Gestionar Clientes
-                            </button>
-                          </div>
-                          {isLoadingClients ? (
-                            <div className="h-14 flex items-center justify-center border rounded-2xl bg-muted/20">
-                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                            </div>
-                          ) : (
-                            <div className="relative">
-                              <div
-                                className="w-full h-14 px-5 rounded-2xl border bg-background flex items-center justify-between cursor-pointer hover:border-orange-500/50 transition-all shadow-sm"
-                                onClick={() => setShowClientDropdown(!showClientDropdown)}
-                              >
-                                <span className={selectedClient ? "text-foreground font-medium" : "text-muted-foreground"}>
-                                  {selectedClient || "Selecciona un cliente..."}
-                                </span>
-                                <PlusCircle className={`h-5 w-5 text-muted-foreground transition-transform ${showClientDropdown ? "rotate-45" : ""}`} />
-                              </div>
-                              <AnimatePresence>
-                                {showClientDropdown && (
-                                  <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-3xl shadow-2xl z-[60] overflow-hidden"
-                                  >
-                                    <div className="p-4 border-b bg-muted/20">
-                                      <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <input
-                                          autoFocus
-                                          type="text"
-                                          placeholder="Buscar cliente..."
-                                          className="w-full h-10 pl-10 pr-4 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-orange-500/20"
-                                          value={clientSearch}
-                                          onChange={(e) => setClientSearch(e.target.value)}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="max-h-[250px] overflow-y-auto p-2 custom-scrollbar">
-                                      {clients.filter(c => c.name.toLowerCase().includes(clientSearch.toLowerCase())).map(c => (
-                                        <button
-                                          key={c.id}
-                                          onClick={() => {
-                                            setSelectedClient(c.name)
-                                            setShowClientDropdown(false)
-                                            setClientSearch("")
-                                          }}
-                                          className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${selectedClient === c.name ? "bg-orange-500 text-white font-bold" : "hover:bg-accent text-foreground"}`}
-                                        >
-                                          {c.name}
-                                        </button>
-                                      ))}
-                                      {clients.filter(c => c.name.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 && (
-                                        <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron clientes.</p>
-                                      )}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha Máxima de Procesamiento</label>
-                          <input
-                            type="text"
-                            placeholder="DD/MM/YYYY"
-                            className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground focus:ring-2 focus:ring-orange-500/20 outline-none transition-all"
-                            value={toolData.ftp_fecha}
-                            onChange={e => setToolData({ ...toolData, ftp_fecha: e.target.value })}
-                          />
-                        </div>
-
-                        <button
-                          onClick={runFtpProcess}
-                          disabled={!selectedClient || isProcessing}
-                          className="w-full h-14 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20"
-                        >
-                          <Play className="h-5 w-5 fill-current" />
-                          Iniciar Descarga
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {activeTool === "sds" && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Seleccionar Cliente SDS</label>
-                      {isLoadingSdsClients ? (
-                        <div className="h-14 flex items-center justify-center border rounded-2xl bg-muted/20">
-                          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <div
-                            className="w-full h-14 px-5 rounded-2xl border bg-background flex items-center justify-between cursor-pointer hover:border-blue-500/50 transition-all shadow-sm"
-                            onClick={() => setShowSdsClientDropdown(!showSdsClientDropdown)}
-                          >
-                            <span className={selectedSdsClient ? "text-foreground font-medium" : "text-muted-foreground"}>
-                              {selectedSdsClient ? selectedSdsClient.name : "Selecciona un cliente..."}
-                            </span>
-                            <PlusCircle className={`h-5 w-5 text-muted-foreground transition-transform ${showSdsClientDropdown ? "rotate-45" : ""}`} />
-                          </div>
-                          <AnimatePresence>
-                            {showSdsClientDropdown && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="absolute top-full left-0 right-0 mt-2 bg-card border rounded-3xl shadow-2xl z-[60] overflow-hidden"
-                              >
-                                <div className="p-4 border-b bg-muted/20">
-                                  <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <input
-                                      autoFocus
-                                      type="text"
-                                      placeholder="Buscar cliente SDS..."
-                                      className="w-full h-10 pl-10 pr-4 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
-                                      value={sdsClientSearch}
-                                      onChange={(e) => setSdsClientSearch(e.target.value)}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="max-h-[250px] overflow-y-auto p-2 custom-scrollbar">
-                                  {sdsClients.filter(c => c.name.toLowerCase().includes(sdsClientSearch.toLowerCase())).map(c => (
-                                    <button
-                                      key={c.customerId}
-                                      onClick={() => {
-                                        setSelectedSdsClient(c)
-                                        setShowSdsClientDropdown(false)
-                                        setSdsClientSearch("")
-                                      }}
-                                      className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${selectedSdsClient?.customerId === c.customerId ? "bg-blue-500 text-white font-bold" : "hover:bg-accent text-foreground"}`}
-                                    >
-                                      {c.name}
-                                    </button>
-                                  ))}
-                                  {sdsClients.filter(c => c.name.toLowerCase().includes(sdsClientSearch.toLowerCase())).length === 0 && (
-                                    <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron clientes.</p>
-                                  )}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha Máxima de Proceso</label>
-                      <input
-                        type="text"
-                        placeholder="DD/MM/YYYY"
-                        className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
-                        value={toolData.sds_fecha}
-                        onChange={e => setToolData({ ...toolData, sds_fecha: e.target.value })}
-                      />
-                    </div>
-
-                    {/* Checkbox Suma Color */}
-                    <label className="flex items-center gap-3 cursor-pointer group select-none">
-                      <div
-                        onClick={() => setSdsSumaColor(prev => !prev)}
-                        className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
-                          sdsSumaColor ? "bg-blue-500" : "bg-border"
-                        }`}
-                      >
-                        <span
-                          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
-                            sdsSumaColor ? "translate-x-5" : "translate-x-0"
-                          }`}
-                        />
-                      </div>
-                      <span className="text-sm font-medium text-foreground">
-                        Suma color
-                      </span>
-                      <span className="text-[11px] text-muted-foreground">
-                        (equipo color: suma ciclos totales en CLASE 20, TIPO 21)
-                      </span>
-                    </label>
-
-                    <button
-                      onClick={runSdsProcess}
-                      disabled={!selectedSdsClient || isProcessing}
-                      className="w-full h-14 bg-blue-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
-                    >
-                      <Download className="h-5 w-5" />
-                      Descargar Contadores
-                    </button>
-                  </div>
-                )}
-
-                {activeTool === "manual" && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha Máxima (Opcional)</label>
-                      <input
-                        type="text"
-                        placeholder="DD/MM/YYYY"
-                        className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground"
-                        value={toolData.manual_fecha}
-                        onChange={e => setToolData({ ...toolData, manual_fecha: e.target.value })}
-                      />
-                    </div>
-                    <FileInput label="Seleccionar archivos .db3" multiple accept=".db3" onChange={(files) => runManualProcess(files)} />
-                  </div>
-                )}
-
-                {activeTool === "en0" && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Cliente</label>
-                        <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.en0_cliente} onChange={e => setToolData({ ...toolData, en0_cliente: e.target.value })} />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha</label>
-                        <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.en0_fecha} onChange={e => setToolData({ ...toolData, en0_fecha: e.target.value })} />
-                      </div>
-                    </div>
-                    <FileInput label="Sube el CSV de entrada" accept=".csv" onChange={(files) => runTool("en0", files)} />
-                  </div>
-                )}
-
-                {activeTool === "suma" && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Hojas a Sumar</label>
-                        <input type="number" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.suma_hojas} onChange={e => setToolData({ ...toolData, suma_hojas: parseInt(e.target.value) })} />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha</label>
-                        <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.suma_fecha} onChange={e => setToolData({ ...toolData, suma_fecha: e.target.value })} />
-                      </div>
-                    </div>
-                    <FileInput label="Selecciona archivos XLS/XLSX" multiple accept=".xls,.xlsx" onChange={(files) => runTool("suma", files)} />
-                  </div>
-                )}
-
-                {activeTool === "auto" && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha de Estimación</label>
-                      <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.auto_fecha} onChange={e => setToolData({ ...toolData, auto_fecha: e.target.value })} />
-                    </div>
-                    <FileInput label="Selecciona CSV Detalle" accept=".csv" onChange={(files) => runTool("auto", files)} />
-                  </div>
-                )}
-
-                {activeTool === "calc" && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-3 p-5 bg-muted/20 rounded-[2rem] border">
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground text-center">Lectura Inicial</p>
-                        <input type="text" placeholder="DD/MM/YYYY" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" value={toolData.calc.fi} onChange={e => setToolData({ ...toolData, calc: { ...toolData.calc, fi: e.target.value } })} />
-                        <input type="number" placeholder="Contador" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" onChange={e => setToolData({ ...toolData, calc: { ...toolData.calc, ci: parseInt(e.target.value) } })} />
-                      </div>
-                      <div className="space-y-3 p-5 bg-muted/20 rounded-[2rem] border">
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground text-center">Lectura Final</p>
-                        <input type="text" placeholder="DD/MM/YYYY" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" value={toolData.calc.ff} onChange={e => setToolData({ ...toolData, calc: { ...toolData.calc, ff: e.target.value } })} />
-                        <input type="number" placeholder="Contador" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" onChange={e => setToolData({ ...toolData, calc: { ...toolData.calc, cf: parseInt(e.target.value) } })} />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha a Proyectar</label>
-                      <input type="text" placeholder="DD/MM/YYYY" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={toolData.calc.fe} onChange={e => setToolData({ ...toolData, calc: { ...toolData.calc, fe: e.target.value } })} />
-                    </div>
-                    <button onClick={runCalc} className="w-full h-14 bg-sky-500 text-white rounded-2xl font-bold hover:opacity-90 transition-all shadow-lg shadow-sky-500/20">Calcular Proyección</button>
-
-                    {calcResult && (
-                      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="p-6 bg-sky-500/5 border border-sky-500/20 rounded-[2rem] grid grid-cols-2 gap-6">
-                        <div><p className="text-[9px] uppercase font-bold text-muted-foreground mb-1">Imp. Diarias</p><p className="text-2xl font-bold text-foreground">{calcResult.imp_dia}</p></div>
-                        <div><p className="text-[9px] uppercase font-bold text-muted-foreground mb-1">Cont. Estimado</p><p className="text-2xl font-bold text-sky-500">{calcResult.cont_est}</p></div>
-                        <div><p className="text-[9px] uppercase font-bold text-muted-foreground mb-1">Imp. Mensual</p><p className="text-2xl font-bold text-foreground">{calcResult.imp_mes}</p></div>
-                        <div><p className="text-[9px] uppercase font-bold text-muted-foreground mb-1">Días Totales</p><p className="text-2xl font-bold text-foreground">{calcResult.dias_est}</p></div>
-                      </motion.div>
-                    )}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <ModalContent
+          isProcessing={proc.isProcessing}
+          status={proc.status}
+          logs={proc.logs}
+          message={proc.message}
+          resultFiles={proc.resultFiles}
+          apiUrl={apiUrl}
+          onRetry={() => proc.setStatus("idle")}
+          hasDropdownOpen={hasDropdownOpen}
+        >
+          {activeTool === "ftp" && (
+            <FtpForm
+              isLoadingClients={ftp.isLoadingClients}
+              clients={ftp.clients}
+              filteredClients={ftp.filteredClients}
+              selectedClient={ftp.selectedClient}
+              showDropdown={ftp.showDropdown}
+              search={ftp.search}
+              deletingId={ftp.deletingId}
+              isManaging={ftp.isManaging}
+              editingClient={ftp.editingClient}
+              formData={ftp.formData}
+              isProcessing={proc.isProcessing}
+              onSelectClient={(name) => { ftp.setSelectedClient(name); ftp.setShowDropdown(false) }}
+              onToggleDropdown={() => ftp.setShowDropdown(v => !v)}
+              onSearchChange={ftp.setSearch}
+              onToggleManaging={() => ftp.setIsManaging(v => !v)}
+              onSetDeletingId={ftp.setDeletingId}
+              onStartEdit={ftp.startEdit}
+              onSetFormData={ftp.setFormData}
+              onSetEditingClient={ftp.setEditingClient}
+              onSave={ftp.handleSave}
+              onDelete={ftp.handleDelete}
+              onRun={runFtpProcess}
+              fecha={toolData.ftp_fecha}
+              onFechaChange={v => setToolData(prev => ({ ...prev, ftp_fecha: v }))}
+              onModalError={proc.setModalError}
+            />
+          )}
+          {activeTool === "sds" && (
+            <SdsForm
+              isLoadingSdsClients={sds.isLoadingSdsClients}
+              filteredSdsClients={sds.filteredSdsClients}
+              selectedSdsClient={sds.selectedSdsClient}
+              showDropdown={sds.showDropdown}
+              search={sds.search}
+              sdsSumaColor={sdsSumaColor}
+              isProcessing={proc.isProcessing}
+              fecha={toolData.sds_fecha}
+              onToggleDropdown={() => sds.setShowDropdown(v => !v)}
+              onSelectClient={(c) => { sds.setSelectedSdsClient(c); sds.setShowDropdown(false) }}
+              onSearchChange={sds.setSearch}
+              onToggleSumaColor={() => setSdsSumaColor(v => !v)}
+              onFechaChange={v => setToolData(prev => ({ ...prev, sds_fecha: v }))}
+              onRun={runSdsProcess}
+            />
+          )}
+          {activeTool === "manual" && (
+            <ManualForm
+              fecha={toolData.manual_fecha}
+              onFechaChange={v => setToolData(prev => ({ ...prev, manual_fecha: v }))}
+              onRun={runManualProcess}
+            />
+          )}
+          {activeTool === "en0" && (
+            <En0Form
+              cliente={toolData.en0_cliente}
+              fecha={toolData.en0_fecha}
+              onClienteChange={v => setToolData(prev => ({ ...prev, en0_cliente: v }))}
+              onFechaChange={v => setToolData(prev => ({ ...prev, en0_fecha: v }))}
+              onRun={files => runTool("en0", files)}
+            />
+          )}
+          {activeTool === "suma" && (
+            <SumaForm
+              hojas={toolData.suma_hojas}
+              fecha={toolData.suma_fecha}
+              onHojasChange={v => setToolData(prev => ({ ...prev, suma_hojas: v }))}
+              onFechaChange={v => setToolData(prev => ({ ...prev, suma_fecha: v }))}
+              onRun={files => runTool("suma", files)}
+            />
+          )}
+          {activeTool === "auto" && (
+            <AutoForm
+              fecha={toolData.auto_fecha}
+              onFechaChange={v => setToolData(prev => ({ ...prev, auto_fecha: v }))}
+              onRun={files => runTool("auto", files)}
+            />
+          )}
+          {activeTool === "calc" && (
+            <CalcForm
+              calc={toolData.calc}
+              calcResult={calcResult}
+              onCalcChange={calc => setToolData(prev => ({ ...prev, calc }))}
+              onRun={runCalc}
+            />
+          )}
+        </ModalContent>
       </Modal>
     </PageShell>
-  )
-}
-
-function ActionCard({ icon: Icon, title, desc, color, onClick, delay }: {
-  icon: React.ElementType
-  title: string
-  desc: string
-  color: string
-  onClick: () => void
-  delay: number
-}) {
-  return (
-    <SpotlightCard onClick={onClick} delay={delay}>
-      <div className="p-4">
-        <div className={`mb-2 p-2 inline-flex rounded-lg bg-orange-500/10 ${color} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
-          <Icon className="h-4 w-4" />
-        </div>
-        <h3 className="text-base font-bold mb-0.5 text-foreground group-hover:text-orange-500 transition-colors">{title}</h3>
-        <p className="text-muted-foreground text-[11px] leading-tight mb-3 line-clamp-2">{desc}</p>
-        <div className="flex items-center gap-2 text-[9px] font-bold text-orange-500">
-          INICIAR PROCESO
-          <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
-        </div>
-      </div>
-    </SpotlightCard>
   )
 }
