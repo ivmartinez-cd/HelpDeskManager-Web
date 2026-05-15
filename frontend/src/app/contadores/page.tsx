@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import {
-  FileText, Database, Calculator, Wand2, Eraser,
+  Database, Calculator, Wand2, Eraser,
   PlusCircle, Server, CloudDownload
 } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
@@ -38,30 +38,26 @@ const TOOL_TITLES: Record<ToolId, string> = {
   en0: "Estimación en 0", suma: "Suma Fija", auto: "Autoestimación", calc: "Calculadora"
 }
 
-const today = () => new Date().toLocaleDateString("es-ES")
-
 export default function ContadoresPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
   const [activeTool, setActiveTool] = useState<ToolId | null>(null)
   const [sdsSumaColor, setSdsSumaColor] = useState(false)
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null)
 
-  const [toolData, setToolData] = useState({
-    en0_cliente: "",
-    en0_fecha: "",
-    suma_hojas: 1000,
-    suma_fecha: "",
-    auto_fecha: "",
-    manual_fecha: "",
-    ftp_fecha: "",
-    sds_fecha: "",
-    calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" },
+  const [toolData, setToolData] = useState(() => {
+    const t = new Date().toLocaleDateString("es-ES")
+    return {
+      en0_cliente: "",
+      en0_fecha: t,
+      suma_hojas: 1000,
+      suma_fecha: t,
+      auto_fecha: t,
+      manual_fecha: "",
+      ftp_fecha: t,
+      sds_fecha: t,
+      calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" },
+    }
   })
-
-  useEffect(() => {
-    const t = today()
-    setToolData(prev => ({ ...prev, en0_fecha: t, suma_fecha: t, auto_fecha: t, ftp_fecha: t, sds_fecha: t }))
-  }, [])
 
   const proc = useProcess()
   const ftp = useFtpClients(apiUrl)

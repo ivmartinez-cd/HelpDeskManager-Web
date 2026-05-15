@@ -47,7 +47,10 @@ export function useFtpClients(apiUrl: string) {
     }
   }, [apiUrl])
 
-  useEffect(() => { fetchClients() }, [fetchClients])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchClients()
+  }, [fetchClients])
 
   const handleSave = useCallback(async () => {
     const isEdit = !!editingClient
