@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
     appIsrStatus: false,
     buildActivity: false,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.BACKEND_URL || 'http://localhost:8010'}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

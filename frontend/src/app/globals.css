@@ -277,9 +277,6 @@
   }
 
   @media (max-width: 767px) {
-    .home-page {
-      /* Keep same layout but handle small screens nicely */
-    }
 
     .home-card-grid {
       grid-template-columns: 1fr;
