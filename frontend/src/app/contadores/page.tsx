@@ -69,14 +69,18 @@ export default function ContadoresPage() {
   const sds = useSdsClients(apiUrl)
   const ers = useErsClients(apiUrl)
 
+  const { fetchSdsClients, sdsClients } = sds;
+  const { fetchErsClients, ersClients } = ers;
+
   useEffect(() => {
-    if (activeTool === "sds" && sds.sdsClients.length === 0) {
-      sds.fetchSdsClients()
+    if (activeTool === "sds" && sdsClients.length === 0) {
+      fetchSdsClients()
     }
-    if (activeTool === "ers" && ers.ersClients.length === 0) {
-      ers.fetchErsClients()
+    if (activeTool === "ers" && ersClients.length === 0) {
+      fetchErsClients()
     }
-  }, [activeTool, sds, ers])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTool])
 
   const closeModal = useCallback(() => {
     setActiveTool(null)
