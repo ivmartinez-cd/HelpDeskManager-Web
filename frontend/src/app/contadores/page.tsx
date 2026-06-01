@@ -13,16 +13,19 @@ import { toast } from "@/hooks/use-toast"
 import { useProcess } from "./_hooks/use-process"
 import { useFtpClients } from "./_hooks/use-ftp-clients"
 import { useSdsClients } from "./_hooks/use-sds-clients"
+import { useErsClients } from "./_hooks/use-ers-clients"
 import { ActionCard } from "./_components/action-card"
 import { ModalContent } from "./_components/process-view"
 import { FtpForm } from "./_components/ftp-form"
 import { SdsForm } from "./_components/sds-form"
+import { ErsForm } from "./_components/ers-form"
 import { ManualForm, En0Form, SumaForm, AutoForm, CalcForm } from "./_components/tool-forms"
 
 import type { CalcResult } from "./_hooks/types"
 
 const TOOLS = [
   { id: "sds", icon: CloudDownload, title: "Descargar SDS", desc: "Obtén los contadores de impresoras directamente desde el API de HP SDS.", color: "text-blue-500", delay: 0.3 },
+  { id: "ers", icon: CloudDownload, title: "Descargar ERS", desc: "Obtén los contadores de impresoras directamente desde el API de Epson Remote Services.", color: "text-orange-500", delay: 0.35 },
   { id: "ftp", icon: Server, title: "Descarga FTP", desc: "Obtén las bases de datos directamente desde los servidores de los clientes.", color: "text-indigo-500", delay: 0.4 },
   { id: "manual", icon: Database, title: "Procesar DB3", desc: "Sube manualmente archivos .db3 para convertirlos a CSV localmente.", color: "text-orange-500", delay: 0.5 },
   { id: "en0", icon: Eraser, title: "Estimación en 0", desc: "Resetea equipos que no reportaron usando el último contador conocido.", color: "text-rose-500", delay: 0.6 },
@@ -34,7 +37,7 @@ const TOOLS = [
 type ToolId = typeof TOOLS[number]["id"]
 
 const TOOL_TITLES: Record<ToolId, string> = {
-  sds: "Descargar SDS", ftp: "Descarga FTP", manual: "Procesar DB3",
+  sds: "Descargar SDS", ers: "Descargar ERS", ftp: "Descarga FTP", manual: "Procesar DB3",
   en0: "Estimación en 0", suma: "Suma Fija", auto: "Autoestimación", calc: "Calculadora"
 }
 
@@ -42,6 +45,7 @@ export default function ContadoresPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
   const [activeTool, setActiveTool] = useState<ToolId | null>(null)
   const [sdsSumaColor, setSdsSumaColor] = useState(false)
+  const [ersSumaColor, setErsSumaColor] = useState(false)
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null)
 
   const [toolData, setToolData] = useState(() => {
@@ -55,6 +59,7 @@ export default function ContadoresPage() {
       manual_fecha: "",
       ftp_fecha: t,
       sds_fecha: t,
+      ers_fecha: t,
       calc: { ci: 0, cf: 0, fi: "", ff: "", fe: "" },
     }
   })
@@ -62,12 +67,16 @@ export default function ContadoresPage() {
   const proc = useProcess()
   const ftp = useFtpClients(apiUrl)
   const sds = useSdsClients(apiUrl)
+  const ers = useErsClients(apiUrl)
 
   useEffect(() => {
     if (activeTool === "sds" && sds.sdsClients.length === 0) {
       sds.fetchSdsClients()
     }
-  }, [activeTool, sds])
+    if (activeTool === "ers" && ers.ersClients.length === 0) {
+      ers.fetchErsClients()
+    }
+  }, [activeTool, sds, ers])
 
   const closeModal = useCallback(() => {
     setActiveTool(null)
@@ -75,7 +84,8 @@ export default function ContadoresPage() {
     setCalcResult(null)
     ftp.resetDropdown()
     sds.resetDropdown()
-  }, [proc, ftp, sds])
+    ers.resetDropdown()
+  }, [proc, ftp, sds, ers])
 
   const runManualProcess = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -210,6 +220,48 @@ export default function ContadoresPage() {
     }
   }, [apiUrl, sds.selectedSdsClient, toolData.sds_fecha, sdsSumaColor, proc])
 
+  const runErsProcess = useCallback(async () => {
+    if (!ers.selectedErsClient) return
+    proc.setIsProcessing(true)
+    proc.setStatus("idle")
+    proc.setResultFiles([])
+    proc.addLog(`Conectando con API de Epson Remote Services para ${ers.selectedErsClient.name}...`, 0)
+    proc.addLog("Obteniendo contadores de dispositivos...", 1500)
+
+    let isoDate = ""
+    try {
+      const parts = toolData.ers_fecha.split("/")
+      if (parts.length === 3) {
+        const [d, m, y] = parts
+        isoDate = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T23:59:59`
+      } else {
+        isoDate = new Date().toISOString()
+      }
+    } catch { isoDate = new Date().toISOString() }
+
+    try {
+      const response = await fetch(`${apiUrl}/api/ers/process`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer_id: ers.selectedErsClient.customer_id, customer_name: ers.selectedErsClient.name, fecha_maxima: isoDate, suma_color: ersSumaColor }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.detail)
+      proc.addLog("Generando archivo CSV...", 4000)
+      proc.setResultFiles([data.csv_file])
+      proc.setStatus("success")
+      proc.setMessage(data.message)
+      toast("Descarga de ERS completada", "success")
+    } catch (err) {
+      const e = err as Error
+      proc.setStatus("error")
+      proc.setMessage(e.message)
+      proc.setModalError(e.message)
+    } finally {
+      proc.setIsProcessing(false)
+    }
+  }, [apiUrl, ers.selectedErsClient, toolData.ers_fecha, ersSumaColor, proc])
+
   const runTool = useCallback(async (tool: string, files: FileList | null) => {
     if (!files || files.length === 0) return
     proc.setIsProcessing(true)
@@ -277,7 +329,7 @@ export default function ContadoresPage() {
     }
   }, [apiUrl, toolData.calc, proc])
 
-  const hasDropdownOpen = ftp.showDropdown || sds.showDropdown
+  const hasDropdownOpen = ftp.showDropdown || sds.showDropdown || ers.showDropdown
 
   return (
     <PageShell>
@@ -360,6 +412,24 @@ export default function ContadoresPage() {
               onToggleSumaColor={() => setSdsSumaColor(v => !v)}
               onFechaChange={v => setToolData(prev => ({ ...prev, sds_fecha: v }))}
               onRun={runSdsProcess}
+            />
+          )}
+          {activeTool === "ers" && (
+            <ErsForm
+              isLoadingErsClients={ers.isLoadingErsClients}
+              filteredErsClients={ers.filteredErsClients}
+              selectedErsClient={ers.selectedErsClient}
+              showDropdown={ers.showDropdown}
+              search={ers.search}
+              ersSumaColor={ersSumaColor}
+              isProcessing={proc.isProcessing}
+              fecha={toolData.ers_fecha}
+              onToggleDropdown={() => ers.setShowDropdown(v => !v)}
+              onSelectClient={(c) => { ers.setSelectedErsClient(c); ers.setShowDropdown(false) }}
+              onSearchChange={ers.setSearch}
+              onToggleSumaColor={() => setErsSumaColor(v => !v)}
+              onFechaChange={v => setToolData(prev => ({ ...prev, ers_fecha: v }))}
+              onRun={runErsProcess}
             />
           )}
           {activeTool === "manual" && (

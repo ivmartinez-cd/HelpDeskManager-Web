@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from services.db3_to_csv import procesar_db_a_csv
 from services.sds_api import get_sds_clients, export_sds_meters_to_csv
+from services.ers_api import get_ers_clients, export_ers_meters_to_csv
 import uuid
 import re
 
@@ -612,6 +613,46 @@ async def sds_process_meters(
         import traceback
 
         print(f"ERROR procesando contadores SDS:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ers/clients")
+async def ers_clients_list():
+    """Devuelve la lista de clientes (grupos de dispositivos) desde la API de ERS."""
+    try:
+        clients = get_ers_clients()
+        return {"status": "success", "clients": clients}
+    except Exception as e:
+        import traceback
+        print(f"ERROR obteniendo clientes ERS:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/ers/process")
+async def ers_process_meters(
+    customer_id: str = Body(..., embed=True),
+    customer_name: str = Body(..., embed=True),
+    fecha_maxima: str = Body(..., embed=True),
+    suma_color: bool = Body(False, embed=True),
+):
+    """Obtiene los contadores de ERS y los exporta a CSV."""
+    try:
+        csv_path_str = export_ers_meters_to_csv(
+            customer_id,
+            customer_name,
+            fecha_maxima,
+            str(OUTPUT_DIR),
+            suma_color=suma_color,
+        )
+        csv_path = Path(csv_path_str)
+        return {
+            "status": "success",
+            "message": f"¡Contadores de {customer_name} exportados con éxito!",
+            "csv_file": csv_path.name,
+        }
+    except Exception as e:
+        import traceback
+        print(f"ERROR procesando contadores ERS:\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
