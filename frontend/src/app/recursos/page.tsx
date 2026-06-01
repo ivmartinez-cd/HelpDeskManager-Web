@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { ResourceCard, ResourceSkeleton } from "./_components/resource-card"
 import { useRecursos } from "./_hooks/use-recursos"
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
+const apiUrl = ""
 
 export default function RecursosPage() {
   const p = useRecursos(apiUrl)

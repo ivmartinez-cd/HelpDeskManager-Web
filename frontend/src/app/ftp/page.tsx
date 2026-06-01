@@ -11,7 +11,7 @@ import { useFtpPage } from "./_hooks/use-ftp-page"
 import { ClientListItem } from "./_components/client-list-item"
 import { ClientForm } from "./_components/client-form"
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
+const apiUrl = ""
 
 export default function FtpPage() {
   const p = useFtpPage(apiUrl)

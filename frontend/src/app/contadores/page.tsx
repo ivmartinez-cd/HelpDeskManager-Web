@@ -42,7 +42,7 @@ const TOOL_TITLES: Record<ToolId, string> = {
 }
 
 export default function ContadoresPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
+  const apiUrl = ""
   const [activeTool, setActiveTool] = useState<ToolId | null>(null)
   const [sdsSumaColor, setSdsSumaColor] = useState(false)
   const [ersSumaColor, setErsSumaColor] = useState(false)
