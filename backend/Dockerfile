@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN playwright install-deps chromium && playwright install chromium
+RUN DEBIAN_FRONTEND=noninteractive playwright install-deps chromium && playwright install chromium
 
 COPY . .
 
