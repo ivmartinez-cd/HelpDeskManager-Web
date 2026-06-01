@@ -195,10 +195,12 @@ def _merge_db3_files(
     def get_table_columns_and_pk(con, table: str):
         info = con.execute(f'PRAGMA table_info("{table}");').fetchall()
         cols = [row["name"] for row in info]
-        pk_cols = [row for row in info if int(row["pk"] or 0) == 1]
-        if len(pk_cols) == 1:
-            pk = pk_cols[0]["name"]
-            is_int_pk = str(pk_cols[0]["type"] or "").upper() == "INTEGER"
+        # Buscar todas las columnas que forman parte de la PK (pk > 0)
+        all_pk_cols = [row for row in info if int(row["pk"] or 0) > 0]
+        # Solo tratamos como PK simple autoincremental si hay exactamente una columna en la PK
+        if len(all_pk_cols) == 1:
+            pk = all_pk_cols[0]["name"]
+            is_int_pk = str(all_pk_cols[0]["type"] or "").upper() == "INTEGER"
             return cols, pk, is_int_pk
         return cols, None, False
 
