@@ -12,9 +12,8 @@ from dotenv import load_dotenv
 from playwright.async_api import async_playwright
 
 # Setup paths and environment
-SCRIPTS_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPTS_DIR.parent
-BACKEND_DIR = REPO_ROOT / "backend"
+SERVICES_DIR = Path(__file__).resolve().parent
+BACKEND_DIR = SERVICES_DIR.parent
 
 # Load .env from backend folder
 load_dotenv(BACKEND_DIR / ".env")

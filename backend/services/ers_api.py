@@ -11,13 +11,24 @@ BASE_URL = "https://www.remote-services.epson.com/prod"
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 TOKEN_FILE = BACKEND_DIR / "data" / "ers_token.json"
 
-def _ensure_ers_session() -> requests.Session:
-    """Carga el Bearer token y cookies de Incapsula y crea la sesión requests."""
-    if not TOKEN_FILE.exists():
-        raise Exception(
-            "La sesión de ERS no está inicializada. Por favor ejecute primero:\n"
-            "  python scripts/ers_token_refresher.py"
+def _refresh_ers_token():
+    """Llama al script de Python mediante subprocess para regenerar el token"""
+    import subprocess
+    print("Iniciando auto-renovación de token ERS via Playwright...")
+    try:
+        subprocess.run(
+            ["python", "-m", "services.ers_token_refresher"], 
+            check=True,
+            cwd=str(BACKEND_DIR)
         )
+        print("Auto-renovación de token exitosa.")
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"Fallo crítico al auto-renovar el token de ERS. Verifique credenciales: {e}")
+
+def _ensure_ers_session(force_refresh=False) -> requests.Session:
+    """Carga el Bearer token y cookies de Incapsula y crea la sesión requests."""
+    if force_refresh or not TOKEN_FILE.exists():
+        _refresh_ers_token()
         
     try:
         with open(TOKEN_FILE, "r", encoding="utf-8") as f:
@@ -66,7 +77,10 @@ def get_ers_clients() -> List[Dict[str, Any]]:
     
     r = session.get(url, timeout=15)
     if r.status_code in (401, 403):
-        raise Exception("Sesión de ERS expirada. Por favor vuelva a correr 'python scripts/ers_token_refresher.py'.")
+        print("Token ERS expirado. Refrescando token...")
+        session = _ensure_ers_session(force_refresh=True)
+        r = session.get(url, timeout=15)
+        
     r.raise_for_status()
 
     device_groups = r.json().get("items", [])
@@ -134,6 +148,12 @@ def export_ers_meters_to_csv(
     # 1. Obtener los IDs de los dispositivos del grupo
     url = f"{BASE_URL}/device_groups/{group_id}/devices/"
     r = session.get(url, timeout=15)
+    
+    if r.status_code in (401, 403):
+        print("Token ERS expirado. Refrescando token para exportación...")
+        session = _ensure_ers_session(force_refresh=True)
+        r = session.get(url, timeout=15)
+        
     r.raise_for_status()
     device_ids = r.json().get("devices", [])
 
