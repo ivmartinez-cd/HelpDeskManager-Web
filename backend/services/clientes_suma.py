@@ -128,7 +128,8 @@ def convertir_xls_a_csv_arcos_headless(
         df = _procesar_un_excel_a_df(str(archivo_xls), fecha_actual, int(hojas_a_sumar))
 
         base = os.path.splitext(os.path.basename(str(archivo_xls)))[0]
-        archivo_csv = os.path.join(carpeta_salida, f"{base}_AutoCSV.csv")
+        date_str = datetime.strptime(fecha_actual, "%d/%m/%Y").strftime("%Y%m%d")
+        archivo_csv = os.path.join(carpeta_salida, f"{base}_{date_str}_AutoCSV.csv")
 
         try:
             df.to_csv(archivo_csv, index=False, sep=";")
@@ -289,7 +290,8 @@ def convertir_xls_a_csv_arcos(archivos_xls=None, carpeta_salida=None, parent=Non
 
         # guardar CSV
         base = os.path.splitext(os.path.basename(archivo_xls))[0]
-        sugerido = os.path.join(carpeta_salida, f"{base}_AutoCSV.csv")
+        date_str = datetime.strptime(fecha_actual, "%d/%m/%Y").strftime("%Y%m%d")
+        sugerido = os.path.join(carpeta_salida, f"{base}_{date_str}_AutoCSV.csv")
         archivo_csv = filedialog.asksaveasfilename(
             title="Guardar CSV",
             initialfile=os.path.basename(sugerido),

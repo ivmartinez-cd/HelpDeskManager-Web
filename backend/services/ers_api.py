@@ -165,12 +165,12 @@ def export_ers_meters_to_csv(
         date_part = max_date.split("T")[0]
         if "-" in date_part:
             y, m, d = date_part.split("-")
-            max_dt = datetime(int(y), int(m), int(d))
+            max_dt = datetime(int(y), int(m), int(d), 23, 59, 59)
         else:
-            max_dt = datetime.fromisoformat(date_part)
+            max_dt = datetime.fromisoformat(date_part).replace(hour=23, minute=59, second=59)
     except Exception as e:
         print(f"Error parseando fecha maxima ({max_date}): {e}")
-        max_dt = datetime.utcnow()
+        max_dt = datetime.utcnow().replace(hour=23, minute=59, second=59)
 
     # Filtro de 30 días
     min_dt = max_dt - timedelta(days=30)
@@ -205,26 +205,22 @@ def export_ers_meters_to_csv(
         info = details.get("device_info_json", {})
         usage = info.get("UsageInfo", {})
         
-        # Obtener total de páginas
-        marker = usage.get("Marker", [{}])[0] if usage.get("Marker") else {}
-        total_pages = int(marker.get("TP") or usage.get("PrtMarker", {}).get("LC") or 0)
+        # Obtener total de páginas (Grand Total / Life Count)
+        prt_marker = usage.get("PrtMarker") or {}
+        total_pages = int(prt_marker.get("LC") or 0)
         
-        # Distribuir si es color (ERS maneja MarkerTotal)
-        marker_total = usage.get("MarkerTotal", [])
-        simplex = 0
-        duplex = 0
-        color_pages = 0
-        for mt in marker_total:
-            ppft = mt.get("PPFT", 0)
-            if ppft == 1:
-                simplex = int(mt.get("PPF", 0))
-            elif ppft == 2:
-                duplex = int(mt.get("PPF", 0))
-            elif ppft == 3:
-                color_pages = int(mt.get("PPF", 0))
+        # Obtener páginas a color (TCP)
+        marker_list = usage.get("Marker") or []
+        marker = marker_list[0] if marker_list else {}
+        color_pages = int(marker.get("TCP") or 0)
+        
+        # Fallback si total_pages es 0: sumar TP (B/W) + TCP (Color)
+        if total_pages == 0:
+            tp_mono = int(marker.get("TP") or 0)
+            total_pages = tp_mono + color_pages
 
         # Determinar si es monocromo o color
-        is_color = color_pages > 0 or details.get("model", "").upper().startswith("L") # L series is color
+        is_color = color_pages > 0
         
         if is_color:
             if suma_color:
@@ -232,7 +228,7 @@ def export_ers_meters_to_csv(
                 return {
                     "SERIE": serial,
                     "FECHA": fecha_csv,
-                    "TIPO": 21,
+                    "TIPO": 17,
                     "CLASE_10": 20,
                     "CONTADOR_10": total_pages,
                     "CLASE_20": "",
@@ -246,7 +242,7 @@ def export_ers_meters_to_csv(
                 return {
                     "SERIE": serial,
                     "FECHA": fecha_csv,
-                    "TIPO": 21,
+                    "TIPO": 17,
                     "CLASE_10": 10,
                     "CONTADOR_10": mono_calc,
                     "CLASE_20": 20,
@@ -259,7 +255,7 @@ def export_ers_meters_to_csv(
             return {
                 "SERIE": serial,
                 "FECHA": fecha_csv,
-                "TIPO": 21,
+                "TIPO": 17,
                 "CLASE_10": 10,
                 "CONTADOR_10": total_pages,
                 "CLASE_20": "",

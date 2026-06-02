@@ -228,8 +228,13 @@ def procesar_db_a_csv(
     # ----- Exportación -----
     base_folder = carpeta_salida or os.path.dirname(archivos_db[0]) or os.getcwd()
     os.makedirs(base_folder, exist_ok=True)
+    # Generar sufijo de fecha en formato YYYYMMDD
+    try:
+        date_str = datetime.strptime(fecha_maxima, "%d/%m/%Y").strftime("%Y%m%d") if fecha_maxima else datetime.now().strftime("%Y%m%d")
+    except Exception:
+        date_str = datetime.now().strftime("%Y%m%d")
     nombre_archivo = (
-        f"{nombre_base_salida}_{os.path.basename(base_folder) or 'root'}_AutoCSV.csv"
+        f"{nombre_base_salida}_{os.path.basename(base_folder) or 'root'}_{date_str}_AutoCSV.csv"
     )
     file_path = os.path.join(base_folder, nombre_archivo)
 
