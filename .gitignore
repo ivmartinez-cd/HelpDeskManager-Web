@@ -35,3 +35,9 @@ frontend/test-results/
 # Antigravity and Local Data
 ANTIGRAVITY_SKILLS.md
 backend/data/
+
+# Scripts de debug / investigacion temporal (no forman parte del proyecto)
+scripts/debug_xcrc.py
+scripts/inspect_ers_device.py
+scripts/inspect_usage_info.py
+scripts/list_all_ers_devices.py
