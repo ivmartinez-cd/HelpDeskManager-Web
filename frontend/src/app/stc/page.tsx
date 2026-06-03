@@ -8,7 +8,7 @@ import { PageShell } from "@/components/ui/page-shell"
 import { PageHeader } from "@/components/ui/page-header"
 import { StcActionCard } from "./_components/stc-action-card"
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010"
+const apiUrl = ""
 
 export default function StcPage() {
   const [isProcessing, setIsProcessing] = useState(false)

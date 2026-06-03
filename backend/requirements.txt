@@ -1,4 +1,4 @@
-fastapi
+﻿fastapi
 uvicorn
 python-multipart
 pandas
@@ -10,3 +10,6 @@ pytest
 httpx
 pytest-asyncio
 requests
+playwright
+
+

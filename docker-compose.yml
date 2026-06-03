@@ -27,7 +27,7 @@ services:
       - /app/node_modules
       - /app/.next
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8010
+      - BACKEND_URL=http://backend:8010
     command: npm run dev
     depends_on:
       - backend
