@@ -706,10 +706,10 @@ def ejecutar_proyeccion(
     ventana_reciente_dias: int = 365,
     umbral_minimo_consumo: float = 0.2,
     max_antiguedad_lectura_dias: int = 365,
-) -> tuple[str, str, list[str]]:
+) -> tuple[str, str, list[str], dict, list[dict]]:
     """
     Ejecuta el algoritmo de proyecciones a partir de un archivo Excel en memoria o disco.
-    Retorna (ruta_excel_salida, ruta_csv_siges_salida, logs_advertencias).
+    Retorna (ruta_excel_salida, ruta_csv_siges_salida, logs_advertencias, kpi_stats, registros).
     """
     logs = []
     
@@ -854,4 +854,17 @@ def ejecutar_proyeccion(
         ruta_csv, sep=";", index=False, encoding="utf-8", lineterminator="\r\n"
     )
 
-    return str(ruta_excel), str(ruta_csv), logs
+    # Serialize dates/NaN in records for JSON transport
+    records = []
+    for row in df_res.to_dict("records"):
+        clean = {}
+        for k, v in row.items():
+            if hasattr(v, "isoformat"):
+                clean[k] = v.isoformat()
+            elif isinstance(v, float) and v != v:  # NaN
+                clean[k] = None
+            else:
+                clean[k] = v
+        records.append(clean)
+
+    return str(ruta_excel), str(ruta_csv), logs, kpi_stats, records

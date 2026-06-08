@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
+import type { ProyeccionSummary, ProyeccionRow } from "./types"
 
 export type ProcessStatus = "idle" | "success" | "error"
 
@@ -13,6 +14,8 @@ export function useProcess() {
   const [resultFiles, setResultFiles] = useState<string[]>([])
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [modalError, setModalError] = useState<string | null>(null)
+  const [proyeccionSummary, setProyeccionSummary] = useState<ProyeccionSummary | null>(null)
+  const [proyeccionData, setProyeccionData] = useState<ProyeccionRow[]>([])
 
   const addLog = useCallback((msg: string, delay: number = 0) => {
     const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
@@ -25,6 +28,8 @@ export function useProcess() {
     setResultFiles([])
     setModalError(null)
     setLogs([])
+    setProyeccionSummary(null)
+    setProyeccionData([])
   }, [])
 
   return {
@@ -36,5 +41,7 @@ export function useProcess() {
     modalError, setModalError,
     addLog,
     resetProcess,
+    proyeccionSummary, setProyeccionSummary,
+    proyeccionData, setProyeccionData,
   }
 }

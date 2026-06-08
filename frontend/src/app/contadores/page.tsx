@@ -20,6 +20,7 @@ import { FtpForm } from "./_components/ftp-form"
 import { SdsForm } from "./_components/sds-form"
 import { ErsForm } from "./_components/ers-form"
 import { ManualForm, En0Form, SumaForm, ProyeccionForm, CalcForm } from "./_components/tool-forms"
+import { ProyeccionDashboard } from "./_components/proyeccion-dashboard"
 
 import type { CalcResult } from "./_hooks/types"
 
@@ -358,6 +359,8 @@ export default function ContadoresPage() {
       if (!response.ok) throw new Error(data.detail || "Error en la proyección")
       proc.addLog("Recibiendo resultados del servidor...", 5500)
       if (data.files) proc.setResultFiles(data.files)
+      if (data.summary) proc.setProyeccionSummary(data.summary)
+      if (data.data) proc.setProyeccionData(data.data)
       proc.setStatus("success")
       proc.setMessage(data.message || "Proyección completada.")
       toast("Proyección Contadores ejecutada", "success")
@@ -397,7 +400,7 @@ export default function ContadoresPage() {
         isOpen={!!activeTool}
         onClose={closeModal}
         title={activeTool ? TOOL_TITLES[activeTool] : ""}
-        maxWidth="max-w-lg"
+        maxWidth={activeTool === "auto" && proc.status === "success" ? "max-w-4xl" : "max-w-lg"}
         error={proc.modalError}
       >
         <ModalContent
@@ -409,6 +412,17 @@ export default function ContadoresPage() {
           apiUrl={apiUrl}
           onRetry={() => proc.setStatus("idle")}
           hasDropdownOpen={hasDropdownOpen}
+          customResultView={
+            activeTool === "auto" && proc.proyeccionSummary ? (
+              <ProyeccionDashboard
+                summary={proc.proyeccionSummary}
+                data={proc.proyeccionData}
+                resultFiles={proc.resultFiles}
+                apiUrl={apiUrl}
+                onReset={() => { proc.setStatus("idle"); proc.setProyeccionSummary(null); proc.setProyeccionData([]) }}
+              />
+            ) : undefined
+          }
         >
           {activeTool === "ftp" && (
             <FtpForm

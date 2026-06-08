@@ -73,7 +73,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative w-full ${maxWidth} bg-card border border-black/5 dark:border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden focus:outline-none animate-fade-in-scale`}
+        className={`relative w-full ${maxWidth} max-h-[90vh] bg-card border border-black/5 dark:border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col focus:outline-none animate-fade-in-scale`}
       >
         {/* Background Glow */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 blur-3xl rounded-full" />
@@ -102,7 +102,7 @@ export function Modal({
         </div>
 
         {/* Content */}
-        <div className="p-8 pt-4 relative z-10">
+        <div className="p-8 pt-4 relative z-10 overflow-y-auto flex-1 custom-scrollbar">
           {error && (
             <div className="mb-6 p-4 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center gap-3 text-destructive animate-fade-in">
               <AlertTriangle className="h-5 w-5 shrink-0" />
