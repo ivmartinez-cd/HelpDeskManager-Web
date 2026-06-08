@@ -1,5 +1,6 @@
 import models
 from fastapi import FastAPI, UploadFile, File, HTTPException, Body, Depends, Form
+from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import os
@@ -58,6 +59,7 @@ from services.counters_tools import (
     ejecutar_autoestimacion,
     calcular_estimacion_manual,
 )
+from services.proyeccion_contadores import ejecutar_proyeccion
 from database import engine, SessionLocal, get_db
 from models import FTPClient
 
@@ -454,18 +456,71 @@ async def tool_suma_fija(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/tools/autoestim")
-async def tool_autoestim(file: UploadFile = File(...), fecha: str = Form(...)):
-    """Autoestimación de contadores."""
+@app.post("/api/tools/proyeccion")
+async def tool_proyeccion(
+    file: UploadFile = File(...),
+    fecha: str = Form(...),
+    tolerancia_dias: int = Form(2),
+    min_dias_intervalo: int = Form(1),
+    ventana_reciente_dias: int = Form(365),
+    umbral_minimo_consumo: float = Form(0.2),
+    max_antiguedad_lectura_dias: int = Form(365),
+):
+    """Proyección de contadores a partir de un archivo Excel cargado manualmente."""
     try:
+        from datetime import datetime
+        fecha_toma = None
+        for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%y"):
+            try:
+                fecha_toma = datetime.strptime(fecha, fmt).date()
+                break
+            except ValueError:
+                continue
+
+        if not fecha_toma:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Formato de fecha no reconocido: '{fecha}'. Use DD/MM/YYYY.",
+            )
+
         temp_path = UPLOAD_DIR / file.filename
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
+        file_input = str(temp_path)
 
-        out1, out2 = ejecutar_autoestimacion(str(temp_path), fecha, str(OUTPUT_DIR))
-        os.remove(temp_path)
-        return {"status": "success", "files": [Path(out1).name, Path(out2).name]}
+        out_excel, out_csv, logs, summary, data, validation = ejecutar_proyeccion(
+            file_input=file_input,
+            fecha_toma=fecha_toma,
+            folder_salida=str(OUTPUT_DIR),
+            tolerancia_dias=tolerancia_dias,
+            min_dias_intervalo=min_dias_intervalo,
+            ventana_reciente_dias=ventana_reciente_dias,
+            umbral_minimo_consumo=umbral_minimo_consumo,
+            max_antiguedad_lectura_dias=max_antiguedad_lectura_dias,
+        )
+
+        if temp_path and temp_path.exists():
+            os.remove(temp_path)
+
+        if logs:
+            print(f"Warnings en proyeccion: {logs}")
+
+        msg = "¡Proyección completada exitosamente!"
+        if logs:
+            msg += f" Con {len(logs)} advertencia(s)."
+
+        return {
+            "status": "success",
+            "message": msg,
+            "files": [Path(out_excel).name, Path(out_csv).name],
+            "warnings": logs,
+            "summary": summary,
+            "data": data,
+            "validation": validation,
+        }
     except Exception as e:
+        import traceback
+        print(f"Error en endpoint proyeccion: {e}\\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -578,7 +633,7 @@ async def process_db3(
 async def sds_clients_list():
     """Devuelve la lista de clientes desde la API de SDS."""
     try:
-        clients = get_sds_clients()
+        clients = await get_sds_clients()
         return {"status": "success", "clients": clients}
     except Exception as e:
         import traceback
@@ -596,7 +651,7 @@ async def sds_process_meters(
 ):
     """Obtiene los contadores de SDS y los exporta a CSV."""
     try:
-        csv_path_str = export_sds_meters_to_csv(
+        csv_path_str = await export_sds_meters_to_csv(
             customer_id,
             customer_name,
             fecha_maxima,

@@ -1,5 +1,6 @@
 import { memo } from "react"
 import { FileInput } from "@/components/ui/file-input"
+import { Loader2, PlusCircle, Search, Wand2 } from "lucide-react"
 import type { CalcResult } from "../_hooks/types"
 
 interface ManualFormProps {
@@ -78,20 +79,112 @@ export const SumaForm = memo(function SumaForm({ hojas, fecha, onHojasChange, on
   )
 })
 
-interface AutoFormProps {
+interface ProyeccionFormProps {
   fecha: string
+  tolerancia: number
+  minIntervalo: number
+  ventana: number
+  umbral: number
+  maxAntiguedad: number
   onFechaChange: (v: string) => void
+  onToleranciaChange: (v: number) => void
+  onMinIntervaloChange: (v: number) => void
+  onVentanaChange: (v: number) => void
+  onUmbralChange: (v: number) => void
+  onMaxAntiguedadChange: (v: number) => void
   onRun: (files: FileList | null) => void
 }
 
-export const AutoForm = memo(function AutoForm({ fecha, onFechaChange, onRun }: AutoFormProps) {
+export const ProyeccionForm = memo(function ProyeccionForm({
+  fecha, tolerancia, minIntervalo, ventana, umbral, maxAntiguedad,
+  onFechaChange, onToleranciaChange, onMinIntervaloChange, onVentanaChange,
+  onUmbralChange, onMaxAntiguedadChange, onRun,
+}: ProyeccionFormProps) {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha de Estimación</label>
-        <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={fecha} onChange={e => onFechaChange(e.target.value)} />
+      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs leading-relaxed space-y-2">
+        <div className="flex items-center gap-1.5 font-bold uppercase text-[10px] tracking-wider">
+          <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+          Proceso Manual Requerido
+        </div>
+        <p>
+          Debes descargar previamente el reporte{" "}
+          <a
+            href="http://reportes.cdsa.com.ar:8090/Reports/Pages/Report.aspx?ItemPath=%2fImpresi%c3%b3n%2fContadores+Facturables+por+empresa"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-amber-600 dark:hover:text-amber-300 transition-colors font-bold"
+          >
+            "Contadores Facturables por empresa"
+          </a>{" "}
+          en formato Excel desde el servidor de reportes (SSRS) de la empresa y subirlo aquí para procesar la proyección.
+        </p>
       </div>
-      <FileInput label="Selecciona CSV Detalle" accept=".csv" onChange={onRun} />
+
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha de Toma</label>
+        <input
+          type="text"
+          className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground"
+          value={fecha}
+          onChange={e => onFechaChange(e.target.value)}
+          placeholder="DD/MM/YYYY"
+        />
+      </div>
+
+      <details className="group border border-border rounded-2xl overflow-hidden bg-muted/5">
+        <summary className="flex items-center justify-between p-4 cursor-pointer font-bold text-[10px] uppercase text-muted-foreground select-none">
+          <span>Ajustes Avanzados</span>
+          <span className="transition-transform group-open:rotate-180 text-xs">▼</span>
+        </summary>
+        <div className="p-4 pt-0 border-t grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Tolerancia (Días)</label>
+            <input type="number" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" value={tolerancia} onChange={e => onToleranciaChange(parseInt(e.target.value) || 0)} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Intervalo Mín. (Días)</label>
+            <input type="number" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" value={minIntervalo} onChange={e => onMinIntervaloChange(parseInt(e.target.value) || 0)} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Ventana Historial (Días)</label>
+            <input type="number" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" value={ventana} onChange={e => onVentanaChange(parseInt(e.target.value) || 0)} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Umbral Mín. Consumo</label>
+            <input type="number" step="0.01" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" value={umbral} onChange={e => onUmbralChange(parseFloat(e.target.value) || 0)} />
+          </div>
+          <div className="space-y-1 col-span-2">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Antigüedad Máx. Lectura (Días)</label>
+            <input type="number" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" value={maxAntiguedad} onChange={e => onMaxAntiguedadChange(parseInt(e.target.value) || 0)} />
+          </div>
+
+          <div className="col-span-2 mt-4 pt-4 border-t border-border/40 space-y-2.5 text-[10px] leading-normal">
+            <h4 className="text-[9px] font-black uppercase text-muted-foreground tracking-wider">
+              ¿Qué hace cada ajuste?
+            </h4>
+            <div className="space-y-2 text-muted-foreground">
+              <p>
+                <strong className="text-foreground">Tolerancia (Días):</strong> Si la última lectura tiene menos días de antigüedad que esto, se toma directamente como <span className="font-semibold text-emerald-500">REAL</span> sin proyectar nada.
+              </p>
+              <p>
+                <strong className="text-foreground">Intervalo Mín. (Días):</strong> El historial de lecturas tiene que abarcar al menos estos días. Evita calcular promedios con lecturas muy pegadas en el tiempo (ej: del mismo día) que terminarían dando números distorsionados.
+              </p>
+              <p>
+                <strong className="text-foreground">Ventana Historial (Días):</strong> Cuántos días para atrás mirar en el historial (ej: el último año). Sirve para medir el ritmo de impresión de ahora, ignorando lecturas re viejas que ya no tienen nada que ver.
+              </p>
+              <p>
+                <strong className="text-foreground">Umbral Mín. Consumo:</strong> El promedio diario mínimo que tiene que registrar. Si imprime menos que esto por día, el sistema no le suma nada y repite el último contador conocido.
+              </p>
+              <p>
+                <strong className="text-foreground">Antigüedad Máx. Lectura (Días):</strong> Límite de tiempo sin reportar. Si la máquina no registra lecturas hace más días que estos (ej: si está desenchufada o retirada), se asume inactiva y no se le suma ninguna página.
+              </p>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <FileInput label="Subir reporte 'Contadores Facturables por empresa'" accept=".xlsx,.xls" onChange={onRun} />
     </div>
   )
 })

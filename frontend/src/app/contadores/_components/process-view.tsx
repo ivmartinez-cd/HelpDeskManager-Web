@@ -118,17 +118,18 @@ interface ModalContentProps {
   onRetry: () => void
   children: ReactNode
   hasDropdownOpen: boolean
+  customResultView?: ReactNode
 }
 
 export const ModalContent = memo(function ModalContent({
-  isProcessing, status, logs, message, resultFiles, apiUrl, onRetry, children, hasDropdownOpen
+  isProcessing, status, logs, message, resultFiles, apiUrl, onRetry, children, hasDropdownOpen, customResultView
 }: ModalContentProps) {
   return (
     <div className={`space-y-6 relative z-10 transition-all duration-300 ${hasDropdownOpen ? "pb-64" : ""}`}>
       {isProcessing ? (
         <ProcessingView logs={logs} />
       ) : status !== "idle" ? (
-        <ResultView status={status} message={message} resultFiles={resultFiles} apiUrl={apiUrl} onRetry={onRetry} />
+        customResultView ?? <ResultView status={status} message={message} resultFiles={resultFiles} apiUrl={apiUrl} onRetry={onRetry} />
       ) : (
         <div className="space-y-6 animate-fade-in">
           {children}

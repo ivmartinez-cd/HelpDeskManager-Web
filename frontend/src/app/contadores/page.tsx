@@ -19,7 +19,8 @@ import { ModalContent } from "./_components/process-view"
 import { FtpForm } from "./_components/ftp-form"
 import { SdsForm } from "./_components/sds-form"
 import { ErsForm } from "./_components/ers-form"
-import { ManualForm, En0Form, SumaForm, AutoForm, CalcForm } from "./_components/tool-forms"
+import { ManualForm, En0Form, SumaForm, ProyeccionForm, CalcForm } from "./_components/tool-forms"
+import { ProyeccionDashboard } from "./_components/proyeccion-dashboard"
 
 import type { CalcResult } from "./_hooks/types"
 
@@ -30,7 +31,7 @@ const TOOLS = [
   { id: "manual", icon: Database, title: "Procesar DB3", desc: "Sube manualmente archivos .db3 para convertirlos a CSV localmente.", color: "text-orange-500", delay: 0.5 },
   { id: "en0", icon: Eraser, title: "Estimación en 0", desc: "Resetea equipos que no reportaron usando el último contador conocido.", color: "text-rose-500", delay: 0.6 },
   { id: "suma", icon: PlusCircle, title: "Suma Fija", desc: "Aplica incrementos masivos de hojas a partir de archivos Excel.", color: "text-emerald-500", delay: 0.7 },
-  { id: "auto", icon: Wand2, title: "Autoestimación", desc: "Genera proyecciones automáticas basadas en el historial de consumo.", color: "text-amber-500", delay: 0.8 },
+  { id: "auto", icon: Wand2, title: "Proyección Contadores", desc: "Proyecta contadores desde planillas Excel basándose en tendencias históricas.", color: "text-amber-500", delay: 0.8 },
   { id: "calc", icon: Calculator, title: "Calculadora", desc: "Herramienta interactiva para proyecciones manuales por fecha.", color: "text-sky-500", delay: 0.9 },
 ] as const
 
@@ -38,7 +39,7 @@ type ToolId = typeof TOOLS[number]["id"]
 
 const TOOL_TITLES: Record<ToolId, string> = {
   sds: "Descargar SDS", ers: "Descargar ERS", ftp: "Descarga FTP", manual: "Procesar DB3",
-  en0: "Estimación en 0", suma: "Suma Fija", auto: "Autoestimación", calc: "Calculadora"
+  en0: "Estimación en 0", suma: "Suma Fija", auto: "Proyección Contadores", calc: "Calculadora"
 }
 
 export default function ContadoresPage() {
@@ -56,6 +57,11 @@ export default function ContadoresPage() {
       suma_hojas: 1000,
       suma_fecha: t,
       auto_fecha: t,
+      proy_tolerancia: 2,
+      proy_min_intervalo: 1,
+      proy_ventana: 365,
+      proy_umbral: 0.2,
+      proy_max_antiguedad: 365,
       manual_fecha: "",
       ftp_fecha: t,
       sds_fecha: t,
@@ -289,11 +295,6 @@ export default function ContadoresPage() {
       formData.append("fecha", toolData.suma_fecha)
       formData.append("hojas", toolData.suma_hojas.toString())
       proc.addLog(`Aplicando suma fija de ${toolData.suma_hojas} hojas...`, 2500)
-    } else if (tool === "auto") {
-      endpoint = "/api/tools/autoestim"
-      formData.append("file", files[0])
-      formData.append("fecha", toolData.auto_fecha)
-      proc.addLog("Generando proyecciones IA...", 2500)
     }
 
     try {
@@ -333,6 +334,48 @@ export default function ContadoresPage() {
     }
   }, [apiUrl, toolData.calc, proc])
 
+  const runProyeccionProcess = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    proc.setIsProcessing(true)
+    proc.setStatus("idle")
+    proc.setResultFiles([])
+    proc.addLog("Preparando planilla de contadores...", 0)
+    proc.addLog("Subiendo archivo al servidor...", 1000)
+    proc.addLog("Analizando tendencia histórica...", 2500)
+    proc.addLog("Generando proyecciones de contadores...", 4000)
+
+    const formData = new FormData()
+    formData.append("file", files[0])
+    formData.append("fecha", toolData.auto_fecha)
+    formData.append("tolerancia_dias", toolData.proy_tolerancia.toString())
+    formData.append("min_dias_intervalo", toolData.proy_min_intervalo.toString())
+    formData.append("ventana_reciente_dias", toolData.proy_ventana.toString())
+    formData.append("umbral_minimo_consumo", toolData.proy_umbral.toString())
+    formData.append("max_antiguedad_lectura_dias", toolData.proy_max_antiguedad.toString())
+
+    try {
+      const response = await fetch(`${apiUrl}/api/tools/proyeccion`, { method: "POST", body: formData })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.detail || "Error en la proyección")
+      proc.addLog("Recibiendo resultados del servidor...", 5500)
+      if (data.files) proc.setResultFiles(data.files)
+      if (data.summary) proc.setProyeccionSummary(data.summary)
+      if (data.data) proc.setProyeccionData(data.data)
+      if (data.validation) proc.setProyeccionValidation(data.validation)
+      proc.setStatus("success")
+      proc.setMessage(data.message || "Proyección completada.")
+      toast("Proyección Contadores ejecutada", "success")
+    } catch (err) {
+      const e = err as Error
+      proc.setStatus("error")
+      proc.setMessage(e.message)
+      proc.setModalError(e.message)
+      toast("Error en la proyección", "error")
+    } finally {
+      proc.setIsProcessing(false)
+    }
+  }, [apiUrl, toolData, proc])
+
   const hasDropdownOpen = ftp.showDropdown || sds.showDropdown || ers.showDropdown
 
   return (
@@ -358,7 +401,7 @@ export default function ContadoresPage() {
         isOpen={!!activeTool}
         onClose={closeModal}
         title={activeTool ? TOOL_TITLES[activeTool] : ""}
-        maxWidth="max-w-lg"
+        maxWidth={activeTool === "auto" && proc.status === "success" ? "max-w-[98vw]" : "max-w-lg"}
         error={proc.modalError}
       >
         <ModalContent
@@ -370,6 +413,23 @@ export default function ContadoresPage() {
           apiUrl={apiUrl}
           onRetry={() => proc.setStatus("idle")}
           hasDropdownOpen={hasDropdownOpen}
+          customResultView={
+            activeTool === "auto" && proc.proyeccionSummary ? (
+              <ProyeccionDashboard
+                summary={proc.proyeccionSummary}
+                data={proc.proyeccionData}
+                validation={proc.proyeccionValidation}
+                resultFiles={proc.resultFiles}
+                apiUrl={apiUrl}
+                onReset={() => {
+                  proc.setStatus("idle")
+                  proc.setProyeccionSummary(null)
+                  proc.setProyeccionData([])
+                  proc.setProyeccionValidation([])
+                }}
+              />
+            ) : undefined
+          }
         >
           {activeTool === "ftp" && (
             <FtpForm
@@ -462,10 +522,20 @@ export default function ContadoresPage() {
             />
           )}
           {activeTool === "auto" && (
-            <AutoForm
+            <ProyeccionForm
               fecha={toolData.auto_fecha}
+              tolerancia={toolData.proy_tolerancia}
+              minIntervalo={toolData.proy_min_intervalo}
+              ventana={toolData.proy_ventana}
+              umbral={toolData.proy_umbral}
+              maxAntiguedad={toolData.proy_max_antiguedad}
               onFechaChange={v => setToolData(prev => ({ ...prev, auto_fecha: v }))}
-              onRun={files => runTool("auto", files)}
+              onToleranciaChange={v => setToolData(prev => ({ ...prev, proy_tolerancia: v }))}
+              onMinIntervaloChange={v => setToolData(prev => ({ ...prev, proy_min_intervalo: v }))}
+              onVentanaChange={v => setToolData(prev => ({ ...prev, proy_ventana: v }))}
+              onUmbralChange={v => setToolData(prev => ({ ...prev, proy_umbral: v }))}
+              onMaxAntiguedadChange={v => setToolData(prev => ({ ...prev, proy_max_antiguedad: v }))}
+              onRun={runProyeccionProcess}
             />
           )}
           {activeTool === "calc" && (
