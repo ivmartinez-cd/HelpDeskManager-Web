@@ -168,10 +168,10 @@ export const ProyeccionForm = memo(function ProyeccionForm({
                 <strong className="text-foreground">Tolerancia (Días):</strong> Si la última lectura histórica tiene menos de estos días de antigüedad, se asume como <span className="font-semibold text-emerald-500">REAL</span> sin proyectar.
               </p>
               <p>
-                <strong className="text-foreground">Intervalo Mín. (Días):</strong> Días mínimos que deben transcurrir entre lecturas históricas para poder calcular el consumo diario.
+                <strong className="text-foreground">Intervalo Mín. (Días):</strong> Mínimo de días que debe abarcar el historial para poder calcular el consumo promedio. Evita proyecciones basadas en lecturas tomadas con muy poca diferencia de tiempo (ej: menos de 1 día).
               </p>
               <p>
-                <strong className="text-foreground">Ventana Historial (Días):</strong> Días máximos hacia atrás para evaluar la tendencia reciente (descartando lecturas más antiguas).
+                <strong className="text-foreground">Ventana Historial (Días):</strong> El período reciente que se analiza (ej. los últimos 365 días). Ignora lecturas muy antiguas para que el promedio refleje cómo se usa la impresora en la actualidad.
               </p>
               <p>
                 <strong className="text-foreground">Umbral Mín. Consumo:</strong> Consumo diario mínimo requerido. Si la tendencia es menor, se forzará a 0 (se replica el último contador).
