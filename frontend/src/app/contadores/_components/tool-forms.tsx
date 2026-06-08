@@ -165,19 +165,19 @@ export const ProyeccionForm = memo(function ProyeccionForm({
             </h4>
             <div className="space-y-2 text-muted-foreground">
               <p>
-                <strong className="text-foreground">Tolerancia (Días):</strong> Si la última lectura histórica tiene menos de estos días de antigüedad, se asume como <span className="font-semibold text-emerald-500">REAL</span> sin proyectar.
+                <strong className="text-foreground">Tolerancia (Días):</strong> Si la última lectura tiene menos días de antigüedad que esto, se toma directamente como <span className="font-semibold text-emerald-500">REAL</span> sin proyectar nada.
               </p>
               <p>
-                <strong className="text-foreground">Intervalo Mín. (Días):</strong> Mínimo de días que debe abarcar el historial para poder calcular el consumo promedio. Evita proyecciones basadas en lecturas tomadas con muy poca diferencia de tiempo (ej: menos de 1 día).
+                <strong className="text-foreground">Intervalo Mín. (Días):</strong> El historial de lecturas tiene que abarcar al menos estos días. Evita calcular promedios con lecturas muy pegadas en el tiempo (ej: del mismo día) que terminarían dando números distorsionados.
               </p>
               <p>
-                <strong className="text-foreground">Ventana Historial (Días):</strong> El período de lecturas que se usa para calcular la velocidad de consumo (ej. usar solo las lecturas del último año para ver el ritmo de impresión reciente, ignorando años anteriores).
+                <strong className="text-foreground">Ventana Historial (Días):</strong> Cuántos días para atrás mirar en el historial (ej: el último año). Sirve para medir el ritmo de impresión de ahora, ignorando lecturas re viejas que ya no tienen nada que ver.
               </p>
               <p>
-                <strong className="text-foreground">Umbral Mín. Consumo:</strong> Consumo diario mínimo requerido. Si la tendencia es menor, se forzará a 0 (se replica el último contador conocido).
+                <strong className="text-foreground">Umbral Mín. Consumo:</strong> El promedio diario mínimo que tiene que registrar. Si imprime menos que esto por día, el sistema no le suma nada y repite el último contador conocido.
               </p>
               <p>
-                <strong className="text-foreground">Antigüedad Máx. Lectura (Días):</strong> Límite de tiempo sin reportar. Si la impresora no registra lecturas desde hace más de estos días (ej. está desconectada o retirada), se asume inactiva y se fuerza su consumo a 0.
+                <strong className="text-foreground">Antigüedad Máx. Lectura (Días):</strong> Límite de tiempo sin reportar. Si la máquina no registra lecturas hace más días que estos (ej: si está desenchufada o retirada), se asume inactiva y no se le suma ninguna página.
               </p>
             </div>
           </div>
