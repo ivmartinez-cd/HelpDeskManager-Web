@@ -108,7 +108,16 @@ export const ProyeccionForm = memo(function ProyeccionForm({
           Proceso Manual Requerido
         </div>
         <p>
-          Debes descargar previamente el reporte <strong>"Contadores Facturables por empresa"</strong> en formato Excel desde el servidor de reportes (SSRS) de la empresa y subirlo aquí para procesar la proyección.
+          Debes descargar previamente el reporte{" "}
+          <a
+            href="http://reportes.cdsa.com.ar:8090/Reports/Pages/Report.aspx?ItemPath=%2fImpresi%c3%b3n%2fContadores+Facturables+por+empresa"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-amber-600 dark:hover:text-amber-300 transition-colors font-bold"
+          >
+            "Contadores Facturables por empresa"
+          </a>{" "}
+          en formato Excel desde el servidor de reportes (SSRS) de la empresa y subirlo aquí para procesar la proyección.
         </p>
       </div>
 
