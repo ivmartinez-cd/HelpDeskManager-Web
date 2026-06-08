@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useRef, useCallback, memo } from "react"
 import {
   Search, Download, FileText, X, RefreshCw,
   ChevronLeft, ChevronRight, AlertTriangle, BarChart3, Edit3, Check,
+  ArrowUp, ArrowDown, ArrowUpDown,
 } from "lucide-react"
 import type { ProyeccionSummary, ProyeccionRow, ValidationRow } from "../_hooks/types"
 
@@ -306,6 +307,18 @@ interface Props {
   onReset: () => void
 }
 
+type SortField =
+  | "Nro Serie"
+  | "Articulo"
+  | "Clase"
+  | "Fecha Ultima Lectura"
+  | "Dias Proyectados"
+  | "Paginas Sumadas"
+  | "Contador Proyectado"
+  | "Metodo"
+
+type SortOrder = "asc" | "desc"
+
 export const ProyeccionDashboard = memo(function ProyeccionDashboard({
   summary, data, validation, resultFiles, apiUrl, onReset,
 }: Props) {
@@ -316,6 +329,8 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
   const [overrides, setOverrides]       = useState<Record<string, number>>({})
   const [editingKey, setEditingKey]     = useState<string | null>(null)
   const [editingValue, setEditingValue] = useState("")
+  const [sortField, setSortField]       = useState<SortField | null>(null)
+  const [sortOrder, setSortOrder]       = useState<SortOrder>("asc")
   const editInputRef = useRef<HTMLInputElement>(null)
 
   const hasOverrides     = Object.keys(overrides).length > 0
@@ -350,11 +365,86 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
     return rows
   }, [data, methodFilter, search])
 
-  const tableTotalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const safePage   = Math.min(page, tableTotalPages)
-  const pageRows   = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const handleSort = useCallback((field: SortField) => {
+    if (sortField === field) {
+      if (sortOrder === "asc") {
+        setSortOrder("desc")
+      } else {
+        setSortField(null)
+        setSortOrder("asc")
+      }
+    } else {
+      setSortField(field)
+      setSortOrder("asc")
+    }
+  }, [sortField, sortOrder])
 
-  useEffect(() => { setPage(1) }, [search, methodFilter])
+  const renderHeader = useCallback((label: string, field: SortField, align: "left" | "right" | "center" = "left") => {
+    const isSorted = sortField === field
+    const alignCls = align === "left" ? "text-left" : align === "right" ? "justify-end text-right" : "justify-center text-center"
+    const thAlignCls = align === "left" ? "text-left" : align === "right" ? "text-right" : "text-center"
+
+    return (
+      <th
+        onClick={() => handleSort(field)}
+        className={`group px-4 py-3 ${thAlignCls} text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap cursor-pointer select-none hover:bg-muted/50 hover:text-foreground transition-all`}
+      >
+        <div className={`flex items-center gap-1.5 ${alignCls}`}>
+          <span>{label}</span>
+          <span className="shrink-0">
+            {isSorted ? (
+              sortOrder === "asc" ? (
+                <ArrowUp className="h-3 w-3 text-foreground" />
+              ) : (
+                <ArrowDown className="h-3 w-3 text-foreground" />
+              )
+            ) : (
+              <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-40 hover:opacity-40 transition-opacity" />
+            )}
+          </span>
+        </div>
+      </th>
+    )
+  }, [sortField, sortOrder, handleSort])
+
+  const sorted = useMemo(() => {
+    if (!sortField) return filtered
+
+    const sortedRows = [...filtered]
+    sortedRows.sort((a, b) => {
+      let valA = sortField === "Contador Proyectado"
+        ? (overrides[`${a["Nro Serie"]}|||${a["Clase"]}`] ?? a["Contador Proyectado"])
+        : a[sortField]
+      let valB = sortField === "Contador Proyectado"
+        ? (overrides[`${b["Nro Serie"]}|||${b["Clase"]}`] ?? b["Contador Proyectado"])
+        : b[sortField]
+
+      if (valA === null || valA === undefined) {
+        if (valB === null || valB === undefined) return 0
+        return sortOrder === "asc" ? 1 : -1
+      }
+      if (valB === null || valB === undefined) {
+        return sortOrder === "asc" ? -1 : 1
+      }
+
+      if (typeof valA === "number" && typeof valB === "number") {
+        return sortOrder === "asc" ? valA - valB : valB - valA
+      }
+
+      const strA = String(valA).toLowerCase()
+      const strB = String(valB).toLowerCase()
+      if (strA < strB) return sortOrder === "asc" ? -1 : 1
+      if (strA > strB) return sortOrder === "asc" ? 1 : -1
+      return 0
+    })
+    return sortedRows
+  }, [filtered, sortField, sortOrder, overrides])
+
+  const tableTotalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
+  const safePage   = Math.min(page, tableTotalPages)
+  const pageRows   = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+
+  useEffect(() => { setPage(1) }, [search, methodFilter, sortField, sortOrder])
   useEffect(() => {
     if (editingKey && editInputRef.current) editInputRef.current.focus()
   }, [editingKey])
@@ -522,14 +612,14 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
               <table className="w-full text-xs min-w-[720px]">
                 <thead>
                   <tr className="border-b bg-muted/30">
-                    <th className="px-4 py-3 text-left   text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">Serie</th>
-                    <th className="px-4 py-3 text-left   text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">Modelo / Sector</th>
-                    <th className="px-4 py-3 text-left   text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">Clase</th>
-                    <th className="px-4 py-3 text-left   text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">Últ. Lectura</th>
-                    <th className="px-4 py-3 text-right  text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">Días</th>
-                    <th className="px-4 py-3 text-right  text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">Págs. Sumadas</th>
-                    <th className="px-4 py-3 text-right  text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">Cont. Proyectado</th>
-                    <th className="px-4 py-3 text-center text-[9px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">Método</th>
+                    {renderHeader("Serie", "Nro Serie", "left")}
+                    {renderHeader("Modelo / Sector", "Articulo", "left")}
+                    {renderHeader("Clase", "Clase", "left")}
+                    {renderHeader("Últ. Lectura", "Fecha Ultima Lectura", "left")}
+                    {renderHeader("Días", "Dias Proyectados", "right")}
+                    {renderHeader("Págs. Sumadas", "Paginas Sumadas", "right")}
+                    {renderHeader("Cont. Proyectado", "Contador Proyectado", "right")}
+                    {renderHeader("Método", "Metodo", "center")}
                   </tr>
                 </thead>
                 <tbody>
