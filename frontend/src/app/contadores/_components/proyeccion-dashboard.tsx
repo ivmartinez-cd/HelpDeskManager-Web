@@ -44,7 +44,8 @@ function useCountUp(target: number, duration = 900) {
 
 function formatDate(s: string | null | undefined): string {
   if (!s) return "—"
-  return new Date(s).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" })
+  const dateStr = s.includes("T") ? s : `${s}T00:00:00`
+  return new Date(dateStr).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "2-digit" })
 }
 
 function dlBlob(content: string, filename: string) {
