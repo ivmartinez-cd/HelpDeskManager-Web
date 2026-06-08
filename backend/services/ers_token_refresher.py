@@ -56,12 +56,12 @@ async def main():
 
         # 2. Fill login form
         print("Filling credentials...")
-        await page.fill('input[type="text"]', ERS_USERNAME)
+        await page.fill('input[type="text"], input[type="email"], input[placeholder="example@example.com"]', ERS_USERNAME)
         await page.fill('input[type="password"]', ERS_PASSWORD)
 
         # 3. Click submit
         print("Submitting login form...")
-        await page.click('button:has-text("Iniciar sesión")')
+        await page.click('button.is-link, button:has-text("Iniciar sesión"), button:has-text("Log in")')
 
         # 4. Wait for redirection / network activity
         try:

@@ -578,7 +578,7 @@ async def process_db3(
 async def sds_clients_list():
     """Devuelve la lista de clientes desde la API de SDS."""
     try:
-        clients = get_sds_clients()
+        clients = await get_sds_clients()
         return {"status": "success", "clients": clients}
     except Exception as e:
         import traceback
@@ -596,7 +596,7 @@ async def sds_process_meters(
 ):
     """Obtiene los contadores de SDS y los exporta a CSV."""
     try:
-        csv_path_str = export_sds_meters_to_csv(
+        csv_path_str = await export_sds_meters_to_csv(
             customer_id,
             customer_name,
             fecha_maxima,

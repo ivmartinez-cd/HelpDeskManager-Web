@@ -1,5 +1,5 @@
 import csv
-import requests
+import httpx
 import base64
 from pathlib import Path
 from typing import List, Dict, Any
@@ -9,8 +9,11 @@ SDS_API_KEY = "2bc8f5eaae344c46814190bffd40060d"
 SDS_API_SECRET = "0iIxVYcz5lH8sTjl6c6B89uvyQ4qyl2bojRPv155onzqkqpANt6culpITUBldR8a"
 SDS_BASE_URL = "https://hp-sds-latam.insightportal.net/PortalAPI"
 
+# Timeout global para todos los requests a SDS (segundos)
+SDS_TIMEOUT = httpx.Timeout(20.0)
 
-def _get_auth_token() -> str:
+
+async def _get_auth_token() -> str:
     """Obtiene el Bearer token de la API de SDS usando Key y Secret."""
     url = f"{SDS_BASE_URL}/login"
 
@@ -22,9 +25,10 @@ def _get_auth_token() -> str:
         "Content-Type": "application/json",
     }
 
-    response = requests.post(url, headers=headers)
+    async with httpx.AsyncClient(timeout=SDS_TIMEOUT) as client:
+        response = await client.post(url, headers=headers)
+
     if response.status_code == 200:
-        # El token viene en el body JSON como access_token
         try:
             data = response.json()
             token = data.get("access_token") or data.get("token")
@@ -43,16 +47,17 @@ def _get_auth_token() -> str:
         )
 
 
-def get_sds_clients() -> List[Dict[str, Any]]:
+async def get_sds_clients() -> List[Dict[str, Any]]:
     """Obtiene la lista de clientes ACTIVOS desde SDS."""
-    token = _get_auth_token()
+    token = await _get_auth_token()
     url = f"{SDS_BASE_URL}/api/customers"
     headers = {"Authorization": token, "Accept": "application/json"}
 
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient(timeout=SDS_TIMEOUT) as client:
+        response = await client.get(url, headers=headers)
+
     if response.status_code == 200:
         all_customers = response.json()
-        # Filtrar solo clientes activos
         active_customers = [
             c for c in all_customers if c.get("status", "").upper() == "ACTIVE"
         ]
@@ -63,18 +68,18 @@ def get_sds_clients() -> List[Dict[str, Any]]:
         )
 
 
-def get_sds_device_meters(customer_id: int, max_date: str) -> List[Dict[str, Any]]:
+async def _get_sds_device_meters(token: str, customer_id: int, max_date: str) -> List[Dict[str, Any]]:
     """
     Obtiene los contadores de las impresoras para un cliente dado, hasta una fecha máxima.
     `max_date` debe tener el formato YYYY-MM-DDTHH:mm:ss.
     """
-    token = _get_auth_token()
     url = f"{SDS_BASE_URL}/api/devices/meters/latestbydate/{customer_id}"
-
     params = {"maxReadDateTimeLocal": max_date, "includeExtendedMeters": "true"}
     headers = {"Authorization": token, "Accept": "application/json"}
 
-    response = requests.get(url, headers=headers, params=params)
+    async with httpx.AsyncClient(timeout=SDS_TIMEOUT) as client:
+        response = await client.get(url, headers=headers, params=params)
+
     if response.status_code == 200:
         return response.json()
     else:
@@ -83,11 +88,14 @@ def get_sds_device_meters(customer_id: int, max_date: str) -> List[Dict[str, Any
         )
 
 
-def _get_device_serial_map(token: str, customer_id: int) -> Dict[int, str]:
+async def _get_device_serial_map(token: str, customer_id: int) -> Dict[int, str]:
     """Devuelve un dict {deviceId: serialNumber} para un cliente dado."""
     url = f"{SDS_BASE_URL}/api/devices"
     headers = {"Authorization": token, "Accept": "application/json"}
-    response = requests.get(url, headers=headers, params={"customerId": customer_id})
+
+    async with httpx.AsyncClient(timeout=SDS_TIMEOUT) as client:
+        response = await client.get(url, headers=headers, params={"customerId": customer_id})
+
     if response.status_code == 200:
         devices = response.json()
         return {
@@ -96,7 +104,7 @@ def _get_device_serial_map(token: str, customer_id: int) -> Dict[int, str]:
     return {}
 
 
-def export_sds_meters_to_csv(
+async def export_sds_meters_to_csv(
     customer_id: int,
     customer_name: str,
     max_date: str,
@@ -115,7 +123,10 @@ def export_sds_meters_to_csv(
       - Sin CLASE_20 (ya está sumado)
       - Equipos solo mono: TIPO=21, CLASE_10=10, CONTADOR_10=monoPages
     """
-    meters = get_sds_device_meters(customer_id, max_date)
+    # Obtener token una sola vez y reutilizarlo en ambas llamadas
+    token = await _get_auth_token()
+
+    meters = await _get_sds_device_meters(token, customer_id, max_date)
 
     if not meters:
         raise Exception(
@@ -126,23 +137,21 @@ def export_sds_meters_to_csv(
     from datetime import datetime as _dt, timedelta as _td
 
     try:
-        # max_date puede venir como YYYY-MM-DDTHH:mm:ss o YYYY-M-D...
         date_part = max_date.split("T")[0]
         if "-" in date_part:
             y, m, d = date_part.split("-")
             max_dt = _dt(int(y), int(m), int(d))
         else:
             max_dt = _dt.fromisoformat(date_part)
-        
+
         min_dt = max_dt - _td(days=30)
         print(f"DEBUG SDS: Filtrando entre {min_dt} y {max_dt}")
     except Exception as e:
         print(f"DEBUG SDS: Error parseando fecha maxima ({max_date}): {e}")
         min_dt = None
 
-    # Obtener mapa deviceId -> serialNumber
-    token = _get_auth_token()
-    serial_map = _get_device_serial_map(token, customer_id)
+    # Obtener mapa deviceId -> serialNumber (reutilizando el token)
+    serial_map = await _get_device_serial_map(token, customer_id)
 
     # Formatear nombre de archivo
     date_str = max_date.split("T")[0].replace("-", "")
@@ -163,7 +172,6 @@ def export_sds_meters_to_csv(
         raw_date = device.get("readingDate") or (device.get("readingDateTime", "")[:10])
         try:
             device_dt = _dt.strptime(raw_date, "%Y-%m-%d")
-            # Aplicar filtro de 30 días: si la lectura es más vieja que max_date - 30 días, se ignora
             if min_dt and device_dt < min_dt:
                 continue
             fecha = device_dt.strftime("%d/%m/%Y")
@@ -176,7 +184,6 @@ def export_sds_meters_to_csv(
         is_color = colour_pages > 0
 
         if suma_color and is_color:
-            # Modo suma: un solo registro con total combinado, CLASE_10=20 (siempre TIPO=21)
             row = {
                 "SERIE": serie,
                 "FECHA": fecha,
@@ -190,7 +197,6 @@ def export_sds_meters_to_csv(
             }
             rows.append(row)
         else:
-            # Modo discriminado: monoPages en CLASE_10, colourPages en CLASE_20
             row = {
                 "SERIE": serie,
                 "FECHA": fecha,
