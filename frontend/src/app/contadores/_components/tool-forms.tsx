@@ -171,13 +171,13 @@ export const ProyeccionForm = memo(function ProyeccionForm({
                 <strong className="text-foreground">Intervalo Mín. (Días):</strong> Mínimo de días que debe abarcar el historial para poder calcular el consumo promedio. Evita proyecciones basadas en lecturas tomadas con muy poca diferencia de tiempo (ej: menos de 1 día).
               </p>
               <p>
-                <strong className="text-foreground">Ventana Historial (Días):</strong> El período reciente que se analiza (ej. los últimos 365 días). Ignora lecturas muy antiguas para que el promedio refleje cómo se usa la impresora en la actualidad.
+                <strong className="text-foreground">Ventana Historial (Días):</strong> El período de lecturas que se usa para calcular la velocidad de consumo (ej. usar solo las lecturas del último año para ver el ritmo de impresión reciente, ignorando años anteriores).
               </p>
               <p>
-                <strong className="text-foreground">Umbral Mín. Consumo:</strong> Consumo diario mínimo requerido. Si la tendencia es menor, se forzará a 0 (se replica el último contador).
+                <strong className="text-foreground">Umbral Mín. Consumo:</strong> Consumo diario mínimo requerido. Si la tendencia es menor, se forzará a 0 (se replica el último contador conocido).
               </p>
               <p>
-                <strong className="text-foreground">Antigüedad Máx. Lectura (Días):</strong> Si la lectura base supera estos días, se asume desactualizada y se fuerza la proyección a consumo 0.
+                <strong className="text-foreground">Antigüedad Máx. Lectura (Días):</strong> Límite de tiempo sin reportar. Si la impresora no registra lecturas desde hace más de estos días (ej. está desconectada o retirada), se asume inactiva y se fuerza su consumo a 0.
               </p>
             </div>
           </div>
