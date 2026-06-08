@@ -501,18 +501,14 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
       {/* ── Dashboard Tab ────────────────────────────────────────── */}
       {activeTab === "dashboard" && (
         <>
-          {/* KPI Grid — 5 cols on large */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div className="col-span-2 sm:col-span-3 lg:col-span-1">
-              <KpiCard label="Total Procesados" value={summary.total}
-                sub={`Toma: ${formatDate(summary.fecha_toma)}`}
-                glowColor="bg-blue-500" textClass="text-blue-500" />
-            </div>
+          {/* KPI Grid — 4 cols */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <KpiCard label="Total Procesados" value={summary.total}
+              sub={`Toma: ${formatDate(summary.fecha_toma)}`}
+              glowColor="bg-blue-500" textClass="text-blue-500" />
             <KpiCard label="Total Real"  value={summary.reales}      pct={pctReal} glowColor="bg-emerald-500" textClass="text-emerald-500" />
             <KpiCard label="Total Proyectado"    value={summary.proyectados}  pct={pctProy} glowColor="bg-amber-500"   textClass="text-amber-500"   />
             <KpiCard label="Sin Datos"     value={summary.sin_datos}    pct={pctSin}  glowColor="bg-rose-500"    textClass="text-rose-500"    />
-            <KpiCard label="Impresiones Proyectadas" value={monoPages + colorPages}
-              sub={`Mono: ${monoPages.toLocaleString()} · Color: ${colorPages.toLocaleString()}`} glowColor="bg-violet-500" textClass="text-violet-500" />
           </div>
 
           {/* Body: [dist + table] | [sidebar] on xl+; stacked otherwise */}

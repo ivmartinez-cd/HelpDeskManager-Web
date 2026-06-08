@@ -401,7 +401,7 @@ export default function ContadoresPage() {
         isOpen={!!activeTool}
         onClose={closeModal}
         title={activeTool ? TOOL_TITLES[activeTool] : ""}
-        maxWidth={activeTool === "auto" && proc.status === "success" ? "max-w-[95vw] 2xl:max-w-7xl" : "max-w-lg"}
+        maxWidth={activeTool === "auto" && proc.status === "success" ? "max-w-[98vw]" : "max-w-lg"}
         error={proc.modalError}
       >
         <ModalContent
