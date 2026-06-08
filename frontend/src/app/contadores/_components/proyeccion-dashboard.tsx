@@ -223,6 +223,16 @@ function AuditView({ audit }: { audit: AuditRow[] }) {
   const [usadoFilter, setUsadoFilter] = useState<"ALL" | "USADO" | "DESCARTADO">("ALL")
   const [page, setPage] = useState(1)
 
+  const handleSearchChange = useCallback((val: string) => {
+    setSearch(val)
+    setPage(1)
+  }, [])
+
+  const handleFilterChange = useCallback((val: "ALL" | "USADO" | "DESCARTADO") => {
+    setUsadoFilter(val)
+    setPage(1)
+  }, [])
+
   const filtered = useMemo(() => {
     let rows = audit
     if (usadoFilter === "USADO") {
@@ -244,8 +254,6 @@ function AuditView({ audit }: { audit: AuditRow[] }) {
   const tableTotalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const safePage = Math.min(page, tableTotalPages)
   const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
-
-  useEffect(() => { setPage(1) }, [search, usadoFilter])
 
   if (audit.length === 0) {
     return (
@@ -272,11 +280,11 @@ function AuditView({ audit }: { audit: AuditRow[] }) {
             type="text"
             placeholder="Buscar por serie, motivo, tipo..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => handleSearchChange(e.target.value)}
             className="w-full h-9 pl-9 pr-8 rounded-xl border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-accent"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+            <button onClick={() => handleSearchChange("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
               <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
             </button>
           )}
@@ -286,7 +294,7 @@ function AuditView({ audit }: { audit: AuditRow[] }) {
           {(["ALL", "USADO", "DESCARTADO"] as const).map(f => (
             <button
               key={f}
-              onClick={() => setUsadoFilter(f)}
+              onClick={() => handleFilterChange(f)}
               className={`px-3 h-9 rounded-xl text-[9px] font-black uppercase transition-all ${
                 usadoFilter === f
                   ? "bg-foreground text-background"
@@ -520,7 +528,18 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
     return rows
   }, [data, methodFilter, search])
 
+  const handleSearchChange = useCallback((val: string) => {
+    setSearch(val)
+    setPage(1)
+  }, [])
+
+  const handleMethodFilterChange = useCallback((val: MethodFilter) => {
+    setMethodFilter(val)
+    setPage(1)
+  }, [])
+
   const handleSort = useCallback((field: SortField) => {
+    setPage(1)
     if (sortField === field) {
       if (sortOrder === "asc") {
         setSortOrder("desc")
@@ -567,10 +586,10 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
 
     const sortedRows = [...filtered]
     sortedRows.sort((a, b) => {
-      let valA = sortField === "Contador Proyectado"
+      const valA = sortField === "Contador Proyectado"
         ? (overrides[`${a["Nro Serie"]}|||${a["Clase"]}`] ?? a["Contador Proyectado"])
         : a[sortField]
-      let valB = sortField === "Contador Proyectado"
+      const valB = sortField === "Contador Proyectado"
         ? (overrides[`${b["Nro Serie"]}|||${b["Clase"]}`] ?? b["Contador Proyectado"])
         : b[sortField]
 
@@ -599,13 +618,9 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
   const safePage   = Math.min(page, tableTotalPages)
   const pageRows   = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
-  useEffect(() => { setPage(1) }, [search, methodFilter, sortField, sortOrder])
   useEffect(() => {
     if (editingKey && editInputRef.current) editInputRef.current.focus()
   }, [editingKey])
-  useEffect(() => {
-    if (activeTab !== "dashboard") setEditingKey(null)
-  }, [activeTab])
 
   const startEdit = useCallback((key: string, cur: number | null) => {
     setEditingKey(key)
@@ -630,7 +645,10 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
           {(["dashboard", "validation", "audit"] as const).map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setActiveTab(tab)
+                if (tab !== "dashboard") setEditingKey(null)
+              }}
               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
                 activeTab === tab
                   ? "bg-background shadow-sm text-foreground"
@@ -710,7 +728,7 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
               {/* Critical alert chip */}
               {criticoCount > 0 && (
                 <button
-                  onClick={() => setMethodFilter(f => f === "CRITICO" ? "ALL" : "CRITICO")}
+                  onClick={() => handleMethodFilterChange(methodFilter === "CRITICO" ? "ALL" : "CRITICO")}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border shrink-0 transition-all ${
                     methodFilter === "CRITICO"
                       ? "bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/30"
@@ -729,11 +747,11 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
                   type="text"
                   placeholder="Buscar serie, modelo, sector..."
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={e => handleSearchChange(e.target.value)}
                   className="w-full h-9 pl-9 pr-8 rounded-xl border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-accent"
                 />
                 {search && (
-                  <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                  <button onClick={() => handleSearchChange("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
                     <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
                   </button>
                 )}
@@ -744,7 +762,7 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
                 {(["ALL", "REAL", "PROYECTADO", "SIN DATOS"] as MethodFilter[]).map(f => (
                   <button
                     key={f}
-                    onClick={() => setMethodFilter(f)}
+                    onClick={() => handleMethodFilterChange(f)}
                     className={`px-3 h-9 rounded-xl text-[9px] font-black uppercase transition-all ${
                       methodFilter === f
                         ? f === "ALL"        ? "bg-foreground text-background"

@@ -1,6 +1,5 @@
 import { memo } from "react"
 import { FileInput } from "@/components/ui/file-input"
-import { Loader2, PlusCircle, Search, Wand2 } from "lucide-react"
 import type { CalcResult } from "../_hooks/types"
 
 interface ManualFormProps {
@@ -115,7 +114,7 @@ export const ProyeccionForm = memo(function ProyeccionForm({
             rel="noopener noreferrer"
             className="underline hover:text-amber-600 dark:hover:text-amber-300 transition-colors font-bold"
           >
-            "Contadores Facturables por empresa"
+            &quot;Contadores Facturables por empresa&quot;
           </a>{" "}
           en formato Excel desde el servidor de reportes (SSRS) de la empresa y subirlo aquí para procesar la proyección.
         </p>
