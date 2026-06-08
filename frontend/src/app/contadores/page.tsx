@@ -361,6 +361,7 @@ export default function ContadoresPage() {
       if (data.files) proc.setResultFiles(data.files)
       if (data.summary) proc.setProyeccionSummary(data.summary)
       if (data.data) proc.setProyeccionData(data.data)
+      if (data.validation) proc.setProyeccionValidation(data.validation)
       proc.setStatus("success")
       proc.setMessage(data.message || "Proyección completada.")
       toast("Proyección Contadores ejecutada", "success")
@@ -400,7 +401,7 @@ export default function ContadoresPage() {
         isOpen={!!activeTool}
         onClose={closeModal}
         title={activeTool ? TOOL_TITLES[activeTool] : ""}
-        maxWidth={activeTool === "auto" && proc.status === "success" ? "max-w-4xl" : "max-w-lg"}
+        maxWidth={activeTool === "auto" && proc.status === "success" ? "max-w-[95vw] 2xl:max-w-7xl" : "max-w-lg"}
         error={proc.modalError}
       >
         <ModalContent
@@ -417,9 +418,15 @@ export default function ContadoresPage() {
               <ProyeccionDashboard
                 summary={proc.proyeccionSummary}
                 data={proc.proyeccionData}
+                validation={proc.proyeccionValidation}
                 resultFiles={proc.resultFiles}
                 apiUrl={apiUrl}
-                onReset={() => { proc.setStatus("idle"); proc.setProyeccionSummary(null); proc.setProyeccionData([]) }}
+                onReset={() => {
+                  proc.setStatus("idle")
+                  proc.setProyeccionSummary(null)
+                  proc.setProyeccionData([])
+                  proc.setProyeccionValidation([])
+                }}
               />
             ) : undefined
           }

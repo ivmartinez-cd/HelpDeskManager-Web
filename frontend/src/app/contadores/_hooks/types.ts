@@ -22,6 +22,18 @@ export interface ProyeccionSummary {
   dist: Record<string, number>
 }
 
+export interface ValidationRow {
+  "Nro Serie": string
+  "Clase": string
+  "Fecha Toma": string
+  "Contador Proyectado": number | null
+  "Fecha Lectura Real": string | null
+  "Contador Real": number | null
+  "Diferencia": number | null
+  "Error %": number | null
+  "Nota": string
+}
+
 export interface ProyeccionRow {
   "Nro Serie": string
   "Clase": string
