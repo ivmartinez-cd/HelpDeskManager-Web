@@ -6,14 +6,14 @@ import {
   ChevronLeft, ChevronRight, AlertTriangle, BarChart3, Edit3, Check,
   ArrowUp, ArrowDown, ArrowUpDown,
 } from "lucide-react"
-import type { ProyeccionSummary, ProyeccionRow, ValidationRow } from "../_hooks/types"
+import type { ProyeccionSummary, ProyeccionRow, ValidationRow, AuditRow } from "../_hooks/types"
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 15
 
 type MethodFilter = "ALL" | "REAL" | "PROYECTADO" | "SIN DATOS" | "CRITICO"
-type ActiveTab = "dashboard" | "validation"
+type ActiveTab = "dashboard" | "validation" | "audit"
 
 const DIST_RANGES = [
   { key: "1 dia",       label: "1 día",      color: "bg-emerald-500", text: "text-emerald-500" },
@@ -218,6 +218,159 @@ function ValidationView({ validation }: { validation: ValidationRow[] }) {
   )
 }
 
+function AuditView({ audit }: { audit: AuditRow[] }) {
+  const [search, setSearch] = useState("")
+  const [usadoFilter, setUsadoFilter] = useState<"ALL" | "USADO" | "DESCARTADO">("ALL")
+  const [page, setPage] = useState(1)
+
+  const filtered = useMemo(() => {
+    let rows = audit
+    if (usadoFilter === "USADO") {
+      rows = rows.filter(r => r["Usado"] === true)
+    } else if (usadoFilter === "DESCARTADO") {
+      rows = rows.filter(r => r["Usado"] === false)
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      rows = rows.filter(r =>
+        r["Nro Serie"]?.toLowerCase().includes(q) ||
+        r["Motivo"]?.toLowerCase().includes(q) ||
+        r["Tipo Contador"]?.toLowerCase().includes(q)
+      )
+    }
+    return rows
+  }, [audit, search, usadoFilter])
+
+  const tableTotalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const safePage = Math.min(page, tableTotalPages)
+  const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+
+  useEffect(() => { setPage(1) }, [search, usadoFilter])
+
+  if (audit.length === 0) {
+    return (
+      <div className="py-16 flex flex-col items-center gap-4 text-center">
+        <div className="p-4 rounded-2xl bg-muted/20 border">
+          <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <div className="max-w-sm">
+          <p className="font-bold text-sm text-foreground">Sin registros de auditoría</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+            No se generó información de auditoría para esta corrida.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2.5 items-center">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Buscar por serie, motivo, tipo..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full h-9 pl-9 pr-8 rounded-xl border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+              <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-1.5 shrink-0">
+          {(["ALL", "USADO", "DESCARTADO"] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setUsadoFilter(f)}
+              className={`px-3 h-9 rounded-xl text-[9px] font-black uppercase transition-all ${
+                usadoFilter === f
+                  ? "bg-foreground text-background"
+                  : "bg-muted/10 text-muted-foreground border border-border/40 hover:bg-muted/20"
+              }`}
+            >
+              {f === "ALL" ? "Todos" : f === f && f === "USADO" ? "Usados" : "Descartados"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-3xl border bg-card/60 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs min-w-[700px]">
+            <thead>
+              <tr className="border-b bg-muted/30">
+                <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-wider text-muted-foreground">Serie</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-wider text-muted-foreground">Clase</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-wider text-muted-foreground">Fecha</th>
+                <th className="px-4 py-3 text-right text-[9px] font-black uppercase tracking-wider text-muted-foreground">Contador</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-wider text-muted-foreground">Tipo</th>
+                <th className="px-4 py-3 text-center text-[9px] font-black uppercase tracking-wider text-muted-foreground">Estado</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-wider text-muted-foreground">Motivo / Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageRows.map((r, i) => (
+                <tr key={i} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                  <td className="px-4 py-3 font-mono font-bold whitespace-nowrap">{r["Nro Serie"]}</td>
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{r["Clase"]}</td>
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{formatDate(r["Fecha"])}</td>
+                  <td className="px-4 py-3 text-right font-mono font-bold tabular-nums whitespace-nowrap">
+                    {r["Contador"] != null ? r["Contador"].toLocaleString() : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{r["Tipo Contador"] || "—"}</td>
+                  <td className="px-4 py-3 text-center whitespace-nowrap">
+                    {r["Usado"] ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase border bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        Usado
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase border bg-rose-500/10 text-rose-500 border-rose-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                        Ignorado
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground max-w-xs truncate hover:text-foreground transition-colors cursor-help" title={r["Motivo"]}>
+                    {r["Motivo"]}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="px-4 py-3 border-t flex items-center justify-between bg-muted/5">
+          <p className="text-[9px] text-muted-foreground font-bold">
+            {filtered.length} lecturas · pág. {safePage}/{tableTotalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={safePage === 1}
+              className="p-1.5 rounded-lg border disabled:opacity-30 hover:bg-muted/50 transition-colors"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => setPage(p => Math.min(tableTotalPages, p + 1))}
+              disabled={safePage === tableTotalPages}
+              className="p-1.5 rounded-lg border disabled:opacity-30 hover:bg-muted/50 transition-colors"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Sidebar Panels (shared between xl sidebar and < xl inline) ──────────────
 
 interface SidebarPanelsProps {
@@ -303,6 +456,7 @@ interface Props {
   summary: ProyeccionSummary
   data: ProyeccionRow[]
   validation: ValidationRow[]
+  audit: AuditRow[]
   resultFiles: string[]
   apiUrl: string
   onReset: () => void
@@ -321,7 +475,7 @@ type SortField =
 type SortOrder = "asc" | "desc"
 
 export const ProyeccionDashboard = memo(function ProyeccionDashboard({
-  summary, data, validation, resultFiles, apiUrl, onReset,
+  summary, data, validation, audit, resultFiles, apiUrl, onReset,
 }: Props) {
   const [activeTab, setActiveTab]       = useState<ActiveTab>("dashboard")
   const [search, setSearch]             = useState("")
@@ -473,7 +627,7 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
       {/* ── Header: tabs + reset ─────────────────────────────────── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex gap-1 p-1 bg-muted/30 rounded-2xl">
-          {(["dashboard", "validation"] as const).map(tab => (
+          {(["dashboard", "validation", "audit"] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -485,7 +639,9 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
             >
               {tab === "dashboard"
                 ? "Dashboard"
-                : `Validación${validationWithReal.length > 0 ? ` (${validationWithReal.length})` : ""}`}
+                : tab === "validation"
+                ? `Validación${validationWithReal.length > 0 ? ` (${validationWithReal.length})` : ""}`
+                : `Auditoría${audit.length > 0 ? ` (${audit.length})` : ""}`}
             </button>
           ))}
         </div>
@@ -746,6 +902,11 @@ export const ProyeccionDashboard = memo(function ProyeccionDashboard({
       {/* ── Validation Tab ───────────────────────────────────────── */}
       {activeTab === "validation" && (
         <ValidationView validation={validation} />
+      )}
+
+      {/* ── Audit Tab ────────────────────────────────────────────── */}
+      {activeTab === "audit" && (
+        <AuditView audit={audit} />
       )}
     </div>
   )

@@ -49,3 +49,13 @@ export interface ProyeccionRow {
   "Metodo": "REAL" | "PROYECTADO" | "SIN DATOS"
   "Observaciones": string
 }
+
+export interface AuditRow {
+  "Nro Serie": string
+  "Clase": string
+  "Fecha": string | null
+  "Contador": number | null
+  "Tipo Contador": string | null
+  "Usado": boolean
+  "Motivo": string
+}

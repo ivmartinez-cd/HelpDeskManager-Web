@@ -362,6 +362,7 @@ export default function ContadoresPage() {
       if (data.summary) proc.setProyeccionSummary(data.summary)
       if (data.data) proc.setProyeccionData(data.data)
       if (data.validation) proc.setProyeccionValidation(data.validation)
+      if (data.audit) proc.setProyeccionAudit(data.audit)
       proc.setStatus("success")
       proc.setMessage(data.message || "Proyección completada.")
       toast("Proyección Contadores ejecutada", "success")
@@ -419,6 +420,7 @@ export default function ContadoresPage() {
                 summary={proc.proyeccionSummary}
                 data={proc.proyeccionData}
                 validation={proc.proyeccionValidation}
+                audit={proc.proyeccionAudit}
                 resultFiles={proc.resultFiles}
                 apiUrl={apiUrl}
                 onReset={() => {
@@ -426,6 +428,7 @@ export default function ContadoresPage() {
                   proc.setProyeccionSummary(null)
                   proc.setProyeccionData([])
                   proc.setProyeccionValidation([])
+                  proc.setProyeccionAudit([])
                 }}
               />
             ) : undefined

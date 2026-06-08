@@ -488,7 +488,7 @@ async def tool_proyeccion(
             shutil.copyfileobj(file.file, buffer)
         file_input = str(temp_path)
 
-        out_excel, out_csv, logs, summary, data, validation = ejecutar_proyeccion(
+        out_excel, out_csv, logs, summary, data, validation, audit = ejecutar_proyeccion(
             file_input=file_input,
             fecha_toma=fecha_toma,
             folder_salida=str(OUTPUT_DIR),
@@ -517,6 +517,7 @@ async def tool_proyeccion(
             "summary": summary,
             "data": data,
             "validation": validation,
+            "audit": audit,
         }
     except Exception as e:
         import traceback

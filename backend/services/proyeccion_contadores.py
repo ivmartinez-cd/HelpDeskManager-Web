@@ -708,10 +708,10 @@ def ejecutar_proyeccion(
     ventana_reciente_dias: int = 365,
     umbral_minimo_consumo: float = 0.2,
     max_antiguedad_lectura_dias: int = 365,
-) -> tuple[str, str, list[str], dict, list[dict], list[dict]]:
+) -> tuple[str, str, list[str], dict, list[dict], list[dict], list[dict]]:
     """
     Ejecuta el algoritmo de proyecciones a partir de un archivo Excel en memoria o disco.
-    Retorna (ruta_excel, ruta_csv, logs, kpi_stats, registros, validacion).
+    Retorna (ruta_excel, ruta_csv, logs, kpi_stats, registros, validacion, auditoria).
     """
     logs = []
     
@@ -870,4 +870,4 @@ def ejecutar_proyeccion(
             out.append(clean)
         return out
 
-    return str(ruta_excel), str(ruta_csv), logs, kpi_stats, _serialize(df_res), _serialize(df_val)
+    return str(ruta_excel), str(ruta_csv), logs, kpi_stats, _serialize(df_res), _serialize(df_val), _serialize(df_aud)
