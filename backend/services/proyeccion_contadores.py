@@ -344,6 +344,8 @@ def construir_validacion(df_res: pd.DataFrame, df_aud: pd.DataFrame, fecha_toma:
         on=["Nro Serie", "Clase"], how="left",
     )
 
+    val["Diferencia"] = None
+    val["Error %"] = None
     mask = val["Contador Real"].notna()
     if not val.empty and mask.any():
         val.loc[mask, "Diferencia"] = (
