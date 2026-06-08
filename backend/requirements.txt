@@ -12,5 +12,8 @@ pytest-asyncio
 requests
 playwright
 openpyxl
+requests-ntlm
+zeep
+lxml
 
 

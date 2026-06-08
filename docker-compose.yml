@@ -14,6 +14,10 @@ services:
       - NAS_APP_DIR=${NAS_APP_DIR:-/nas_app}
       - DATABASE_URL=postgresql://neondb_owner:npg_TF7LyjxW6kEO@ep-icy-smoke-adpxoqpt.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
       - PYTHONUNBUFFERED=1
+      - SSRS_BASE=${SSRS_BASE:-http://reportes.cdsa.com.ar:8090}
+      - SSRS_DOMAIN=${SSRS_DOMAIN:-}
+      - SSRS_USER=${SSRS_USER:-}
+      - SSRS_PASSWORD=${SSRS_PASSWORD:-}
     command: uvicorn main:app --host 0.0.0.0 --port 8010 --reload
     restart: always
 

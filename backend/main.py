@@ -1,5 +1,6 @@
 import models
 from fastapi import FastAPI, UploadFile, File, HTTPException, Body, Depends, Form
+from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import os
@@ -59,6 +60,7 @@ from services.counters_tools import (
     calcular_estimacion_manual,
 )
 from services.proyeccion_contadores import ejecutar_proyeccion
+from services.ssrs_contadores import obtener_empresas_ssrs, descargar_excel_ssrs
 from database import engine, SessionLocal, get_db
 from models import FTPClient
 
@@ -455,9 +457,22 @@ async def tool_suma_fija(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/tools/proyeccion/empresas")
+async def get_proyeccion_empresas():
+    """Devuelve la lista de empresas disponibles en SSRS."""
+    try:
+        empresas = obtener_empresas_ssrs()
+        return {"empresas": empresas}
+    except Exception as e:
+        import traceback
+        print(f"Error al obtener empresas SSRS: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/tools/proyeccion")
 async def tool_proyeccion(
-    file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(None),
+    empresa: Optional[str] = Form(None),
     fecha: str = Form(...),
     tolerancia_dias: int = Form(2),
     min_dias_intervalo: int = Form(1),
@@ -465,13 +480,12 @@ async def tool_proyeccion(
     umbral_minimo_consumo: float = Form(0.2),
     max_antiguedad_lectura_dias: int = Form(365),
 ):
-    """Proyección de contadores."""
+    """Proyección de contadores. Acepta empresa (descarga SSRS) o archivo Excel."""
     try:
-        # Validar fecha
+        from datetime import datetime
         fecha_toma = None
         for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%y"):
             try:
-                from datetime import datetime
                 fecha_toma = datetime.strptime(fecha, fmt).date()
                 break
             except ValueError:
@@ -483,12 +497,23 @@ async def tool_proyeccion(
                 detail=f"Formato de fecha no reconocido: '{fecha}'. Use DD/MM/YYYY.",
             )
 
-        temp_path = UPLOAD_DIR / file.filename
-        with open(temp_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        if not empresa and not file:
+            raise HTTPException(status_code=400, detail="Debe proveer una empresa o un archivo Excel.")
+
+        import io
+        temp_path = None
+
+        if empresa:
+            excel_bytes = descargar_excel_ssrs(empresa)
+            file_input = io.BytesIO(excel_bytes)
+        else:
+            temp_path = UPLOAD_DIR / file.filename
+            with open(temp_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            file_input = str(temp_path)
 
         out_excel, out_csv, logs = ejecutar_proyeccion(
-            file_input=str(temp_path),
+            file_input=file_input,
             fecha_toma=fecha_toma,
             folder_salida=str(OUTPUT_DIR),
             tolerancia_dias=tolerancia_dias,
@@ -497,8 +522,10 @@ async def tool_proyeccion(
             umbral_minimo_consumo=umbral_minimo_consumo,
             max_antiguedad_lectura_dias=max_antiguedad_lectura_dias,
         )
-        os.remove(temp_path)
-        
+
+        if temp_path and temp_path.exists():
+            os.remove(temp_path)
+
         if logs:
             print(f"Warnings en proyeccion: {logs}")
 
@@ -510,7 +537,7 @@ async def tool_proyeccion(
             "status": "success",
             "message": msg,
             "files": [Path(out_excel).name, Path(out_csv).name],
-            "warnings": logs
+            "warnings": logs,
         }
     except Exception as e:
         import traceback

@@ -14,6 +14,7 @@ import { useProcess } from "./_hooks/use-process"
 import { useFtpClients } from "./_hooks/use-ftp-clients"
 import { useSdsClients } from "./_hooks/use-sds-clients"
 import { useErsClients } from "./_hooks/use-ers-clients"
+import { useProyeccionEmpresas } from "./_hooks/use-proyeccion-empresas"
 import { ActionCard } from "./_components/action-card"
 import { ModalContent } from "./_components/process-view"
 import { FtpForm } from "./_components/ftp-form"
@@ -73,6 +74,7 @@ export default function ContadoresPage() {
   const ftp = useFtpClients(apiUrl)
   const sds = useSdsClients(apiUrl)
   const ers = useErsClients(apiUrl)
+  const proy = useProyeccionEmpresas(apiUrl)
 
   const { fetchSdsClients, sdsClients } = sds;
   const { fetchErsClients, ersClients } = ers;
@@ -84,6 +86,9 @@ export default function ContadoresPage() {
     if (activeTool === "ers" && ersClients.length === 0) {
       fetchErsClients()
     }
+    if (activeTool === "auto" && proy.empresas.length === 0) {
+      proy.fetchEmpresas()
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTool])
 
@@ -94,7 +99,8 @@ export default function ContadoresPage() {
     ftp.resetDropdown()
     sds.resetDropdown()
     ers.resetDropdown()
-  }, [proc, ftp, sds, ers])
+    proy.resetDropdown()
+  }, [proc, ftp, sds, ers, proy])
 
   const runManualProcess = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -294,17 +300,6 @@ export default function ContadoresPage() {
       formData.append("fecha", toolData.suma_fecha)
       formData.append("hojas", toolData.suma_hojas.toString())
       proc.addLog(`Aplicando suma fija de ${toolData.suma_hojas} hojas...`, 2500)
-    } else if (tool === "auto") {
-      endpoint = "/api/tools/proyeccion"
-      formData.append("file", files[0])
-      formData.append("fecha", toolData.auto_fecha)
-      formData.append("tolerancia_dias", toolData.proy_tolerancia.toString())
-      formData.append("min_dias_intervalo", toolData.proy_min_intervalo.toString())
-      formData.append("ventana_reciente_dias", toolData.proy_ventana.toString())
-      formData.append("umbral_minimo_consumo", toolData.proy_umbral.toString())
-      formData.append("max_antiguedad_lectura_dias", toolData.proy_max_antiguedad.toString())
-      proc.addLog("Analizando tendencia histórica...", 2000)
-      proc.addLog("Generando proyecciones de contadores...", 3500)
     }
 
     try {
@@ -344,7 +339,46 @@ export default function ContadoresPage() {
     }
   }, [apiUrl, toolData.calc, proc])
 
-  const hasDropdownOpen = ftp.showDropdown || sds.showDropdown || ers.showDropdown
+  const runProyeccionProcess = useCallback(async () => {
+    if (!proy.selectedEmpresa) return
+    proc.setIsProcessing(true)
+    proc.setStatus("idle")
+    proc.setResultFiles([])
+    proc.addLog("Conectando al servidor SSRS...", 0)
+    proc.addLog("Descargando planilla de contadores...", 1500)
+    proc.addLog("Analizando tendencia histórica...", 4000)
+    proc.addLog("Generando proyecciones de contadores...", 6000)
+
+    const formData = new FormData()
+    formData.append("empresa", proy.selectedEmpresa)
+    formData.append("fecha", toolData.auto_fecha)
+    formData.append("tolerancia_dias", toolData.proy_tolerancia.toString())
+    formData.append("min_dias_intervalo", toolData.proy_min_intervalo.toString())
+    formData.append("ventana_reciente_dias", toolData.proy_ventana.toString())
+    formData.append("umbral_minimo_consumo", toolData.proy_umbral.toString())
+    formData.append("max_antiguedad_lectura_dias", toolData.proy_max_antiguedad.toString())
+
+    try {
+      const response = await fetch(`${apiUrl}/api/tools/proyeccion`, { method: "POST", body: formData })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.detail || "Error en la proyección")
+      proc.addLog("Recibiendo resultados del servidor...", 7500)
+      if (data.files) proc.setResultFiles(data.files)
+      proc.setStatus("success")
+      proc.setMessage(data.message || "Proyección completada.")
+      toast("Proyección Contadores ejecutada", "success")
+    } catch (err) {
+      const e = err as Error
+      proc.setStatus("error")
+      proc.setMessage(e.message)
+      proc.setModalError(e.message)
+      toast("Error en la proyección", "error")
+    } finally {
+      proc.setIsProcessing(false)
+    }
+  }, [apiUrl, proy.selectedEmpresa, toolData, proc])
+
+  const hasDropdownOpen = ftp.showDropdown || sds.showDropdown || ers.showDropdown || proy.showDropdown
 
   return (
     <PageShell>
@@ -480,13 +514,22 @@ export default function ContadoresPage() {
               ventana={toolData.proy_ventana}
               umbral={toolData.proy_umbral}
               maxAntiguedad={toolData.proy_max_antiguedad}
+              isLoadingEmpresas={proy.isLoadingEmpresas}
+              filteredEmpresas={proy.filteredEmpresas}
+              selectedEmpresa={proy.selectedEmpresa}
+              showDropdown={proy.showDropdown}
+              search={proy.search}
+              isProcessing={proc.isProcessing}
               onFechaChange={v => setToolData(prev => ({ ...prev, auto_fecha: v }))}
               onToleranciaChange={v => setToolData(prev => ({ ...prev, proy_tolerancia: v }))}
               onMinIntervaloChange={v => setToolData(prev => ({ ...prev, proy_min_intervalo: v }))}
               onVentanaChange={v => setToolData(prev => ({ ...prev, proy_ventana: v }))}
               onUmbralChange={v => setToolData(prev => ({ ...prev, proy_umbral: v }))}
               onMaxAntiguedadChange={v => setToolData(prev => ({ ...prev, proy_max_antiguedad: v }))}
-              onRun={files => runTool("auto", files)}
+              onSelectEmpresa={name => { proy.setSelectedEmpresa(name); proy.setShowDropdown(false) }}
+              onToggleDropdown={() => proy.setShowDropdown(v => !v)}
+              onSearchChange={proy.setSearch}
+              onRun={runProyeccionProcess}
             />
           )}
           {activeTool === "calc" && (
