@@ -60,7 +60,6 @@ from services.counters_tools import (
     calcular_estimacion_manual,
 )
 from services.proyeccion_contadores import ejecutar_proyeccion
-from services.ssrs_contadores import obtener_empresas_ssrs, descargar_excel_ssrs
 from database import engine, SessionLocal, get_db
 from models import FTPClient
 
@@ -457,22 +456,9 @@ async def tool_suma_fija(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/tools/proyeccion/empresas")
-async def get_proyeccion_empresas():
-    """Devuelve la lista de empresas disponibles en SSRS."""
-    try:
-        empresas = obtener_empresas_ssrs()
-        return {"empresas": empresas}
-    except Exception as e:
-        import traceback
-        print(f"Error al obtener empresas SSRS: {e}\n{traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @app.post("/api/tools/proyeccion")
 async def tool_proyeccion(
-    file: Optional[UploadFile] = File(None),
-    empresa: Optional[str] = Form(None),
+    file: UploadFile = File(...),
     fecha: str = Form(...),
     tolerancia_dias: int = Form(2),
     min_dias_intervalo: int = Form(1),
@@ -480,7 +466,7 @@ async def tool_proyeccion(
     umbral_minimo_consumo: float = Form(0.2),
     max_antiguedad_lectura_dias: int = Form(365),
 ):
-    """Proyección de contadores. Acepta empresa (descarga SSRS) o archivo Excel."""
+    """Proyección de contadores a partir de un archivo Excel cargado manualmente."""
     try:
         from datetime import datetime
         fecha_toma = None
@@ -497,20 +483,10 @@ async def tool_proyeccion(
                 detail=f"Formato de fecha no reconocido: '{fecha}'. Use DD/MM/YYYY.",
             )
 
-        if not empresa and not file:
-            raise HTTPException(status_code=400, detail="Debe proveer una empresa o un archivo Excel.")
-
-        import io
-        temp_path = None
-
-        if empresa:
-            excel_bytes = descargar_excel_ssrs(empresa)
-            file_input = io.BytesIO(excel_bytes)
-        else:
-            temp_path = UPLOAD_DIR / file.filename
-            with open(temp_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            file_input = str(temp_path)
+        temp_path = UPLOAD_DIR / file.filename
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        file_input = str(temp_path)
 
         out_excel, out_csv, logs = ejecutar_proyeccion(
             file_input=file_input,
@@ -541,7 +517,7 @@ async def tool_proyeccion(
         }
     except Exception as e:
         import traceback
-        print(f"Error en endpoint proyeccion: {e}\n{traceback.format_exc()}")
+        print(f"Error en endpoint proyeccion: {e}\\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
