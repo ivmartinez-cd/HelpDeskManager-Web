@@ -1,0 +1,24 @@
+name: Deploy Backend via SSH
+
+on:
+  push:
+    branches:
+      - fix/composite-pk-vital
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/ivmartinez_cd/HelpDeskManager-Web
+            git checkout fix/composite-pk-vital
+            git pull origin fix/composite-pk-vital
+            sudo docker compose down backend
+            sudo docker compose up -d --build backend
