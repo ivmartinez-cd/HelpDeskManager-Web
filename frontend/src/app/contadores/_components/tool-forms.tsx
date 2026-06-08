@@ -158,6 +158,29 @@ export const ProyeccionForm = memo(function ProyeccionForm({
             <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Antigüedad Máx. Lectura (Días)</label>
             <input type="number" className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground" value={maxAntiguedad} onChange={e => onMaxAntiguedadChange(parseInt(e.target.value) || 0)} />
           </div>
+
+          <div className="col-span-2 mt-4 pt-4 border-t border-border/40 space-y-2.5 text-[10px] leading-normal">
+            <h4 className="text-[9px] font-black uppercase text-muted-foreground tracking-wider">
+              ¿Qué hace cada ajuste?
+            </h4>
+            <div className="space-y-2 text-muted-foreground">
+              <p>
+                <strong className="text-foreground">Tolerancia (Días):</strong> Si la última lectura histórica tiene menos de estos días de antigüedad, se asume como <span className="font-semibold text-emerald-500">REAL</span> sin proyectar.
+              </p>
+              <p>
+                <strong className="text-foreground">Intervalo Mín. (Días):</strong> Días mínimos que deben transcurrir entre lecturas históricas para poder calcular el consumo diario.
+              </p>
+              <p>
+                <strong className="text-foreground">Ventana Historial (Días):</strong> Días máximos hacia atrás para evaluar la tendencia reciente (descartando lecturas más antiguas).
+              </p>
+              <p>
+                <strong className="text-foreground">Umbral Mín. Consumo:</strong> Consumo diario mínimo requerido. Si la tendencia es menor, se forzará a 0 (se replica el último contador).
+              </p>
+              <p>
+                <strong className="text-foreground">Antigüedad Máx. Lectura (Días):</strong> Si la lectura base supera estos días, se asume desactualizada y se fuerza la proyección a consumo 0.
+              </p>
+            </div>
+          </div>
         </div>
       </details>
 
