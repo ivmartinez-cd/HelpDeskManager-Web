@@ -11,5 +11,6 @@ httpx
 pytest-asyncio
 requests
 playwright
+openpyxl
 
 

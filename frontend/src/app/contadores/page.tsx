@@ -19,7 +19,7 @@ import { ModalContent } from "./_components/process-view"
 import { FtpForm } from "./_components/ftp-form"
 import { SdsForm } from "./_components/sds-form"
 import { ErsForm } from "./_components/ers-form"
-import { ManualForm, En0Form, SumaForm, AutoForm, CalcForm } from "./_components/tool-forms"
+import { ManualForm, En0Form, SumaForm, ProyeccionForm, CalcForm } from "./_components/tool-forms"
 
 import type { CalcResult } from "./_hooks/types"
 
@@ -30,7 +30,7 @@ const TOOLS = [
   { id: "manual", icon: Database, title: "Procesar DB3", desc: "Sube manualmente archivos .db3 para convertirlos a CSV localmente.", color: "text-orange-500", delay: 0.5 },
   { id: "en0", icon: Eraser, title: "Estimación en 0", desc: "Resetea equipos que no reportaron usando el último contador conocido.", color: "text-rose-500", delay: 0.6 },
   { id: "suma", icon: PlusCircle, title: "Suma Fija", desc: "Aplica incrementos masivos de hojas a partir de archivos Excel.", color: "text-emerald-500", delay: 0.7 },
-  { id: "auto", icon: Wand2, title: "Autoestimación", desc: "Genera proyecciones automáticas basadas en el historial de consumo.", color: "text-amber-500", delay: 0.8 },
+  { id: "auto", icon: Wand2, title: "Proyección Contadores", desc: "Proyecta contadores desde planillas Excel basándose en tendencias históricas.", color: "text-amber-500", delay: 0.8 },
   { id: "calc", icon: Calculator, title: "Calculadora", desc: "Herramienta interactiva para proyecciones manuales por fecha.", color: "text-sky-500", delay: 0.9 },
 ] as const
 
@@ -38,7 +38,7 @@ type ToolId = typeof TOOLS[number]["id"]
 
 const TOOL_TITLES: Record<ToolId, string> = {
   sds: "Descargar SDS", ers: "Descargar ERS", ftp: "Descarga FTP", manual: "Procesar DB3",
-  en0: "Estimación en 0", suma: "Suma Fija", auto: "Autoestimación", calc: "Calculadora"
+  en0: "Estimación en 0", suma: "Suma Fija", auto: "Proyección Contadores", calc: "Calculadora"
 }
 
 export default function ContadoresPage() {
@@ -56,6 +56,11 @@ export default function ContadoresPage() {
       suma_hojas: 1000,
       suma_fecha: t,
       auto_fecha: t,
+      proy_tolerancia: 2,
+      proy_min_intervalo: 1,
+      proy_ventana: 365,
+      proy_umbral: 0.2,
+      proy_max_antiguedad: 365,
       manual_fecha: "",
       ftp_fecha: t,
       sds_fecha: t,
@@ -290,10 +295,16 @@ export default function ContadoresPage() {
       formData.append("hojas", toolData.suma_hojas.toString())
       proc.addLog(`Aplicando suma fija de ${toolData.suma_hojas} hojas...`, 2500)
     } else if (tool === "auto") {
-      endpoint = "/api/tools/autoestim"
+      endpoint = "/api/tools/proyeccion"
       formData.append("file", files[0])
       formData.append("fecha", toolData.auto_fecha)
-      proc.addLog("Generando proyecciones IA...", 2500)
+      formData.append("tolerancia_dias", toolData.proy_tolerancia.toString())
+      formData.append("min_dias_intervalo", toolData.proy_min_intervalo.toString())
+      formData.append("ventana_reciente_dias", toolData.proy_ventana.toString())
+      formData.append("umbral_minimo_consumo", toolData.proy_umbral.toString())
+      formData.append("max_antiguedad_lectura_dias", toolData.proy_max_antiguedad.toString())
+      proc.addLog("Analizando tendencia histórica...", 2000)
+      proc.addLog("Generando proyecciones de contadores...", 3500)
     }
 
     try {
@@ -462,9 +473,19 @@ export default function ContadoresPage() {
             />
           )}
           {activeTool === "auto" && (
-            <AutoForm
+            <ProyeccionForm
               fecha={toolData.auto_fecha}
+              tolerancia={toolData.proy_tolerancia}
+              minIntervalo={toolData.proy_min_intervalo}
+              ventana={toolData.proy_ventana}
+              umbral={toolData.proy_umbral}
+              maxAntiguedad={toolData.proy_max_antiguedad}
               onFechaChange={v => setToolData(prev => ({ ...prev, auto_fecha: v }))}
+              onToleranciaChange={v => setToolData(prev => ({ ...prev, proy_tolerancia: v }))}
+              onMinIntervaloChange={v => setToolData(prev => ({ ...prev, proy_min_intervalo: v }))}
+              onVentanaChange={v => setToolData(prev => ({ ...prev, proy_ventana: v }))}
+              onUmbralChange={v => setToolData(prev => ({ ...prev, proy_umbral: v }))}
+              onMaxAntiguedadChange={v => setToolData(prev => ({ ...prev, proy_max_antiguedad: v }))}
               onRun={files => runTool("auto", files)}
             />
           )}

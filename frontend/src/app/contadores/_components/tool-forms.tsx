@@ -78,20 +78,106 @@ export const SumaForm = memo(function SumaForm({ hojas, fecha, onHojasChange, on
   )
 })
 
-interface AutoFormProps {
+interface ProyeccionFormProps {
   fecha: string
+  tolerancia: number
+  minIntervalo: number
+  ventana: number
+  umbral: number
+  maxAntiguedad: number
   onFechaChange: (v: string) => void
+  onToleranciaChange: (v: number) => void
+  onMinIntervaloChange: (v: number) => void
+  onVentanaChange: (v: number) => void
+  onUmbralChange: (v: number) => void
+  onMaxAntiguedadChange: (v: number) => void
   onRun: (files: FileList | null) => void
 }
 
-export const AutoForm = memo(function AutoForm({ fecha, onFechaChange, onRun }: AutoFormProps) {
+export const ProyeccionForm = memo(function ProyeccionForm({
+  fecha,
+  tolerancia,
+  minIntervalo,
+  ventana,
+  umbral,
+  maxAntiguedad,
+  onFechaChange,
+  onToleranciaChange,
+  onMinIntervaloChange,
+  onVentanaChange,
+  onUmbralChange,
+  onMaxAntiguedadChange,
+  onRun,
+}: ProyeccionFormProps) {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha de Estimación</label>
-        <input type="text" className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground" value={fecha} onChange={e => onFechaChange(e.target.value)} />
+        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Fecha de Toma</label>
+        <input
+          type="text"
+          className="w-full h-14 px-5 rounded-2xl border bg-background text-foreground"
+          value={fecha}
+          onChange={e => onFechaChange(e.target.value)}
+          placeholder="DD/MM/YYYY"
+        />
       </div>
-      <FileInput label="Selecciona CSV Detalle" accept=".csv" onChange={onRun} />
+
+      <details className="group border border-border rounded-2xl overflow-hidden bg-muted/5">
+        <summary className="flex items-center justify-between p-4 cursor-pointer font-bold text-[10px] uppercase text-muted-foreground select-none">
+          <span>Ajustes Avanzados</span>
+          <span className="transition-transform group-open:rotate-180 text-xs">▼</span>
+        </summary>
+        <div className="p-4 pt-0 border-t grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Tolerancia (Días)</label>
+            <input
+              type="number"
+              className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground"
+              value={tolerancia}
+              onChange={e => onToleranciaChange(parseInt(e.target.value) || 0)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Intervalo Mín. (Días)</label>
+            <input
+              type="number"
+              className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground"
+              value={minIntervalo}
+              onChange={e => onMinIntervaloChange(parseInt(e.target.value) || 0)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Ventana Historial (Días)</label>
+            <input
+              type="number"
+              className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground"
+              value={ventana}
+              onChange={e => onVentanaChange(parseInt(e.target.value) || 0)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Umbral Mín. Consumo</label>
+            <input
+              type="number"
+              step="0.01"
+              className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground"
+              value={umbral}
+              onChange={e => onUmbralChange(parseFloat(e.target.value) || 0)}
+            />
+          </div>
+          <div className="space-y-1 col-span-2">
+            <label className="text-[9px] font-bold uppercase text-muted-foreground ml-1">Antigüedad Máx. Lectura (Días)</label>
+            <input
+              type="number"
+              className="w-full h-11 px-4 rounded-xl border bg-background text-sm text-foreground"
+              value={maxAntiguedad}
+              onChange={e => onMaxAntiguedadChange(parseInt(e.target.value) || 0)}
+            />
+          </div>
+        </div>
+      </details>
+
+      <FileInput label="Selecciona Planilla de Contadores (XLSX / XLS)" accept=".xlsx,.xls" onChange={onRun} />
     </div>
   )
 })

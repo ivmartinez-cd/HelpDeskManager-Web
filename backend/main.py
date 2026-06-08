@@ -58,6 +58,7 @@ from services.counters_tools import (
     ejecutar_autoestimacion,
     calcular_estimacion_manual,
 )
+from services.proyeccion_contadores import ejecutar_proyeccion
 from database import engine, SessionLocal, get_db
 from models import FTPClient
 
@@ -454,18 +455,66 @@ async def tool_suma_fija(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/tools/autoestim")
-async def tool_autoestim(file: UploadFile = File(...), fecha: str = Form(...)):
-    """Autoestimación de contadores."""
+@app.post("/api/tools/proyeccion")
+async def tool_proyeccion(
+    file: UploadFile = File(...),
+    fecha: str = Form(...),
+    tolerancia_dias: int = Form(2),
+    min_dias_intervalo: int = Form(1),
+    ventana_reciente_dias: int = Form(365),
+    umbral_minimo_consumo: float = Form(0.2),
+    max_antiguedad_lectura_dias: int = Form(365),
+):
+    """Proyección de contadores."""
     try:
+        # Validar fecha
+        fecha_toma = None
+        for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%y"):
+            try:
+                from datetime import datetime
+                fecha_toma = datetime.strptime(fecha, fmt).date()
+                break
+            except ValueError:
+                continue
+
+        if not fecha_toma:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Formato de fecha no reconocido: '{fecha}'. Use DD/MM/YYYY.",
+            )
+
         temp_path = UPLOAD_DIR / file.filename
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        out1, out2 = ejecutar_autoestimacion(str(temp_path), fecha, str(OUTPUT_DIR))
+        out_excel, out_csv, logs = ejecutar_proyeccion(
+            file_input=str(temp_path),
+            fecha_toma=fecha_toma,
+            folder_salida=str(OUTPUT_DIR),
+            tolerancia_dias=tolerancia_dias,
+            min_dias_intervalo=min_dias_intervalo,
+            ventana_reciente_dias=ventana_reciente_dias,
+            umbral_minimo_consumo=umbral_minimo_consumo,
+            max_antiguedad_lectura_dias=max_antiguedad_lectura_dias,
+        )
         os.remove(temp_path)
-        return {"status": "success", "files": [Path(out1).name, Path(out2).name]}
+        
+        if logs:
+            print(f"Warnings en proyeccion: {logs}")
+
+        msg = "¡Proyección completada exitosamente!"
+        if logs:
+            msg += f" Con {len(logs)} advertencia(s)."
+
+        return {
+            "status": "success",
+            "message": msg,
+            "files": [Path(out_excel).name, Path(out_csv).name],
+            "warnings": logs
+        }
     except Exception as e:
+        import traceback
+        print(f"Error en endpoint proyeccion: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
