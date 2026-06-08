@@ -32,7 +32,7 @@ def test_ejecutar_proyeccion_basica(tmp_path):
     fecha_toma = date(2026, 5, 15)
 
     # Ejecutar la proyección
-    ruta_excel, ruta_csv, logs, kpi_stats, records = ejecutar_proyeccion(
+    ruta_excel, ruta_csv, logs, kpi_stats, records, validation = ejecutar_proyeccion(
         file_input=str(excel_path),
         fecha_toma=fecha_toma,
         folder_salida=str(output_dir),
@@ -47,6 +47,7 @@ def test_ejecutar_proyeccion_basica(tmp_path):
     assert kpi_stats is not None
     assert isinstance(records, list)
     assert len(records) == 2
+    assert isinstance(validation, list)
 
     # Verificar que los archivos existan
     assert os.path.exists(ruta_excel)
