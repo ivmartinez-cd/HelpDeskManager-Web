@@ -3,7 +3,7 @@ name: Deploy Backend via SSH
 on:
   push:
     branches:
-      - fix/composite-pk-vital
+      - main
 
 jobs:
   deploy:
@@ -18,7 +18,7 @@ jobs:
           port: 22
           script: |
             cd /home/ivmartinez_cd/HelpDeskManager-Web
-            git checkout fix/composite-pk-vital
-            git pull origin fix/composite-pk-vital
+            git checkout main
+            git pull origin main
             sudo docker compose down backend
             sudo docker compose up -d --build backend
