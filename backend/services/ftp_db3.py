@@ -94,7 +94,7 @@ def download_db3_from_ftp(
         remoto = _pick_remote_file(ftp, pattern, status_cb=status_cb)
 
         if status_cb:
-            status_cb(f"Descargando: {key} → {remoto}")
+            status_cb(f"Descargando: {key} -> {remoto}")
 
         with open(dest_path, "wb") as f:
             ftp.retrbinary(f"RETR {remoto}", f.write)
@@ -273,6 +273,24 @@ def _merge_db3_files(
         merged_con.close()
 
 
+def _is_sqlite3_valid(path: str) -> bool:
+    try:
+        if not os.path.isfile(path) or os.path.getsize(path) < 100:
+            return False
+        with open(path, "rb") as f:
+            header = f.read(16)
+        if not header.startswith(b"SQLite format 3\x00"):
+            return False
+        conn = sqlite3.connect(path)
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA integrity_check(1);")
+        res = cursor.fetchone()
+        conn.close()
+        return res == ("ok",)
+    except Exception:
+        return False
+
+
 def download_db3_many_from_ftp(
     cliente: str,
     *,
@@ -312,18 +330,36 @@ def download_db3_many_from_ftp(
         remotos = _list_remote_files(ftp, pattern, status_cb=status_cb)
 
         locales: List[str] = []
+        remotos_validos: List[str] = []
         total = len(remotos)
 
         for i, remoto in enumerate(remotos, start=1):
             local_path = os.path.join(dest_dir, os.path.basename(remoto))
 
             if status_cb:
-                status_cb(f"Descargando ({i}/{total}): {key} → {remoto}")
+                status_cb(f"Descargando ({i}/{total}): {key} -> {remoto}")
 
-            with open(local_path, "wb") as f:
-                ftp.retrbinary(f"RETR {remoto}", f.write)
-
-            locales.append(local_path)
+            try:
+                with open(local_path, "wb") as f:
+                    ftp.retrbinary(f"RETR {remoto}", f.write)
+                
+                if _is_sqlite3_valid(local_path):
+                    locales.append(local_path)
+                    remotos_validos.append(remoto)
+                else:
+                    if status_cb:
+                        status_cb(f"Omitiendo archivo malformado/corrupto: {remoto}")
+                    try:
+                        os.remove(local_path)
+                    except Exception:
+                        pass
+            except Exception as e:
+                if status_cb:
+                    status_cb(f"Error al descargar {remoto}: {e}")
+                try:
+                    os.remove(local_path)
+                except Exception:
+                    pass
 
         if len(locales) > 1:
             stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -335,12 +371,12 @@ def download_db3_many_from_ftp(
             if status_cb:
                 status_cb("Descarga completa")
 
-            return [merged_path], remotos
+            return [merged_path], remotos_validos
 
         if status_cb:
             status_cb("Descarga completa")
 
-        return locales, remotos
+        return locales, remotos_validos
 
     finally:
         try:
