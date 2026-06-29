@@ -51,7 +51,7 @@ async def health():
     return {"status": "healthy"}
 
 
-from services.ftp_db3 import download_db3_many_from_ftp
+from services.ftp_db3 import download_db3_from_ftp
 from services.stc_service import process_db3_to_ips, process_txt_to_ips
 from services.counters_tools import (
     filtrar_falta_contador_csv,
@@ -278,19 +278,19 @@ async def process_ftp_client(
             }
         }
 
-        print(f"DEBUG: Descargando y Fusionando DB3s para {client_name}...")
-        locales, remotos = download_db3_many_from_ftp(
-            cliente=client_name, cfg_map=cfg_map, dest_dir=str(UPLOAD_DIR)
+        print(f"DEBUG: Descargando ultimo DB3 para {client_name}...")
+        dest_path = str(UPLOAD_DIR / f"{client_name.upper()}_latest.db3")
+        local_path, remoto = download_db3_from_ftp(
+            cliente=client_name, cfg_map=cfg_map, dest_path=dest_path
         )
 
-        if not locales:
+        if not local_path:
             raise HTTPException(
                 status_code=404,
                 detail="No se encontraron archivos en el FTP para este cliente.",
             )
 
-        local_path = locales[0]  # Es el archivo fusionado
-        print(f"DEBUG: Descarga y Fusión completada. Procesando {local_path}...")
+        print(f"DEBUG: Descarga completada ({remoto}). Procesando {local_path}...")
 
         output_file_path, warnings = procesar_db_a_csv(
             archivos_db=[local_path],
@@ -301,8 +301,8 @@ async def process_ftp_client(
 
         output_path = Path(output_file_path)
 
-        # Copiar el DB3 fusionado a la carpeta de salida para que sea descargable
-        db3_output_name = f"{client_name}_merged.db3"
+        # Copiar el DB3 descargado a la carpeta de salida para que sea descargable
+        db3_output_name = f"{client_name}_latest.db3"
         db3_output_path = OUTPUT_DIR / db3_output_name
         shutil.copy(local_path, db3_output_path)
 
