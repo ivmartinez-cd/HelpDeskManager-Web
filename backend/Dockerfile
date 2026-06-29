@@ -9,8 +9,7 @@ COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements.txt
 
-RUN --mount=type=cache,target=/root/.cache/ms-playwright \
-    DEBIAN_FRONTEND=noninteractive playwright install-deps chromium && playwright install chromium
+RUN DEBIAN_FRONTEND=noninteractive playwright install-deps chromium && playwright install chromium
 
 COPY . .
 

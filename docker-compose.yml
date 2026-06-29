@@ -1,5 +1,6 @@
 services:
   backend:
+    image: ghcr.io/ivmartinez-cd/helpdeskmanager-backend:latest
     build: ./backend
     container_name: helpdesk-backend
     ports:
