@@ -68,6 +68,7 @@ def download_db3_from_ftp(
     timeout: int = 8,
     status_cb: Optional[Callable[[str], None]] = None,
 ) -> Tuple[str, str]:
+    import re
     key = (cliente or "").strip().upper()
     cfg = cfg_map.get(key)
     if not cfg:
@@ -91,18 +92,71 @@ def download_db3_from_ftp(
         ftp.login(user, password)
         ftp.cwd(path)
 
-        remoto = _pick_remote_file(ftp, pattern, status_cb=status_cb)
+        candidatos = _list_remote_files(ftp, pattern, status_cb=status_cb)
+        latest_file = candidatos[-1]
+        
+        match = re.search(r"\d{4}[-/]?\d{2}[-/]?\d{2}", latest_file)
+        
+        target_files = [latest_file]
+        if match:
+            date_str = match.group(0)
+            target_files = [f for f in candidatos if date_str in f]
 
         if status_cb:
-            status_cb(f"Descargando: {key} -> {remoto}")
+            status_cb(f"Archivos encontrados para descargar del día más reciente ({date_str if match else 'N/A'}): {len(target_files)}")
 
-        with open(dest_path, "wb") as f:
-            ftp.retrbinary(f"RETR {remoto}", f.write)
-
-        if status_cb:
-            status_cb("Descarga completa")
-
-        return dest_path, remoto
+        if len(target_files) == 1:
+            remoto = target_files[0]
+            if status_cb:
+                status_cb(f"Descargando: {key} -> {remoto}")
+            with open(dest_path, "wb") as f:
+                ftp.retrbinary(f"RETR {remoto}", f.write)
+            if status_cb:
+                status_cb("Descarga completa")
+            return dest_path, remoto
+        else:
+            temp_dir = tempfile.mkdtemp()
+            locales = []
+            remotos_validos = []
+            
+            for i, remoto in enumerate(target_files, start=1):
+                local_path = os.path.join(temp_dir, os.path.basename(remoto))
+                if status_cb:
+                    status_cb(f"Descargando ({i}/{len(target_files)}): {key} -> {remoto}")
+                try:
+                    with open(local_path, "wb") as f:
+                        ftp.retrbinary(f"RETR {remoto}", f.write)
+                    if _is_sqlite3_valid(local_path):
+                        locales.append(local_path)
+                        remotos_validos.append(remoto)
+                    else:
+                        if status_cb:
+                            status_cb(f"Omitiendo archivo malformado/corrupto: {remoto}")
+                        safe_remove(local_path)
+                except Exception as e:
+                    if status_cb:
+                        status_cb(f"Error al descargar {remoto}: {e}")
+                    safe_remove(local_path)
+            
+            if len(locales) > 1:
+                _merge_db3_files(locales, dest_path, status_cb=status_cb)
+            elif len(locales) == 1:
+                import shutil
+                shutil.move(locales[0], dest_path)
+            else:
+                raise ValueError("No se pudo descargar ningún archivo válido.")
+                
+            for local_path in locales:
+                safe_remove(local_path)
+            try:
+                os.rmdir(temp_dir)
+            except:
+                pass
+                
+            if status_cb:
+                status_cb("Descarga y fusión completa")
+                
+            return dest_path, ", ".join(remotos_validos)
 
     finally:
         # IMPORTANTE: quit() puede colgarse esperando respuesta del server.
