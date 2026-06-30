@@ -278,8 +278,11 @@ async def process_ftp_client(
             }
         }
 
+        # Sanitizar el nombre del cliente para usarlo en nombres de archivo y URLs
+        safe_name = re.sub(r"[^a-zA-Z0-9._-]", "_", client_name)
+
         print(f"DEBUG: Descargando ultimo DB3 para {client_name}...")
-        dest_path = str(UPLOAD_DIR / f"{client_name.upper()}_latest.db3")
+        dest_path = str(UPLOAD_DIR / f"{safe_name.upper()}_latest.db3")
         local_path, remoto = download_db3_from_ftp(
             cliente=client_name, cfg_map=cfg_map, dest_path=dest_path
         )
@@ -295,14 +298,14 @@ async def process_ftp_client(
         output_file_path, warnings = procesar_db_a_csv(
             archivos_db=[local_path],
             fecha_maxima=fecha_maxima,
-            nombre_base_salida=f"{client_name}_FTP",
+            nombre_base_salida=f"{safe_name}_FTP",
             carpeta_salida=str(OUTPUT_DIR),
         )
 
         output_path = Path(output_file_path)
 
         # Copiar el DB3 descargado a la carpeta de salida para que sea descargable
-        db3_output_name = f"{client_name}_latest.db3"
+        db3_output_name = f"{safe_name}_latest.db3"
         db3_output_path = OUTPUT_DIR / db3_output_name
         shutil.copy(local_path, db3_output_path)
 

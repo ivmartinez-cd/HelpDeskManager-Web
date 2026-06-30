@@ -171,7 +171,7 @@ export default function FtpPage() {
                                 <p className="text-[10px] text-muted-foreground">Contadores extraídos</p>
                               </div>
                             </div>
-                            <a href={`${apiUrl}/api/download/${p.csvFile}`} download={p.csvFile} className="w-full bg-primary text-primary-foreground h-9 rounded-xl flex items-center justify-center font-bold text-xs hover:opacity-90 transition-all">
+                            <a href={`${apiUrl}/api/download/${encodeURIComponent(p.csvFile)}`} download={p.csvFile} className="w-full bg-primary text-primary-foreground h-9 rounded-xl flex items-center justify-center font-bold text-xs hover:opacity-90 transition-all">
                               Descargar CSV
                             </a>
                           </div>
@@ -185,7 +185,7 @@ export default function FtpPage() {
                                 <p className="text-[10px] text-muted-foreground">Archivo fusionado (.db3)</p>
                               </div>
                             </div>
-                            <a href={`${apiUrl}/api/download/${p.db3File}`} download={p.db3File} className="w-full bg-accent text-accent-foreground h-9 rounded-xl flex items-center justify-center font-bold text-xs hover:opacity-90 transition-all">
+                            <a href={`${apiUrl}/api/download/${encodeURIComponent(p.db3File)}`} download={p.db3File} className="w-full bg-accent text-accent-foreground h-9 rounded-xl flex items-center justify-center font-bold text-xs hover:opacity-90 transition-all">
                               Descargar DB3
                             </a>
                           </div>
