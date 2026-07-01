@@ -12,6 +12,8 @@ export function useSdsClients(apiUrl: string) {
   const [isLoadingSdsClients, setIsLoadingSdsClients] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   const [search, setSearch] = useState("")
+  const [isManaging, setIsManaging] = useState(false)
+  const [savingId, setSavingId] = useState<number | null>(null)
 
   const filteredSdsClients = useMemo(
     () => sdsClients.filter(c => c.name.toLowerCase().includes(search.toLowerCase())),
@@ -32,9 +34,32 @@ export function useSdsClients(apiUrl: string) {
     }
   }, [apiUrl])
 
+  const saveSumaColor = useCallback(async (client: SdsClient, sumaColor: boolean) => {
+    setSavingId(client.customerId)
+    try {
+      const res = await fetch(`${apiUrl}/api/sds/clients/${client.customerId}/config`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer_name: client.name, suma_color: sumaColor }),
+      })
+      if (!res.ok) throw new Error("Error al guardar la preferencia del cliente")
+      setSdsClients(prev => prev.map(c => c.customerId === client.customerId ? { ...c, suma_color: sumaColor } : c))
+      if (selectedSdsClient?.customerId === client.customerId) {
+        setSelectedSdsClient(prev => prev ? { ...prev, suma_color: sumaColor } : prev)
+      }
+      toast("Preferencia de cliente guardada", "success")
+    } catch (err) {
+      console.error("Error saving SDS client config:", err)
+      toast("Error al guardar la preferencia del cliente", "error")
+    } finally {
+      setSavingId(null)
+    }
+  }, [apiUrl, selectedSdsClient])
+
   const resetDropdown = useCallback(() => {
     setShowDropdown(false)
     setSearch("")
+    setIsManaging(false)
   }, [])
 
   return {
@@ -43,6 +68,8 @@ export function useSdsClients(apiUrl: string) {
     isLoadingSdsClients,
     showDropdown, setShowDropdown,
     search, setSearch,
+    isManaging, setIsManaging,
+    savingId, saveSumaColor,
     fetchSdsClients, resetDropdown,
   }
 }

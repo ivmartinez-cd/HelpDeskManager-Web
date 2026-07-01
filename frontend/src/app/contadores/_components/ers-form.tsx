@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { Loader2, PlusCircle, Search, Download } from "lucide-react"
+import { Loader2, PlusCircle, Search, Download, Settings, ChevronLeft } from "lucide-react"
 import type { ErsClient } from "../_hooks/use-ers-clients"
 
 interface ErsFormProps {
@@ -8,22 +8,68 @@ interface ErsFormProps {
   selectedErsClient: ErsClient | null
   showDropdown: boolean
   search: string
-  ersSumaColor: boolean
+  isManaging: boolean
+  savingId: string | null
   isProcessing: boolean
   fecha: string
   onToggleDropdown: () => void
   onSelectClient: (c: ErsClient) => void
   onSearchChange: (v: string) => void
-  onToggleSumaColor: () => void
+  onToggleManaging: () => void
+  onSaveSumaColor: (c: ErsClient, sumaColor: boolean) => void
   onFechaChange: (v: string) => void
   onRun: () => void
 }
 
 export const ErsForm = memo(function ErsForm(p: ErsFormProps) {
+  if (p.isManaging) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <button
+            onClick={p.onToggleManaging}
+            className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            VOLVER A SELECCIÓN
+          </button>
+          <h3 className="text-sm font-black uppercase tracking-widest text-accent">Gestión de Clientes ERS</h3>
+        </div>
+        <p className="text-[11px] text-muted-foreground px-1">
+          Definí por cliente si suma mono+color en un solo contador (según su contrato), para que se aplique automáticamente en cada descarga.
+        </p>
+        <div className="max-h-[340px] overflow-y-auto pr-2 custom-scrollbar space-y-2">
+          {p.filteredErsClients.map(c => (
+            <div key={c.customer_id} className="p-4 bg-muted/20 border rounded-2xl transition-all hover:border-orange-500/50">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-bold text-sm text-foreground truncate">{c.name}</p>
+                <div
+                  onClick={() => p.savingId === c.customer_id ? undefined : p.onSaveSumaColor(c, !c.suma_color)}
+                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 cursor-pointer ${c.suma_color ? "bg-orange-500" : "bg-border"} ${p.savingId === c.customer_id ? "opacity-50 pointer-events-none" : ""}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${c.suma_color ? "translate-x-5" : "translate-x-0"}`} />
+                </div>
+              </div>
+            </div>
+          ))}
+          {p.filteredErsClients.length === 0 && (
+            <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron clientes.</p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Seleccionar Cliente ERS</label>
+        <div className="flex items-center justify-between ml-1">
+          <label className="text-[10px] font-bold uppercase text-muted-foreground">Seleccionar Cliente ERS</label>
+          <button onClick={p.onToggleManaging} className="flex items-center gap-1.5 text-[10px] font-black text-accent hover:text-orange-400 transition-colors uppercase tracking-wider">
+            <Settings className="h-3 w-3" />
+            Gestionar Clientes
+          </button>
+        </div>
         {p.isLoadingErsClients ? (
           <div className="h-14 flex items-center justify-center border rounded-2xl bg-muted/20">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -85,16 +131,15 @@ export const ErsForm = memo(function ErsForm(p: ErsFormProps) {
         />
       </div>
 
-      <label className="flex items-center gap-3 cursor-pointer select-none">
-        <div
-          onClick={p.onToggleSumaColor}
-          className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${p.ersSumaColor ? "bg-orange-500" : "bg-border"}`}
-        >
-          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${p.ersSumaColor ? "translate-x-5" : "translate-x-0"}`} />
+      {p.selectedErsClient && (
+        <div className="flex items-center gap-2 px-1 text-sm">
+          <span className="text-muted-foreground">Suma color:</span>
+          <span className={`font-bold ${p.selectedErsClient.suma_color ? "text-orange-500" : "text-foreground"}`}>
+            {p.selectedErsClient.suma_color ? "Sí" : "No"}
+          </span>
+          <span className="text-[11px] text-muted-foreground">(según contrato del cliente — editar en &quot;Gestionar Clientes&quot;)</span>
         </div>
-        <span className="text-sm font-medium text-foreground">Suma color</span>
-        <span className="text-[11px] text-muted-foreground">(equipo color: suma ciclos totales en CLASE 20, TIPO 21)</span>
-      </label>
+      )}
 
       <button
         onClick={p.onRun}

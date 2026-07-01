@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, UniqueConstraint
 from database import Base
 import datetime
 
@@ -25,4 +25,21 @@ class ResourceLink(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+    )
+
+
+class MeterClientConfig(Base):
+    __tablename__ = "meter_client_configs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    source = Column(String, index=True)  # "sds" | "ers"
+    customer_id = Column(String, index=True)
+    customer_name = Column(String)
+    suma_color = Column(Boolean, default=False)
+    updated_at = Column(
+        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+    )
+
+    __table_args__ = (
+        UniqueConstraint("source", "customer_id", name="uq_meter_client_source_customer"),
     )

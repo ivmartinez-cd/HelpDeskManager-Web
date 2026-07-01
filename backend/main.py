@@ -61,7 +61,7 @@ from services.counters_tools import (
 )
 from services.proyeccion_contadores import ejecutar_proyeccion
 from database import engine, SessionLocal, get_db
-from models import FTPClient
+from models import FTPClient, MeterClientConfig
 
 models.Base.metadata.create_all(bind=engine)
 from sqlalchemy.orm import Session
@@ -84,6 +84,46 @@ class ResourceSchema(BaseModel):
     name: str
     url: str
     category: str = "Otros"
+
+
+class MeterClientConfigSchema(BaseModel):
+    customer_name: str
+    suma_color: bool
+
+
+def _get_meter_configs(db: Session, source: str) -> dict:
+    """Devuelve {customer_id: suma_color} para todas las configs guardadas de un source."""
+    rows = db.query(MeterClientConfig).filter(MeterClientConfig.source == source).all()
+    return {row.customer_id: row.suma_color for row in rows}
+
+
+def _get_meter_suma_color(db: Session, source: str, customer_id) -> bool:
+    row = (
+        db.query(MeterClientConfig)
+        .filter(MeterClientConfig.source == source, MeterClientConfig.customer_id == str(customer_id))
+        .first()
+    )
+    return row.suma_color if row else False
+
+
+def _upsert_meter_config(db: Session, source: str, customer_id, customer_name: str, suma_color: bool):
+    customer_id = str(customer_id)
+    row = (
+        db.query(MeterClientConfig)
+        .filter(MeterClientConfig.source == source, MeterClientConfig.customer_id == customer_id)
+        .first()
+    )
+    if row:
+        row.customer_name = customer_name
+        row.suma_color = suma_color
+    else:
+        row = MeterClientConfig(
+            source=source, customer_id=customer_id, customer_name=customer_name, suma_color=suma_color
+        )
+        db.add(row)
+    db.commit()
+    db.refresh(row)
+    return row
 
 
 @app.get("/api/ftp/clients")
@@ -634,10 +674,13 @@ async def process_db3(
 
 
 @app.get("/api/sds/clients")
-async def sds_clients_list():
-    """Devuelve la lista de clientes desde la API de SDS."""
+async def sds_clients_list(db: Session = Depends(get_db)):
+    """Devuelve la lista de clientes desde la API de SDS, con su config de suma_color guardada."""
     try:
         clients = await get_sds_clients()
+        configs = _get_meter_configs(db, "sds")
+        for c in clients:
+            c["suma_color"] = configs.get(str(c.get("customerId")), False)
         return {"status": "success", "clients": clients}
     except Exception as e:
         import traceback
@@ -646,15 +689,25 @@ async def sds_clients_list():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.put("/api/sds/clients/{customer_id}/config")
+async def update_sds_client_config(
+    customer_id: str, config: MeterClientConfigSchema, db: Session = Depends(get_db)
+):
+    """Guarda/actualiza la preferencia de suma_color de un cliente SDS."""
+    row = _upsert_meter_config(db, "sds", customer_id, config.customer_name, config.suma_color)
+    return {"status": "success", "customer_id": row.customer_id, "suma_color": row.suma_color}
+
+
 @app.post("/api/sds/process")
 async def sds_process_meters(
     customer_id: int = Body(..., embed=True),
     customer_name: str = Body(..., embed=True),
     fecha_maxima: str = Body(..., embed=True),
-    suma_color: bool = Body(False, embed=True),
+    db: Session = Depends(get_db),
 ):
     """Obtiene los contadores de SDS y los exporta a CSV."""
     try:
+        suma_color = _get_meter_suma_color(db, "sds", customer_id)
         csv_path_str = await export_sds_meters_to_csv(
             customer_id,
             customer_name,
@@ -676,10 +729,13 @@ async def sds_process_meters(
 
 
 @app.get("/api/ers/clients")
-async def ers_clients_list():
-    """Devuelve la lista de clientes (grupos de dispositivos) desde la API de ERS."""
+async def ers_clients_list(db: Session = Depends(get_db)):
+    """Devuelve la lista de clientes (grupos de dispositivos) desde la API de ERS, con su config de suma_color guardada."""
     try:
         clients = get_ers_clients()
+        configs = _get_meter_configs(db, "ers")
+        for c in clients:
+            c["suma_color"] = configs.get(str(c.get("customer_id")), False)
         return {"status": "success", "clients": clients}
     except Exception as e:
         import traceback
@@ -687,15 +743,25 @@ async def ers_clients_list():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.put("/api/ers/clients/{customer_id}/config")
+async def update_ers_client_config(
+    customer_id: str, config: MeterClientConfigSchema, db: Session = Depends(get_db)
+):
+    """Guarda/actualiza la preferencia de suma_color de un cliente ERS."""
+    row = _upsert_meter_config(db, "ers", customer_id, config.customer_name, config.suma_color)
+    return {"status": "success", "customer_id": row.customer_id, "suma_color": row.suma_color}
+
+
 @app.post("/api/ers/process")
 async def ers_process_meters(
     customer_id: str = Body(..., embed=True),
     customer_name: str = Body(..., embed=True),
     fecha_maxima: str = Body(..., embed=True),
-    suma_color: bool = Body(False, embed=True),
+    db: Session = Depends(get_db),
 ):
     """Obtiene los contadores de ERS y los exporta a CSV."""
     try:
+        suma_color = _get_meter_suma_color(db, "ers", customer_id)
         csv_path_str = export_ers_meters_to_csv(
             customer_id,
             customer_name,

@@ -45,8 +45,6 @@ const TOOL_TITLES: Record<ToolId, string> = {
 export default function ContadoresPage() {
   const apiUrl = ""
   const [activeTool, setActiveTool] = useState<ToolId | null>(null)
-  const [sdsSumaColor, setSdsSumaColor] = useState(false)
-  const [ersSumaColor, setErsSumaColor] = useState(false)
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null)
 
   const [toolData, setToolData] = useState(() => {
@@ -211,7 +209,7 @@ export default function ContadoresPage() {
       const response = await fetch(`${apiUrl}/api/sds/process`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer_id: sds.selectedSdsClient.customerId, customer_name: sds.selectedSdsClient.name, fecha_maxima: isoDate, suma_color: sdsSumaColor }),
+        body: JSON.stringify({ customer_id: sds.selectedSdsClient.customerId, customer_name: sds.selectedSdsClient.name, fecha_maxima: isoDate }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail)
@@ -228,7 +226,7 @@ export default function ContadoresPage() {
     } finally {
       proc.setIsProcessing(false)
     }
-  }, [apiUrl, sds.selectedSdsClient, toolData.sds_fecha, sdsSumaColor, proc])
+  }, [apiUrl, sds.selectedSdsClient, toolData.sds_fecha, proc])
 
   const runErsProcess = useCallback(async () => {
     if (!ers.selectedErsClient) return
@@ -253,7 +251,7 @@ export default function ContadoresPage() {
       const response = await fetch(`${apiUrl}/api/ers/process`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer_id: ers.selectedErsClient.customer_id, customer_name: ers.selectedErsClient.name, fecha_maxima: isoDate, suma_color: ersSumaColor }),
+        body: JSON.stringify({ customer_id: ers.selectedErsClient.customer_id, customer_name: ers.selectedErsClient.name, fecha_maxima: isoDate }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail)
@@ -270,7 +268,7 @@ export default function ContadoresPage() {
     } finally {
       proc.setIsProcessing(false)
     }
-  }, [apiUrl, ers.selectedErsClient, toolData.ers_fecha, ersSumaColor, proc])
+  }, [apiUrl, ers.selectedErsClient, toolData.ers_fecha, proc])
 
   const runTool = useCallback(async (tool: string, files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -470,13 +468,15 @@ export default function ContadoresPage() {
               selectedSdsClient={sds.selectedSdsClient}
               showDropdown={sds.showDropdown}
               search={sds.search}
-              sdsSumaColor={sdsSumaColor}
+              isManaging={sds.isManaging}
+              savingId={sds.savingId}
               isProcessing={proc.isProcessing}
               fecha={toolData.sds_fecha}
               onToggleDropdown={() => sds.setShowDropdown(v => !v)}
               onSelectClient={(c) => { sds.setSelectedSdsClient(c); sds.setShowDropdown(false) }}
               onSearchChange={sds.setSearch}
-              onToggleSumaColor={() => setSdsSumaColor(v => !v)}
+              onToggleManaging={() => sds.setIsManaging(v => !v)}
+              onSaveSumaColor={sds.saveSumaColor}
               onFechaChange={v => setToolData(prev => ({ ...prev, sds_fecha: v }))}
               onRun={runSdsProcess}
             />
@@ -488,13 +488,15 @@ export default function ContadoresPage() {
               selectedErsClient={ers.selectedErsClient}
               showDropdown={ers.showDropdown}
               search={ers.search}
-              ersSumaColor={ersSumaColor}
+              isManaging={ers.isManaging}
+              savingId={ers.savingId}
               isProcessing={proc.isProcessing}
               fecha={toolData.ers_fecha}
               onToggleDropdown={() => ers.setShowDropdown(v => !v)}
               onSelectClient={(c) => { ers.setSelectedErsClient(c); ers.setShowDropdown(false) }}
               onSearchChange={ers.setSearch}
-              onToggleSumaColor={() => setErsSumaColor(v => !v)}
+              onToggleManaging={() => ers.setIsManaging(v => !v)}
+              onSaveSumaColor={ers.saveSumaColor}
               onFechaChange={v => setToolData(prev => ({ ...prev, ers_fecha: v }))}
               onRun={runErsProcess}
             />
